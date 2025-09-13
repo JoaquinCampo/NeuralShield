@@ -1,0 +1,5 @@
+[tool.neuralshield.pipeline_order]
+order = [
+  "neuralshield.preprocessing.steps.unfold_obs_fold:run",
+  "neuralshield.preprocessing.steps.normalize:run"
+]

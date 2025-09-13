@@ -8,11 +8,9 @@ authors = [
     { name = "Mateo Daneri", email = "matedaneri@gmail.com" },
 ]
 requires-python = ">=3.12"
-dependencies = []
-
-[build-system]
-requires = ["uv_build>=0.8.15,<0.9.0"]
-build-backend = "uv_build"
+dependencies = [
+    "loguru>=0.7.3",
+]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/neuralshield"]
@@ -58,6 +56,7 @@ line-ending = "auto"
 [tool.mypy]
 ignore_missing_imports = true
 show_error_codes = true
+
 
 
 [[tool.mypy.overrides]]
