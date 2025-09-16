@@ -1,0 +1,15 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+
+## User interaction
+
+- Avoid doing extra work. Just do what you are told to do, nothing less, nothing more. Following the provided instructions is crucial for a smooth coding experience.
+- Avoid running a script after creating it. If the user wants to run it they will either tell you or run it themselves.
+- If a file was rejected, dont generate it again unless explicitely asked to do so
+
+## Toolset
+
+Use loguru for logging.

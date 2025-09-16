@@ -1,34 +1,36 @@
 """
 HTTP request preprocessing pipeline for neuralshield.
 
-This module provides functionality to create and manage preprocessing pipelines
-for HTTP requests. Each preprocessing step is a function that takes an HTTP
-request string and returns a normalized/transformed version suitable for
-machine learning models.
+This module creates and manages preprocessing pipelines for HTTP requests.
+Each preprocessing step is an instance of `HttpPreprocessor` implementing a
+`process()` method that takes an HTTP request string and returns a normalized
+or transformed version suitable for machine learning models.
 """
 
 import tomllib
 from importlib import import_module
 from pathlib import Path
-from typing import Callable, Iterable, List
+from typing import Callable, Iterable, List, Type
 
-HttpPreprocessor = Callable[[str], str]
+from neuralshield.preprocessing.http_preprocessor import HttpPreprocessor
+
+PreprocessorFunc = Callable[[str], str]
 
 
-def pipeline(steps: Iterable[HttpPreprocessor]) -> HttpPreprocessor:
+def pipeline(steps: Iterable[HttpPreprocessor]) -> PreprocessorFunc:
     """
     Create an HTTP request preprocessing pipeline from a sequence of steps.
 
     Args:
-        steps: An iterable of HttpPreprocessor functions to be executed in sequence.
+        steps: An iterable of `HttpPreprocessor` instances to execute in order.
 
     Returns:
-        An HttpPreprocessor function that applies all the provided steps in order.
+        A function that applies all provided steps' `process()` in order.
     """
 
     def run(s: str) -> str:
         for step in steps:
-            s = step(s)
+            s = step.process(s)
         return s
 
     return run
@@ -36,13 +38,16 @@ def pipeline(steps: Iterable[HttpPreprocessor]) -> HttpPreprocessor:
 
 def resolve(dotted: str) -> HttpPreprocessor:
     """
-    Resolve a dotted import path to an HTTP preprocessing function.
+    Resolve a dotted import path to an HTTP preprocessing class instance.
 
-    Takes a string in the format "module.path:function_name" and dynamically
-    imports the module and retrieves the specified HTTP preprocessor function.
+    Accepts "module.path:ClassName", imports the module, retrieves the class,
+    and returns an instantiated `HttpPreprocessor`.
     """
-    module_name, func_name = dotted.split(":", 1)
-    return getattr(import_module(module_name), func_name)
+    module_name, class_name = dotted.split(":", 1)
+    preprocessor_cls: Type[HttpPreprocessor] = getattr(
+        import_module(module_name), class_name
+    )
+    return preprocessor_cls()
 
 
 def load_order_from_config(config_path: Path) -> List[str]:
@@ -58,7 +63,7 @@ def load_order_from_config(config_path: Path) -> List[str]:
         raise ValueError("Pipeline order not found in config")
 
 
-preprocess: HttpPreprocessor = pipeline(
+preprocess: PreprocessorFunc = pipeline(
     resolve(name)
     for name in load_order_from_config(
         Path("src/neuralshield/preprocessing/config.toml")
