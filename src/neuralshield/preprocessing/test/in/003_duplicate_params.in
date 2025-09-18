@@ -1,0 +1,11 @@
+GET /search?a=1&a=2&b=&flag&a=3&a=&a&dup=one&dup=two&encoded=%25%32%30&empty=&lonely HTTP/1.1
+Host: x.example
+Accept-Language: es-ES,es;q=0.9,en;q=0.8
+Cache-Control: max-age=0
+X-Header: value
+	continued 1
+  continued 2
+X-Header: another
+X-Header: yet another
+Cookie: a=1; b=2; c=3
+Accept: text/plain

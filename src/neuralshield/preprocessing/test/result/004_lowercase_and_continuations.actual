@@ -1,0 +1,18 @@
+[METHOD] GET
+[URL] /path
+[QUERY] x=1
+[QUERY] y=
+[QUERY] y=2
+[QUERY] z=hello+world
+[HEADER] host: x
+[HEADER] 	continued A
+[HEADER]   continued B
+[HEADER] User-Agent: TestAgent/1.0
+[HEADER] X-Obs: part1
+[HEADER] 	part2
+[HEADER] 		part3
+[HEADER]   part4
+[HEADER] Accept: */*
+[HEADER] Accept: application/json
+[HEADER] Foo: bar
+[HEADER] Foo: baz

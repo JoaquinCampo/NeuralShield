@@ -1,0 +1,31 @@
+[METHOD] GET
+[URL] /v1/api/search;param/path;seg
+[QUERY] q=foo%252Ebar
+[QUERY] user=John+Doe
+[QUERY] flag
+[QUERY] empty=
+[QUERY] list=1
+[QUERY] list=2
+[QUERY] encoded=%2Fpath%2F..%2F
+[QUERY] space=hello%20world
+[QUERY] plus=a+b
+[QUERY] semi=1;2;3
+[QUERY] weird==
+[QUERY] lonely
+[QUERY] multi=αβγ
+[QUERY] multi=другой
+[HEADER] Host: Example.com
+[HEADER] User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 14_5) Gecko/20100101 Firefox/119.0
+[HEADER] Accept: text/html
+[HEADER] Accept: */*
+[HEADER] Accept: application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+[HEADER] Accept-Language: es-ES,es;q=0.9,en;q=0.8
+[HEADER] Accept-Encoding: gzip, deflate, br
+[HEADER] X-Custom: first line
+[HEADER] 	second	part continued
+[HEADER]   third part
+[HEADER] X-Multi: αβγ
+[HEADER] X-Empty:
+[HEADER] Cache-Control: no-cache
+[HEADER] Pragma: no-cache
+[HEADER] Cookie: sid=abc123; theme=light; sessionToken=xyz

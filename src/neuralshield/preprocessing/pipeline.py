@@ -28,8 +28,10 @@ def pipeline(steps: Iterable[HttpPreprocessor]) -> PreprocessorFunc:
         A function that applies all provided steps' `process()` in order.
     """
 
+    steps_list = list(steps)
+
     def run(s: str) -> str:
-        for step in steps:
+        for step in steps_list:
             s = step.process(s)
         return s
 
