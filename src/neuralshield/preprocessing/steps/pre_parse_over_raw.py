@@ -1,9 +1,28 @@
-import re
 import unicodedata
 
 from loguru import logger
 
 from neuralshield.preprocessing.http_preprocessor import HttpPreprocessor
+from neuralshield.preprocessing.steps.exceptions import MalformedHttpRequestError
+
+VALID_METHODS = (
+    "GET",
+    "POST",
+    "PUT",
+    "DELETE",
+    "PATCH",
+    "OPTIONS",
+    "HEAD",
+    "TRACE",
+    "CONNECT",
+    "PRI",
+)
+METHOD = str
+PATH = str
+QUERY = str
+HEADER = str
+QUERIES = list[QUERY]
+HEADERS = list[HEADER]
 
 
 class RemoveFramingArtifacts(HttpPreprocessor):
@@ -65,7 +84,7 @@ class RemoveFramingArtifacts(HttpPreprocessor):
         # Log what was removed
         if bom_removed or leading_controls > 0 or trailing_controls > 0:
             total_removed = original_length - len(processed)
-            logger.info(
+            logger.debug(
                 "Pre-parse cleanup: removed {total} chars "
                 "(BOM: {bom}, leading controls: {lead}, trailing controls: {trail})",
                 total=total_removed,
@@ -80,193 +99,197 @@ class RemoveFramingArtifacts(HttpPreprocessor):
         return self._remove_framing_artifacts(http_request=request)
 
 
-class LineStructurePreprocessor(HttpPreprocessor):
+class RequestStructurer(HttpPreprocessor):
     """
-    EOL analysis/normalization (headers) and obs-fold unfolding.
-
-    - Detects mixed terminators and bare CR/LF in header section
-    - Normalizes header terminators to CRLF
-    - Strictly unfolds folded header lines (obs-fold) within headers only
-    - Logs anomalies and telemetry via loguru
+    Transform HTTP request into structured [METHOD]/[URL]/[QUERY]/[HEADER] format.
     """
 
-    def process(self, request: str) -> str:
-        if not request:
-            return request
-
-        header_lines, _header_end_pos, eol_stats = self._scan_header_lines(request)
-        self._log_eol_stats(eol_stats)
-
-        normalized_headers = self._normalize_and_unfold_headers(header_lines)
-
-        # Return only normalized headers, followed by a blank line
-        rebuilt = "\r\n".join(normalized_headers) + "\r\n\r\n"
-        return rebuilt
-
-    def _scan_header_lines(self, raw: str):
+    def _parse_request_line(
+        self,
+        request_line: str,
+    ) -> tuple[METHOD, PATH, QUERY]:
         """
-        Scan raw request to extract header lines, header/body split, and EOL stats.
+        Parse the HTTP request line to extract method, path, and query string.
+
+        Args:
+            request_line: First line of HTTP request (e.g., "GET /path?query HTTP/1.1")
 
         Returns:
-            (header_lines, header_end_pos, eol_stats)
-        where header_lines excludes the empty separator line,
-        header_end_pos points to the end of string,
-        and eol_stats is a dict with counts and flags based on header section.
+            Tuple of (method, path, query)
+
+        Raises:
+            MalformedHttpRequestError: If request line is malformed
         """
-        crlf_count = 0
-        lf_count = 0
-        cr_count = 0
+        logger.debug("Parsing HTTP request line")
 
-        header_lines: list[str] = []
-        current: list[str] = []
-        i = 0
-        n = len(raw)
-        header_end_pos = None
-
-        # Helper to finalize current line into header_lines
-        def flush_line():
-            header_lines.append("".join(current))
-            current.clear()
-
-        # Scan until end-of-headers (first empty line). Count EOLs in headers only.
-        while i < n:
-            ch = raw[i]
-            if ch == "\r":
-                if i + 1 < n and raw[i + 1] == "\n":
-                    crlf_count += 1
-                    # End of line
-                    if not current:
-                        # Empty line -> end of headers at i+2
-                        header_end_pos = i + 2
-                        i += 2
-                        break
-                    flush_line()
-                    i += 2
-                    continue
-                else:
-                    # Bare CR
-                    cr_count += 1
-                    if not current:
-                        header_end_pos = i + 1
-                        i += 1
-                        break
-                    flush_line()
-                    i += 1
-                    continue
-            elif ch == "\n":
-                # Bare LF
-                lf_count += 1
-                if not current:
-                    header_end_pos = i + 1
-                    i += 1
-                    break
-                flush_line()
-                i += 1
-                continue
-
-            # Normal char within header section
-            current.append(ch)
-            i += 1
-
-        # If we didn't reach an empty line, we consumed to EOF as headers
-        if header_end_pos is None:
-            if current:
-                flush_line()
-            header_end_pos = i
-
-        # EOL flags based on header counts and terminator at EOF/header-end
-        kinds_present = sum(1 for c in (crlf_count, lf_count, cr_count) if c > 0)
-        eol_mix = kinds_present > 1
-        eof_no_crlf = not raw[:header_end_pos].endswith("\r\n\r\n") and not raw[
-            :header_end_pos
-        ].endswith("\r\n")
-
-        eol_stats = {
-            "CRLF": crlf_count,
-            "LF": lf_count,
-            "CR": cr_count,
-            "EOL:MIX": eol_mix,
-            "EOL:BARELF": lf_count > 0,
-            "EOL:BARECR": cr_count > 0,
-            "EOL:EOF_NOCRLF": eof_no_crlf,
-        }
-
-        return header_lines, header_end_pos, eol_stats
-
-    def _normalize_and_unfold_headers(self, header_lines: list[str]) -> list[str]:
-        """
-        Normalize header terminators to CRLF and unfold obs-fold strictly in headers.
-        The input is the list of header lines (including request-line).
-        """
-        if not header_lines:
-            return header_lines
-
-        unfolded: list[str] = []
-        obs_fold_count = 0
-        any_unfold = False
-
-        # RFC7230 tchar for header field-name
-        # ! # $ % & ' * + - . ^ _ ` | ~ DIGIT ALPHA
-
-        tchar_re = re.compile(r"^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$")
-
-        def is_valid_header(line: str) -> bool:
-            if ":" not in line:
-                return False
-            name, _ = line.split(":", 1)
-            return bool(name) and bool(tchar_re.match(name))
-
-        # Preserve request-line as-is at index 0
-        unfolded.append(header_lines[0])
-        last_was_valid = False
-
-        for idx in range(1, len(header_lines)):
-            line = header_lines[idx]
-            if line.startswith(" ") or line.startswith("\t"):
-                # Continuation line
-                if unfolded and last_was_valid:
-                    continuation = line.lstrip()
-                    unfolded[-1] = (
-                        unfolded[-1] + (" " if continuation else "") + continuation
-                    )
-                    obs_fold_count += 1
-                    any_unfold = True
-                    continue
-                else:
-                    # Malformed context for continuation; keep as-is
-                    unfolded.append(line)
-                    last_was_valid = False
-                    continue
-
-            # New header candidate
-            if is_valid_header(line):
-                unfolded.append(line)
-                last_was_valid = True
-            else:
-                unfolded.append(line)
-                last_was_valid = False
-
-        if any_unfold:
-            logger.info(
-                "OBS-FOLD unfolding applied: {count} continuations",
-                count=obs_fold_count,
+        parts = request_line.strip().split()
+        if len(parts) != 3:
+            raise MalformedHttpRequestError(
+                f"Invalid request line format: {request_line}"
             )
 
-        return unfolded
+        method, url, http_version = parts
 
-    def _log_eol_stats(self, stats: dict) -> None:
+        # Validate HTTP version format
+        if not http_version.startswith("HTTP/"):
+            raise MalformedHttpRequestError(f"Invalid HTTP version: {http_version}")
+
+        # Extract path and query string from URL
+        if "?" in url:
+            path, query_string = url.split("?", 1)
+        else:
+            path, query_string = url, ""
+
         logger.debug(
-            "Phase0 EOL stats: CRLF={crlf}, LF={lf}, CR={cr}",
-            crlf=stats["CRLF"],
-            lf=stats["LF"],
-            cr=stats["CR"],
+            "Parsed request line: method={}, path={}, query={}",
+            method,
+            path,
+            query_string,
         )
-        if stats.get("EOL:MIX") or stats.get("EOL:BARELF") or stats.get("EOL:BARECR"):
-            logger.info(
-                "Phase0 EOL anomalies: mix={mix}, bareLF={lf}, bareCR={cr}",
-                mix=bool(stats.get("EOL:MIX")),
-                lf=bool(stats.get("EOL:BARELF")),
-                cr=bool(stats.get("EOL:BARECR")),
-            )
-        if stats.get("EOL:EOF_NOCRLF"):
-            logger.info("Phase0 EOL anomaly: header EOF does not end with CRLF")
+
+        if method.upper() not in VALID_METHODS:
+            raise MalformedHttpRequestError(f"Invalid method: {method}")
+
+        return method, path, query_string
+
+    def _parse_query_parameters(
+        self,
+        query_string: str,
+    ) -> QUERIES:
+        """
+        Parse query string into individual parameter strings.
+
+        Args:
+            query_string: Query string portion of URL (after ?)
+
+        Returns:
+            List of formatted query parameters like ["a=1", "b=2", "a=3"]
+            (preserving original encoding)
+        """
+        logger.debug("Parsing query parameters from: {}", query_string)
+
+        if not query_string:
+            return []
+
+        query_params = []
+        for param in query_string.split("&"):
+            query_params.append(param)
+
+        logger.debug("Parsed {} query parameters", len(query_params))
+        return query_params
+
+    def _parse_headers(
+        self,
+        headers_section: str,
+    ) -> HEADERS:
+        """
+        Parse headers preserving original lines.
+
+        Args:
+            headers_section: Raw headers section of HTTP request
+
+        Returns:
+            List of formatted headers like:
+            ["host:example.com","user-agent:Mozilla/5.0"]
+        """
+        logger.debug("Parsing HTTP headers")
+
+        if headers_section == "":
+            return []
+
+        headers = headers_section.split("\n")
+
+        logger.debug("Parsed {} headers", len(headers))
+        return headers
+
+    def _format_output(
+        self,
+        method: METHOD,
+        path: PATH,
+        query_params: QUERIES,
+        headers: HEADERS,
+    ) -> str:
+        """
+        Format the parsed components into the target output format.
+
+        Args:
+            method: HTTP method
+            path: URL path
+            query_params: List of query parameters
+            headers: List of headers
+
+        Returns:
+            Formatted output string
+        """
+        logger.debug(
+            "Formatting output with {} query params and {} headers",
+            len(query_params),
+            len(headers),
+        )
+
+        lines = []
+
+        # Add method and URL
+        lines.append(f"[METHOD] {method}")
+        lines.append(f"[URL] {path}")
+
+        # Add query parameters
+        for param in query_params:
+            lines.append(f"[QUERY] {param}")
+
+        # Add headers
+        for header in headers:
+            lines.append(f"[HEADER] {header}")
+
+        return "\n".join(lines)
+
+    def process(self, request: str) -> str:
+        """
+        Transform HTTP request into structured format.
+
+        Args:
+            request: Raw HTTP request string
+
+        Returns:
+            Formatted request string
+
+        Raises:
+            MalformedHttpRequestError: If request cannot be parsed
+        """
+        logger.debug("Processing HTTP request for structuring")
+
+        if not request.strip():
+            raise MalformedHttpRequestError("Empty HTTP request")
+
+        # Split request into lines
+        lines = request.split("\n")
+
+        if not lines:
+            raise MalformedHttpRequestError("No lines in HTTP request")
+
+        # Parse request line
+        request_line = lines[0]
+        method, path, query_string = self._parse_request_line(request_line)
+
+        # Find the end of headers (first empty line)
+        headers_end = 1
+        for i in range(1, len(lines)):
+            if lines[i] == "" or lines[i] == "\r":
+                headers_end = i
+                break
+        else:
+            # No empty line found, headers go to end of request
+            headers_end = len(lines)
+
+        # Extract headers section
+        headers_section = "\n".join(lines[1:headers_end])
+
+        # Parse components
+        query_params = self._parse_query_parameters(query_string)
+        headers = self._parse_headers(headers_section)
+
+        # Format output
+        result = self._format_output(method, path, query_params, headers)
+
+        logger.debug(f"Successfully structured HTTP request: {method} {path} \n\n")
+        return result
