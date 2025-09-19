@@ -1,0 +1,18 @@
+[METHOD] POST
+[URL] /../../root
+DOTDOT
+[QUERY] empty
+[QUERY] =emptykey
+[QUERY] emptyval=
+[QUERY] both=
+[QUERY] =encoded
+FULLWIDTH
+[QUERY] param=val
+FULLWIDTH
+[QUERY] normal=test
+[QUERY] ==
+FULLWIDTH
+[HEADER] Host: example.com
+[HEADER] Content-Length: 0
+[HEADER] User-Agent: Test/1.0
+[HEADER] Accept: */*

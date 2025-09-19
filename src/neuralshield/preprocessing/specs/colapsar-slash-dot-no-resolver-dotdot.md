@@ -15,65 +15,93 @@ Esta especificación define cómo normalizar el path colapsando separadores redu
 ### Reglas normativas
 
 1. Segmentación
-	- Dividir el path en segmentos por `/` sin decodificar previamente `%2F` (ver spec de percent-decode).
+
+   - Dividir el path en segmentos por `/` sin decodificar previamente `%2F` (ver spec de percent-decode).
 
 2. Colapsación de redundancias
-	- Reemplazar secuencias de múltiples `/` por un único `/`. Si ocurre al menos una vez → `MULTIPLESLASH`.
-	- Eliminar segmentos `.` (punto actual) sin efectos colaterales → `/.` colapsa a `/` (forma canónica). Puede anotarse `DOTCUR` opcionalmente si se desea rastreo fino.
+
+   - Reemplazar secuencias de múltiples `/` por un único `/`. Si ocurre al menos una vez → `MULTIPLESLASH`.
+   - Eliminar segmentos `.` (punto actual) sin efectos colaterales → `/.` colapsa a `/` (forma canónica). Puede anotarse `DOTCUR` opcionalmente si se desea rastreo fino.
 
 3. No resolución de `..`
-	- No combinar ni eliminar segmentos `..`. Conservarlos tal cual, en su posición.
-	- Emitir flag `DOTDOT` si aparece al menos un `..`.
-	- Contabilizar runs de `..` consecutivos y, opcionalmente, emitir `DOTDOTN:{n}`.
+
+   - No combinar ni eliminar segmentos `..`. Conservarlos tal cual, en su posición.
+   - Emitir flag `DOTDOT` si aparece al menos un `..`.
+   - Contabilizar runs de `..` consecutivos y, opcionalmente, emitir `DOTDOTN:{n}`.
 
 4. Reconstrucción canónica
-	- Unir los segmentos con un único `/` inicial si el path original comenzaba con `/`.
-	- Si el path original estaba vacío, usar `/` como forma canónica.
+
+   - Unir los segmentos con un único `/` inicial si el path original comenzaba con `/`.
+   - Si el path original estaba vacío, usar `/` como forma canónica.
 
 5. Interacción con percent-decode
-	- La colapsación estructural se realiza sin convertir `%2F`. Si se detectan `%2F` preservados tras el decode de segmentos, ya existe spec para `PCTSLASH`.
+
+   - La colapsación estructural se realiza sin convertir `%2F`. Si se detectan `%2F` preservados tras el decode de segmentos, ya existe spec para `PCTSLASH`.
 
 6. Flags adicionales
-	- `HOME`: si el path canónico es exactamente `/`.
-	- `PAREN`, `BRACE`, `BACKSLASH`, etc., se emiten desde la spec de caracteres peligrosos si aparecen en segmentos.
 
-7. Métricas
-	- `PLEN:{len}@{bucket}`: longitud total del path canónico.
-	- `PMAX:{len}@{bucket}`: longitud máxima de un segmento.
-	- Buckets típicos: `0-15`, `16-31`, `32-63`, `64-127`, `128-255`, `>255`.
+   - `HOME`: si el path canónico es exactamente `/`.
+   - `PAREN`, `BRACE`, `BACKSLASH`, etc., se emiten desde la spec de caracteres peligrosos si aparecen en segmentos.
+
+7. Métricas (opcional)
+   - `PLEN:{len}@{bucket}`: longitud total del path canónico.
+   - `PMAX:{len}@{bucket}`: longitud máxima de un segmento.
+   - Buckets típicos: `0-15`, `16-31`, `32-63`, `64-127`, `128-255`, `>255`.
 
 ---
 
 ### Ejemplos
 
 Entrada:
+
 ```
 /foo//bar/.//baz
 ```
+
 Salida (fragmento):
+
 ```
-P:/foo/bar/baz PLEN:11@0-15 PMAX:3@0-15
-FLAGS:[MULTIPLESLASH]
+[URL] /foo/bar/baz
+MULTIPLESLASH
 ```
 
 Entrada con traversal:
+
 ```
 /foo/../etc/passwd
 ```
+
 Salida (fragmento):
+
 ```
-P:/foo/../etc/passwd PLEN:20@16-31 PMAX:8@0-15
-FLAGS:[DOTDOT]
+[URL] /foo/../etc/passwd
+DOTDOT
 ```
 
 Entrada raíz:
+
 ```
 /
 ```
+
 Salida (fragmento):
+
 ```
-P:/ PLEN:1@0-15 PMAX:0@0-15
-FLAGS:[HOME]
+[URL] /
+HOME
+```
+
+Entrada con múltiples anomalías:
+
+```
+/foo//bar/../baz/.//qux
+```
+
+Salida (fragmento):
+
+```
+[URL] /foo/bar/../baz/qux
+DOTDOT MULTIPLESLASH
 ```
 
 ---
@@ -90,5 +118,6 @@ FLAGS:[HOME]
 
 - Colapsación de `//` y `/.`.
 - Preservación de `..` sin resolución.
-- Cálculo correcto de `PLEN` y `PMAX` con bucketing.
+- Cálculo correcto de `PLEN` y `PMAX` con bucketing (si implementado).
 - Idempotencia del proceso.
+- Emisión inmediata de flags tras líneas donde se detecten anomalías.

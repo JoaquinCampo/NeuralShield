@@ -1,0 +1,15 @@
+[METHOD] GET
+[URL] /path/test/nested
+[QUERY] param1="quoted"
+HTMLENT
+[QUERY] param2=ABC
+HTMLENT
+[QUERY] param3=&malformed
+HTMLENT
+[QUERY] valid=<valid>
+HTMLENT
+[QUERY] script=<script>
+HTMLENT
+[HEADER] Host: example.com
+[HEADER] User-Agent: Test/1.0
+[HEADER] Accept: */*

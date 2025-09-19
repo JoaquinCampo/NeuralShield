@@ -1,0 +1,11 @@
+[METHOD] GET
+[URL] /path/../%2Econfig%00file/..
+DOTDOT
+CONTROL DOUBLEPCT FULLWIDTH HTMLENT
+[QUERY] p=../../%20admin
+DOUBLEPCT HTMLENT
+[QUERY] attack=admin%00%01
+CONTROL FULLWIDTH HTMLENT
+[HEADER] Host: example.com
+[HEADER] User-Agent: Test/1.0
+[HEADER] Accept: */*

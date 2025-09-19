@@ -1,0 +1,6 @@
+[METHOD] GET
+[URL] /foo/../etc/passwd
+DOTDOT
+[HEADER] Host: example.com
+[HEADER] User-Agent: Test/1.0
+[HEADER] Accept: */*

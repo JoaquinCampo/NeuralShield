@@ -1,0 +1,11 @@
+[METHOD] GET
+[URL] /path/API/test
+FULLWIDTH
+[QUERY] param=value
+FULLWIDTH
+[QUERY] normal=test
+[QUERY] mixed=abc123
+FULLWIDTH
+[HEADER] Host: example.com
+[HEADER] User-Agent: Test/1.0
+[HEADER] Accept: */*

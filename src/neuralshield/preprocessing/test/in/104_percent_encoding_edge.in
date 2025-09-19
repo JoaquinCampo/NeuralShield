@@ -1,0 +1,4 @@
+GET /path%25252520triple%252E%2E%252Ftest?param1=%252525252520quintuple&param2=%2G%invalid&param3=%25%2541normal&param4=%2e%2E%2F&case=%2a%2A%2b%2B HTTP/1.1
+Host: example.com
+User-Agent: Test/1.0
+Accept: */*

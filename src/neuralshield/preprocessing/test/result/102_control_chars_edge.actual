@@ -1,0 +1,10 @@
+[METHOD] GET
+[URL] /path%00with%01null%09tab%0Anewline
+CONTROL
+[QUERY] param1=%00
+CONTROL
+[QUERY] param2=value%0D
+[QUERY] param3=%1Funit
+[HEADER] Host: example.com
+[HEADER] User-Agent: Test/1.0
+[HEADER] Accept: */*

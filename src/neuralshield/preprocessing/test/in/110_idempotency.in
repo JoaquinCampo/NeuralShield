@@ -1,0 +1,4 @@
+GET /already/normalized/path?param=value&encoded=%2Etest HTTP/1.1
+Host: example.com
+User-Agent: Test/1.0
+Accept: */*

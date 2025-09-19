@@ -1,0 +1,4 @@
+GET /％70ath//bar/../config%00test/.//final HTTP/1.1
+Host: example.com
+User-Agent: Test/1.0
+Accept: */*

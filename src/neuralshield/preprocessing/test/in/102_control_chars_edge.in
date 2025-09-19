@@ -1,0 +1,4 @@
+GET /path%00with%01null%09tab%0Anewline?param1=%00&param2=value%0D&param3=%1Funit HTTP/1.1
+Host: example.com
+User-Agent: Test/1.0
+Accept: */*

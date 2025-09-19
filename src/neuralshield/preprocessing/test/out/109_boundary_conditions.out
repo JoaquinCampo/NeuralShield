@@ -1,0 +1,12 @@
+[METHOD] GET
+[URL] /
+HOME MULTIPLESLASH
+[QUERY] a=%00%00%00%00%00
+CONTROL
+[QUERY] b=aaaaaaaaaaaaaaa
+FULLWIDTH
+[QUERY] c=%2E%2E%2E%2E%2E%2E%2E%2E%2E%2E%2E%2E%2E%2E%2E
+DOUBLEPCT
+[HEADER] Host: example.com
+[HEADER] User-Agent: Test/1.0
+[HEADER] Accept: */*

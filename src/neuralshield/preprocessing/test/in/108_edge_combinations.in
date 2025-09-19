@@ -1,0 +1,5 @@
+POST /./.././../root/./././?empty&=emptykey&emptyval=&both=&＝encoded&ｐａｒａｍ=％76ａｌ&normal=test&＝= HTTP/1.1
+Host: example.com
+Content-Length: 0
+User-Agent: Test/1.0
+Accept: */*

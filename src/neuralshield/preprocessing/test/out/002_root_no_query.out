@@ -1,5 +1,6 @@
 [METHOD] HEAD
 [URL] /
+HOME
 [HEADER] Host: example.com
 [HEADER] Connection: keep-alive
 [HEADER] Upgrade-Insecure-Requests: 1
