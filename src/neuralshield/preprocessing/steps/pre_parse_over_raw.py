@@ -1,3 +1,4 @@
+import re
 import unicodedata
 
 from loguru import logger
@@ -159,21 +160,44 @@ class RequestStructurer(HttpPreprocessor):
         """
         Parse query string into individual parameter strings.
 
+        HTML-entity aware: protects & characters that are part of HTML entities
+        like &#x3c; from being treated as parameter separators.
+
         Args:
             query_string: Query string portion of URL (after ?)
 
         Returns:
             List of formatted query parameters like ["a=1", "b=2", "a=3"]
-            (preserving original encoding)
+            (preserving original encoding and HTML entities)
         """
         logger.debug("Parsing query parameters from: {}", query_string)
 
         if not query_string:
             return []
 
+        # HTML entity pattern to protect & characters within entities
+        html_entity_pattern = re.compile(
+            r"&(?:[a-zA-Z][a-zA-Z0-9]*|#(?:\d+|x[0-9a-fA-F]+));"
+        )
+
+        # Find all HTML entities and replace with temporary placeholders
+        entities: list[str] = []
+
+        def replace_entity(match):
+            placeholder = f"__HTMLENT_{len(entities)}__"
+            entities.append(match.group(0))
+            return placeholder
+
+        protected_query = html_entity_pattern.sub(replace_entity, query_string)
+
+        # Now split on & safely (HTML entity & characters are protected)
         query_params = []
-        for param in query_string.split("&"):
-            query_params.append(param)
+        for param in protected_query.split("&"):
+            # Restore HTML entities in this parameter
+            restored_param = param
+            for i, entity in enumerate(entities):
+                restored_param = restored_param.replace(f"__HTMLENT_{i}__", entity)
+            query_params.append(restored_param)
 
         logger.debug("Parsed {} query parameters", len(query_params))
         return query_params

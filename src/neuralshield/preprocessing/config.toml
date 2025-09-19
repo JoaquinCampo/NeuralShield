@@ -2,4 +2,5 @@
 order = [
   "neuralshield.preprocessing.steps.pre_parse_over_raw:RemoveFramingArtifacts",
   "neuralshield.preprocessing.steps.pre_parse_over_raw:RequestStructurer",
+  "neuralshield.preprocessing.steps.header:FlagsNormalizer",
 ]

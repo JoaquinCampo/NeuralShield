@@ -1,6 +1,7 @@
 [METHOD] GET
 [URL] /v1/api/search;param/path;seg
-[QUERY] q=foo%252Ebar
+[QUERY] q=foo%2Ebar
+DOUBLEPCT
 [QUERY] user=John+Doe
 [QUERY] flag
 [QUERY] empty=

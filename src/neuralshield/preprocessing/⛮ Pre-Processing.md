@@ -1,21 +1,23 @@
 - ### Normalizar y Agregar una flag de que es lo raro
-	- 1. **Capturás la request** tal como vino.
-	1. **Decodificás** percent-encoding una sola vez.
-	2. **Normalizás Unicode** a ASCII donde sea posible.
-	3. **Agregás flags** si había:
-		- fullwidth chars
-		- doble codificación
-		- caracteres de control
-		- entidades HTML
-	4. **Salida**: versión estable + flags
-	5. Ejemplo final:
-		1. M:GET
-		2. U:/path.jsp
-		3. FLAGS: FULLWIDTH DOUBLEPCT
-		4. H:host=example.com
-		5. H:user-agent=mozilla/5.0
 
-- ###  Separadores & parseo robusto (header)
+  - 1.  **Capturás la request** tal como vino.
+
+  1.  **Decodificás** percent-encoding una sola vez.
+  2.  **Normalizás Unicode** a ASCII donde sea posible.
+  3.  **Agregás flags** si había:
+      - fullwidth chars
+      - doble codificación
+      - caracteres de control
+      - entidades HTML
+  4.  **Salida**: versión estable + flags
+  5.  Ejemplo final:
+      1. M:GET
+      2. U:/path.jsp
+      3. FLAGS: FULLWIDTH DOUBLEPCT
+      4. H:host=example.com
+      5. H:user-agent=mozilla/5.0
+
+- ### Separadores & parseo robusto (header)
 
   - Separa pares por &. Algunos servidores aceptan ; como separador; si ves ; repetidos con patrón k=v;k=v, puedes:
   - o bien tratarlos también como separadores y marcar FLAGS:[QSEMISEP],
@@ -24,11 +26,13 @@
   - Tip (Python): parse_qsl(query, keep_blank_values=True, strict_parsing=False, separator='&'). Si detectas ; dominante, usa separator=';&'.
 
 - ### Headers: valores “shape-aware”
+
   **PREVIO: Separadores & parseo robusto (header)**
+
   - user-agent → tokenizar grosero (nombre/version + plataformas); cortar a N tokens, sin comentarios; shape del resto.
     - → H:user-agent=mozilla/5.0 konqueror/3.5 khtml/3.5.8 like:gecko
-  - accept* → lista normalizada type/subtype;qX; ordenar por type y q descendente.
-    - → H:accept=text/html;q0.9 text/plain;q0.8 */*;q0.5 …
+  - accept\* → lista normalizada type/subtype;qX; ordenar por type y q descendente.
+    - → H:accept=text/html;q0.9 text/plain;q0.8 _/_;q0.5 …
   - accept-encoding → set de codificaciones.
     - → H:accept-encoding=gzip deflate x-gzip x-deflate
   - accept-language → estandarizar a ll-CC y ordenar por q.
@@ -42,7 +46,7 @@
   - Headers inusuales (no en lista blanca) → marcar UNKHDR (opcional, o basada en vocabulario visto por app).
     - → FLAGS:[UNKHDR:x-foo]
 
-- ###  Headers: nombres, orden y duplicados
+- ### Headers: nombres, orden y duplicados
 
   - Lowercase names, trim y colapsar espacios; ordenar por nombre.
   - Duplicados → unir con coma y marcar. → FLAGS:[DUPHDR:accept]
@@ -51,40 +55,36 @@
   - Header count y tamaño total con bucketing (mitiga DoS / obfusc).
     → HCNT:12 HLEN:512@512-1023
 
-
 - ### **Construir URL absoluta cuando es relativa**
 
-	- **Qué es:**  
+  - **Qué es:**  
      Si la request dice `GET /path/file.jsp HTTP/1.1`, ese `/path/file.jsp` es **relativo**. No incluye esquema (`http://` o `https://`) ni host.  
      Pero en los headers aparece `Host: mi-dominio.com`.
-    
-	- **Qué hacemos:**  
-      Armamos una URL absoluta:
-      http://mi-dominio.com/path/file.jsp
-		- Si el puerto es `80` para `http` o `443` para `https`, lo omitimos:  
-    `http://mi-dominio.com:80/...` → `http://mi-dominio.com/...`
-	      - Si es otro puerto, lo mantenemos:  
-	    `http://mi-dominio.com:8080/...`
-		**Por qué ayuda:**
-	- Evita que el modelo tenga que aprender a unir `Host` + path.
-	- Siempre trabajamos con una forma estable: `scheme://host[:port]/path?query`.
-  -  **Colapsar `//` y `/.` pero NO resolver `..`**
-    - **Qué es:**
-      - `//` o `/.` no cambian la semántica → los colapsamos a `/`.
-    - `..` sube un directorio → no lo resolvemos, sólo lo marcamos (`[DOTDOT]`), porque podría ser un ataque (path traversal).
-    - Ejemplo:
-      - /foo//bar/.//baz  → /foo/bar/baz + MULTIPLESLASH
-      - /foo/../etc/passwd → /foo/../etc/passwd + DOTDOT
+  - **Qué hacemos:**  
+     Armamos una URL absoluta:
+    http://mi-dominio.com/path/file.jsp
+    - Si el puerto es `80` para `http` o `443` para `https`, lo omitimos:  
+      `http://mi-dominio.com:80/...` → `http://mi-dominio.com/...` - Si es otro puerto, lo mantenemos:  
+       `http://mi-dominio.com:8080/...`
+      **Por qué ayuda:**
+  - Evita que el modelo tenga que aprender a unir `Host` + path.
+  - Siempre trabajamos con una forma estable: `scheme://host[:port]/path?query`.
+  - **Colapsar `//` y `/.` pero NO resolver `..`**
+  - **Qué es:**
+    - `//` o `/.` no cambian la semántica → los colapsamos a `/`.
+  - `..` sube un directorio → no lo resolvemos, sólo lo marcamos (`[DOTDOT]`), porque podría ser un ataque (path traversal).
+  - Ejemplo:
 
-      FLAG:(HOME).
+    - /foo//bar/.//baz → /foo/bar/baz + MULTIPLESLASH
+    - /foo/../etc/passwd → /foo/../etc/passwd + DOTDOT
 
-    - FLAG:(../*15)
-        ../../../../../../../../../../../../../../  -> FLAG:(../*15)/etc/paswd
-        * A expandir: 8.3
+    FLAG:(HOME).
 
+  - FLAG:(../*15)
+    ../../../../../../../../../../../../../../ -> FLAG:(../*15)/etc/paswd
+    - A expandir: 8.3
 
-
-- ###  Caracteres peligrosos + Script mixing
+- ### Caracteres peligrosos + Script mixing
 
   - Caracteres peligrosos: % (despues de decodificado en URL), <, >, ', ", ;, (, ), {, }, |, \, espacio, %00 (NUL).
   - Si aparecen en un segmento → marcamos con FLAGS:[ANGLE][QUOTE][SEMICOLON]...
@@ -95,6 +95,7 @@
   - Esto es clave para detectar XSS, SQLi, Unicode obfuscation, etc.
 
 - ### Claves con valores anómalos- (HIGH)
+
   - Valores vacíos: k= → FLAGS:[QEMPTYVAL]
   - Clave repetida: k=a&k=b → FLAGS:[QREPEAT:k]
   - Par sin =: justkey → FLAGS:[QBARE]
@@ -108,7 +109,7 @@
 
   - Clasifica cada valor en un shape y reemplázalo por <shape:len> (o <SECRET:shape:len> si sensible):
   - Claves sensibles (redactar siempre):
-    - pass|pwd|token|auth|authorization|cookie|session|bearer|jwt|csrf|xsrf|apikey|api_key|access[_-]?token|id_token|refresh[_-]?token|sig|hmac|sso
+    - pass|pwd|token|auth|authorization|cookie|session|bearer|jwt|csrf|xsrf|apikey|api*key|access[*-]?token|id*token|refresh[*-]?token|sig|hmac|sso
   - Shapes útiles (elige subset razonable y determinista):
     - num (solo dígitos)
     - hex (0–9 a–f)
@@ -125,15 +126,14 @@
     - Entropía alta → rand{H} (si calculas Shannon)
     - Longitud-bucket además del valor exacto (ej. len=37@32-63)
       - Ejemplos
-      - pwd=visionario             → pwd=<SECRET:alpha:10>
-      - token=eyJhbGciOi...        → token=<SECRET:jwt:836>
-      - id=12345                   → id=<num:5>
-      - hash=14d18cd98f...         → hash=<hex:32>
-      - next=https://ex.com/a      → next=<uaxurl:19>
+      - pwd=visionario → pwd=<SECRET:alpha:10>
+      - token=eyJhbGciOi... → token=<SECRET:jwt:836>
+      - id=12345 → id=<num:5>
+      - hash=14d18cd98f... → hash=<hex:32>
+      - next=https://ex.com/a → next=<uaxurl:19>
       - Por qué: el modelo ve forma y tamaño (muy informativo) sin ver el valor concreto (privacidad + generalización).
 
-
-- ###  URL: Normalización de parámetros (LOW)
+- ### URL: Normalización de parámetros (LOW)
 
   - Ordena parámetros alfabéticamente para invarianza de orden entre requests.
   - Preserva el orden de llegada de los valores por clave (muy importante: algunos frameworks aplican el primero, otros el último).
@@ -143,7 +143,7 @@
       - QK:modo=<lower:6>
   - Mantenemos casing: apps pueden llegar a usarlo.
 
-- ###  Longitudes totales del paquete - Bucketing
+- ### Longitudes totales del paquete - Bucketing
 
   - Qué es: medir tamaños y ubicarlos en rangos (buckets) para que el modelo capte “lo raro” sin memorizar números exactos.
   - PLEN: longitud total del path (caracteres).
@@ -153,56 +153,50 @@
   - PLEN:{len}@{bucket} PMAX:{len}@{bucket}
   - Ejemplo
 
-- ###  RFC - obs-fold, irregular spaces and tabs, etc.
+- ### RFC - obs-fold, irregular spaces and tabs, etc.
 
   Obs-Fold
-		Qué es: Antes en HTTP/1.1 se permitía header folding = continuar una línea con un espacio o tab al inicio de la siguiente.
-		Ejemplo:
-		X-Test: valor1
-			valor2
-	- Significa `X-Test: valor1 valor2`.
-	- **Problema**: Es raro hoy, a veces usado para _obfuscation_ o bypass de parsers.
-	- **Solución**:
-	    - Detectar líneas que empiezan con espacio/tab y unirlas a la anterior.
-	    - Si ocurre, añadir `FLAGS:[OBSFOLD]` para que el modelo sepa que hubo plegado.
+  Qué es: Antes en HTTP/1.1 se permitía header folding = continuar una línea con un espacio o tab al inicio de la siguiente.
+  Ejemplo:
+  X-Test: valor1
+  valor2
 
- Tab-Spaces
-	Qué es: Simplificar cualquier espacio redundante (tabs, múltiples espacios) a un solo espacio.
-	Por qué:
-	Un modelo no necesita aprender diferencias irrelevantes como “\t” vs “ ”.
-	Evita que un atacante esconda payloads con padding extraño.
-	Cómo: Reemplazar cualquier secuencia \t + por " ".
+  - Significa `X-Test: valor1 valor2`.
+  - **Problema**: Es raro hoy, a veces usado para _obfuscation_ o bypass de parsers.
+  - **Solución**:
+    - Detectar líneas que empiezan con espacio/tab y unirlas a la anterior.
+    - Si ocurre, añadir `FLAGS:[OBSFOLD]` para que el modelo sepa que hubo plegado.
 
-	Ejemplo
-	Entrada:
-		User-Agent:   Mozilla\t5.0
+Tab-Spaces
+Qué es: Simplificar cualquier espacio redundante (tabs, múltiples espacios) a un solo espacio.
+Por qué:
+Un modelo no necesita aprender diferencias irrelevantes como “\t” vs “ ”.
+Evita que un atacante esconda payloads con padding extraño.
+Cómo: Reemplazar cualquier secuencia \t + por " ".
+
+    Ejemplo
+    Entrada:
+    	User-Agent:   Mozilla\t5.0
     Salida:
-		User-Agent: Mozilla 5.0
-		WSPAD
+    	User-Agent: Mozilla 5.0
+    	WSPAD
 
-  - Pasar metodo a mayusculas, si no es uno de los estandares poner OTHER
-
-
+- Pasar metodo a mayusculas, si no es uno de los estandares poner OTHER
 
 - ### Percent-decode exactamente 1 vez + flags
-	- **Qué es:**  
-	    Las URLs pueden tener caracteres codificados: `%2E` = `.`  
+
+  - **Qué es:**  
+     Las URLs pueden tener caracteres codificados: `%2E` = `.`  
     `%252E` = `%2E` codificado dos veces → se vuelve `.` sólo tras decodificar dos veces.
-	- **Qué hacemos:**
+  - **Qué hacemos:**
     - Decodificamos **una sola vez** (`%2E` → `.`) para forma canónica.
     - Si tras eso sigue habiendo `%` → posible obfuscación, marcamos con `FLAGS:[DOUBLEPCT]`.
     - Ejemplo:
-	    - /foo%2Ejsp        → /foo.jsp          (ok)
-		 /foo%252Ejsp      → /foo%2Ejsp + [DOUBLEPCT]
-	 **Por qué ayuda:**
-		- El modelo ve siempre la forma más “limpia”.
-		- La presencia de `DOUBLEPCT` alerta sobre intentos de bypass.
-
-
-
-
-
-
+      - /foo%2Ejsp → /foo.jsp (ok)
+        /foo%252Ejsp → /foo%2Ejsp + [DOUBLEPCT]
+        **Por qué ayuda:**
+    - El modelo ve siempre la forma más “limpia”.
+    - La presencia de `DOUBLEPCT` alerta sobre intentos de bypass.
 
 - ### Extraer el query y decodificar % exactamente 1 vez
 
@@ -211,19 +205,14 @@
   - No conviertas + → espacio por defecto (detalle más abajo).
   - Por qué: normalizas lo sano y exponés obfuscaciones sin “arreglarlas” del todo.
 
-
-
-- ###  No traduzcas + a espacio (por defecto)
+- ### No traduzcas + a espacio (por defecto)
 
   - En URLs (RFC 3986) el + es un carácter literal. - A CHEQUEAR
   - En cuerpos application/x-www-form-urlencoded (p. ej. POST) sí se usa + como espacio. Aquí no hay body, así que no lo traduzcas.
   - Si en el futuro procesás body con ese Content-Type, ahí sí traduce +→ y marca el origen.
   - Beneficio: evitas falsos positivos donde + tiene significado (tokens, hashes base64url, etc.).
 
-
-
-
-- ###  Encodings y decodificaciones “raras”
+- ### Encodings y decodificaciones “raras”
 
   - UTF-8 overlong o secuencias inválidas → FLAGS:[BADUTF8]
   - Doble/triple encoding (%252e, %255c) → FLAGS:[MULTIENC:k]

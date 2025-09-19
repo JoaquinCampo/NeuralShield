@@ -1,0 +1,5 @@
+POST /％70ath&#x2f;%252Econfig%00test?param1=％61ttack&param2=value&#x3c;script&#x3e;&param3=%252520space&param4=normal&param5=%00null&param6=＜script＞ HTTP/1.1
+Host: example.com
+Content-Type: application/x-www-form-urlencoded
+User-Agent: Test/1.0
+Accept: */*

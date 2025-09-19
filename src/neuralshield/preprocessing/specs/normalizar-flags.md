@@ -12,7 +12,6 @@ Esta especificación define el comportamiento base del preprocesador: producir u
 
 ---
 
-
 ### Invariantes y principios
 
 - Idempotencia: aplicar el preprocesador dos veces no cambia la salida.
@@ -25,17 +24,18 @@ Esta especificación define el comportamiento base del preprocesador: producir u
 ### Entrada y salida (resumen de formato)
 
 - Entrada: request HTTP como bytes (método, target, versión, headers, y opcionalmente body no tratado aquí).
-- Salida: líneas canónicas, por ejemplo:
+- Salida: líneas canónicas en formato estructurado, por ejemplo:
 
 ```
-M:GET
-U:http://example.com/path.jsp
-FLAGS:[FULLWIDTH DOUBLEPCT]
-H:host=example.com
-H:user-agent=mozilla/5.0
+[METHOD] GET
+[URL] /path.jsp
+FULLWIDTH DOUBLEPCT
+[QUERY] param=value
+[HEADER] Host: example.com
+[HEADER] User-Agent: mozilla/5.0
 ```
 
-- `FLAGS:[...]` es la unión alfabética y sin duplicados de las flags detectadas en cualquier parte de la request. Las specs de cada componente (path, query, headers) pueden incluir flags en línea para contexto local; la línea `FLAGS:` es el roll-up global.
+- Las flags aparecen inmediatamente después de la línea donde se detectan las anomalías, como palabras separadas por espacios en orden alfabético. No se usa prefijo `FLAGS:` ni corchetes.
 
 ---
 
@@ -48,9 +48,10 @@ H:user-agent=mozilla/5.0
 5. Decodificar entidades HTML una vez en path/query si aparecen → `HTMLENT`.
 6. Detectar caracteres de control → `CONTROL`.
 7. Detectar y registrar `FULLWIDTH` cuando se identifican formas de ancho completo o equivalentes normalizadas.
-8. Generar salida canónica y la línea `FLAGS:[...]` (orden alfabético, sin repeticiones).
+8. Emitir flags inmediatamente después de cada línea donde se detecten anomalías (orden alfabético, sin repeticiones).
 
 Notas:
+
 - Decisiones detalladas (p. ej., no resolver `..`, colapsar `//`, manejo de `+`, cookies, etc.) están en las specs específicas y también pueden añadir flags. Esta spec solo define las flags nucleares de rareza y su política de emisión global.
 
 ---
@@ -58,16 +59,19 @@ Notas:
 ### Taxonomía de flags nucleares en este ítem
 
 - `FULLWIDTH`
+
   - Qué: presencia de caracteres de ancho completo (Fullwidth/Halfwidth Forms, variaciones de ancho mapeables por NFKC) en campos estructurales (p. ej., path y claves de query; nombres de header).
   - Cómo: tras NFKC, si la forma resultante difiere por mapeo de ancho, o se detecta en rangos U+FF00–U+FFEF → emitir.
   - Dónde: path, claves de query, nombres de headers.
 
 - `DOUBLEPCT`
+
   - Qué: evidencia de doble codificación percent-encoding.
   - Cómo: aplicar percent-decode exactamente una vez; si quedan secuencias `%hh` válidas, emitir.
   - Dónde: path y query (por componente).
 
 - `CONTROL`
+
   - Qué: aparición de caracteres de control Unicode (categoría Cc) o separadores de línea no estándar.
   - Cómo: escanear tras la decodificación a Unicode; excluir `TAB` y `SPACE` cuando sean separadores legales según cada spec; incluir `NUL` aunque aparezca via `%00` (otras specs añaden `QNUL` para query).
   - Dónde: global (si aparece en cualquier parte).
@@ -77,7 +81,7 @@ Notas:
   - Cómo: decodificar entidades una vez y, si hubo sustituciones, emitir.
   - Dónde: path y query.
 
-Otras flags (p. ej., `MIXEDSCRIPT`, `DOTDOT`, `MULTIPLESLASH`, `Q*`, `DUPHDR:*`) se definen y emiten en sus respectivas specs; esta spec solo las agregará a la línea global `FLAGS:[...]` cuando estén presentes.
+Otras flags (p. ej., `MIXEDSCRIPT`, `DOTDOT`, `MULTIPLESLASH`, `Q*`, `DUPHDR:*`) se definen y emiten en sus respectivas specs siguiendo el mismo patrón de emisión inmediata.
 
 ---
 
@@ -87,7 +91,7 @@ Otras flags (p. ej., `MIXEDSCRIPT`, `DOTDOT`, `MULTIPLESLASH`, `Q*`, `DUPHDR:*`)
 2. Unicode (NFKC) aplicado a campos estructurales; si se detectan formas de ancho completo antes/después → `FULLWIDTH`.
 3. Entidades HTML: una pasada de decodificación. Si se reemplazó al menos una entidad → `HTMLENT`.
 4. Control chars: si `\p{Cc}` (o NUL de cualquier origen) aparece en cualquier segmento procesado → `CONTROL`.
-5. La línea `FLAGS:[...]` debe contener todas las flags observadas, ordenadas alfabéticamente, sin duplicar, y emitirse siempre (vacía si no hubo flags no es necesario; si no hay flags, omitir la línea).
+5. Las flags deben emitirse inmediatamente después de cada línea donde se detecten, ordenadas alfabéticamente, sin duplicar en la misma línea.
 
 ---
 
@@ -103,36 +107,43 @@ Otras flags (p. ej., `MIXEDSCRIPT`, `DOTDOT`, `MULTIPLESLASH`, `Q*`, `DUPHDR:*`)
 
 ### Ejemplos
 
-1) FULLWIDTH + DOUBLEPCT
+1. FULLWIDTH + DOUBLEPCT
 
 Entrada:
+
 ```
 GET /％70ath%252Ejsp HTTP/1.1
 Host: ex.com
 ```
 
 Salida (fragmento):
+
 ```
-M:GET
-U:http://ex.com/path%2Ejsp
-FLAGS:[DOUBLEPCT FULLWIDTH]
+[METHOD] GET
+[URL] /path%2Ejsp
+DOUBLEPCT FULLWIDTH
+[HEADER] Host: ex.com
 ```
 
-2) CONTROL + HTMLENT
+2. CONTROL + HTMLENT
 
 Entrada:
+
 ```
 GET /a&#x2f;b%00c HTTP/1.1
 Host: ex.com
 ```
 
 Salida (fragmento):
+
 ```
-U:http://ex.com/a/b%00c
-FLAGS:[CONTROL HTMLENT]
+[METHOD] GET
+[URL] /a/b%00c
+CONTROL HTMLENT
+[HEADER] Host: ex.com
 ```
 
-3) Sin rarezas nucleares
+3. Sin rarezas nucleares
 
 ```
 GET /a/b.jsp HTTP/1.1
@@ -140,19 +151,19 @@ Host: ex.com
 ```
 
 ```
-M:GET
-U:http://ex.com/a/b.jsp
+[METHOD] GET
+[URL] /a/b.jsp
+[HEADER] Host: ex.com
 ```
 
 ---
-
 
 ### Casos límite y aclaraciones
 
 - `DOUBLEPCT` no se emite por secuencias `%` inválidas (no hex); esas no cuentan.
 - `FULLWIDTH` se evalúa sobre campos estructurales donde NFKC es aplicable; los valores opacos se tratan en la spec de shapes/redacción.
 - `CONTROL` incluye NUL proveniente de `%00`; las specs de query/headers pueden añadir flags específicas adicionales (`QNUL`, etc.).
-- Si no se detecta ninguna flag, no se emite la línea `FLAGS:`.
+- Si no se detecta ninguna flag en una línea, no se emite ninguna línea de flags después de ella.
 
 ---
 

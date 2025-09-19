@@ -1,0 +1,16 @@
+[METHOD] GET
+[URL] /path/%20path%00test
+CONTROL DOUBLEPCT FULLWIDTH HTMLENT
+[QUERY] param1=avalue
+FULLWIDTH
+[QUERY] param2=normal%2Eparam
+[QUERY] param3=%20space
+DOUBLEPCT
+[QUERY] param4=test%00data
+CONTROL
+[QUERY] param5=<script>value
+HTMLENT
+[HEADER] Host: example.com
+[HEADER] Content-Type: application/x-www-form-urlencoded
+[HEADER] User-Agent: Test/1.0
+[HEADER] Accept: */*

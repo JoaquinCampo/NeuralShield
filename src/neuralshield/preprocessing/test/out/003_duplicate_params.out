@@ -9,7 +9,8 @@
 [QUERY] a
 [QUERY] dup=one
 [QUERY] dup=two
-[QUERY] encoded=%25%32%30
+[QUERY] encoded=%20
+DOUBLEPCT
 [QUERY] empty=
 [QUERY] lonely
 [HEADER] Host: x.example

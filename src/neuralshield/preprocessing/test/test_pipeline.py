@@ -25,6 +25,10 @@ def run_tests() -> int:
     result_dir.mkdir(parents=True, exist_ok=True)
     in_dir.mkdir(parents=True, exist_ok=True)
     out_dir.mkdir(parents=True, exist_ok=True)
+
+    # clean diff dir
+    for file in diff_dir.glob("*.diff"):
+        file.unlink()
     diff_dir.mkdir(parents=True, exist_ok=True)
 
     in_files = sorted(in_dir.glob("*.in"))
