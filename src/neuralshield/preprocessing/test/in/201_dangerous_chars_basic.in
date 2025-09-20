@@ -1,0 +1,4 @@
+GET /path/<script>alert('xss')</script>?name=O'Brien&cmd=$(whoami)&file={/etc/passwd}&data=test|grep&backslash=C:\Windows HTTP/1.1
+Host: example.com
+User-Agent: Test/1.0
+Accept: */*

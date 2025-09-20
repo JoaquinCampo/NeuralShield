@@ -1,18 +1,21 @@
 [METHOD] GET
 [URL] /search
-[QUERY] a=1
-[QUERY] a=2
-[QUERY] b=
-[QUERY] flag
-[QUERY] a=3
-[QUERY] a=
-[QUERY] a
-[QUERY] dup=one
-[QUERY] dup=two
-[QUERY] encoded=%20
-DOUBLEPCT
-[QUERY] empty=
-[QUERY] lonely
+[QPARAM] a QREPEAT:a
+[QPARAM] a QREPEAT:a
+[QPARAM] b QEMPTYVAL
+[QPARAM] flag QBARE
+[QPARAM] a QREPEAT:a
+[QPARAM] a QEMPTYVAL QREPEAT:a
+[QPARAM] a QBARE QREPEAT:a
+[QPARAM] dup QREPEAT:dup
+[QPARAM] dup QREPEAT:dup
+[QPARAM] items[] QARRAY:items[] QREPEAT:items[]
+[QPARAM] items[] QARRAY:items[] QREPEAT:items[]
+[QPARAM] data[key]
+[QPARAM] encoded
+[QPARAM] empty QEMPTYVAL
+[QPARAM] lonely QBARE
+[QMETA] count=15 QEMPTYVAL QBARE QARRAY:items[]
 [HEADER] Host: x.example
 [HEADER] Accept-Language: es-ES,es;q=0.9,en;q=0.8
 [HEADER] Cache-Control: max-age=0

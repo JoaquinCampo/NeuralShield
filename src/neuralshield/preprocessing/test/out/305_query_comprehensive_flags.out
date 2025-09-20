@@ -1,0 +1,11 @@
+[METHOD] GET
+[URL] /complex
+[QPARAM] items[] QARRAY:items[] QREPEAT:items[]
+[QPARAM] items[] QARRAY:items[] QREPEAT:items[]
+[QPARAM] mixed QNONASCII
+[QPARAM] long
+[QPARAM] empty QEMPTYVAL
+[QPARAM] barekey QBARE
+[QPARAM] nullval QNUL
+[QMETA] count=7 QARRAY:items[] QNONASCII QEMPTYVAL QBARE QNUL
+[HEADER] Host: example.com

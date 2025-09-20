@@ -1,0 +1,2 @@
+GET /complex?items[]=first&items[]=second&mixed=αβγ&long=%252Fvery%252Flong%252Fpath%252Fwith%252Fmany%252Fsegments%252Fand%252Fdata&empty=&barekey&nullval=%00test HTTP/1.1
+Host: example.com

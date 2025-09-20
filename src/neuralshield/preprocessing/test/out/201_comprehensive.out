@@ -1,0 +1,25 @@
+[METHOD] POST
+[URL] /path/admin/../../config/%2E%2E/root%00file
+NUL
+DOTDOT MULTIPLESLASH
+CONTROL FULLWIDTH
+[QPARAM] user
+[QPARAM] pass
+[QPARAM] token
+[QPARAM] id QNUL
+[QPARAM] data
+[QPARAM] encoded DOUBLEPCT
+[QPARAM] special QEMPTYVAL
+[QPARAM] malicious QBARE
+[QPARAM] empty QEMPTYVAL
+[QPARAM] <empty>
+[QPARAM] final QNUL
+[QMETA] count=11 QNUL DOUBLEPCT QEMPTYVAL QBARE
+[HEADER] Host: target.example.com
+[HEADER] Content-Type: application/x-www-form-urlencoded
+[HEADER] User-Agent: Mozilla/5.0 (Attack/1.0)
+PAREN
+[HEADER] X-Forwarded-For: 127.0.0.1
+[HEADER] Authorization: Bearer ％74％6f％6b％65％6e
+[HEADER] Accept: */*
+[HEADER] Cache-Control: no-cache

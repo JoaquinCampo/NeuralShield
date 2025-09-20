@@ -1,0 +1,11 @@
+[METHOD] GET
+[URL] /%D1%80ath/%3Cscript%3E
+ANGLE MIXEDSCRIPT
+[QPARAM] user
+[QPARAM] cmd
+[QPARAM] mixed QNONASCII
+[QPARAM] null QNUL
+[QMETA] count=4 QNONASCII QNUL
+[HEADER] Host: example.com
+[HEADER] User-Agent: Test/1.0
+[HEADER] Accept: */*

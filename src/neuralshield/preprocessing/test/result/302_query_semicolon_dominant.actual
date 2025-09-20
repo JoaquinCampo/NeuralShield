@@ -1,0 +1,8 @@
+[METHOD] GET
+[URL] /api
+[QPARAM] mode
+[QPARAM] user
+[QPARAM] token
+[QSEP] QSEMISEP
+[QMETA] count=3
+[HEADER] Host: example.com

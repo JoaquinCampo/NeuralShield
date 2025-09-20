@@ -1,10 +1,11 @@
 [METHOD] GET
 [URL] /path%00with%01null%09tab%0Anewline
+NUL
 CONTROL
-[QUERY] param1=%00
-CONTROL
-[QUERY] param2=value%0D
-[QUERY] param3=%1Funit
+[QPARAM] param1 QNUL
+[QPARAM] param2
+[QPARAM] param3
+[QMETA] count=3 QNUL
 [HEADER] Host: example.com
 [HEADER] User-Agent: Test/1.0
 [HEADER] Accept: */*

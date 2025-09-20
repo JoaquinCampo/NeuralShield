@@ -1,5 +1,6 @@
 [METHOD] GET
 [URL] /path/bar/../config%00test/final
+NUL
 DOTDOT MULTIPLESLASH
 CONTROL FULLWIDTH
 [HEADER] Host: example.com

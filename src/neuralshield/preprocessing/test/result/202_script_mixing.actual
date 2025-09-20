@@ -1,0 +1,11 @@
+[METHOD] GET
+[URL] /раypal.com/login
+MIXEDSCRIPT
+[QPARAM] user QNONASCII
+[QPARAM] domain QNONASCII
+[QPARAM] mixed QNONASCII
+[QMETA] count=3 QNONASCII
+[HEADER] Host: раypal.com
+MIXEDSCRIPT
+[HEADER] User-Agent: Test/1.0
+[HEADER] Accept: */*

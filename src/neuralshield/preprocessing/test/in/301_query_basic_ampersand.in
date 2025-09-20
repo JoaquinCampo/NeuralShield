@@ -1,0 +1,3 @@
+GET /search?login=alice&login=bob&empty=&items[]=one&items[]=two&=emptykey&bare HTTP/1.1
+Host: example.com
+User-Agent: Test/1.0

@@ -12,4 +12,5 @@ HOME
 [HEADER] 	more
 [HEADER]   details
 [HEADER] If-None-Match: "abc123", "def456"
+QUOTE
 [HEADER] If-Modified-Since: Wed, 21 Oct 2015 07:28:00 GMT

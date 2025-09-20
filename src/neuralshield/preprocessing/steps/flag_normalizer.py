@@ -293,7 +293,10 @@ class FlagsNormalizer(HttpPreprocessor):
 
             # Skip existing flag lines to avoid duplication
             if not line.startswith("[") and any(
-                flag in line
+                flag == line.strip()
+                or f" {flag} " in f" {line.strip()} "
+                or line.strip().startswith(f"{flag} ")
+                or line.strip().endswith(f" {flag}")
                 for flag in [
                     FULLWIDTH_FLAG,
                     CONTROL_FLAG,

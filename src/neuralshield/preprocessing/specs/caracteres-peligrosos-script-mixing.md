@@ -8,115 +8,137 @@ Esta especificación define la detección y marcado de caracteres peligrosos (ú
 
 - Señalar presencia de caracteres y patrones con alta correlación de riesgo.
 - Dar al modelo señales explícitas sin eliminar información estructural.
-- Mantener política consistente entre path, query y headers.
+- Mantener política consistente entre URL, query y headers.
 
 ---
 
 ### Conjunto de caracteres peligrosos (base)
 
-- `ANGLE`: `<` o `>`
-- `QUOTE`: `'` o `"`
-- `SEMICOLON`: `;`
-- `PAREN`: `(` o `)`
-- `BRACE`: `{` o `}`
-- `PIPE`: `|`
-- `BACKSLASH`: `\\`
-- `SPACE`: espacio dentro de segmentos sensibles (p. ej., en path tras decode)
-- `NUL`: `\x00` (también puede aparecer como `%00` → ver `QNUL` en query)
-- `PERCENT_IN_PATH`: `%` crudo en path tras decode (opcional; si se conserva `%`)
+- `ANGLE`: `<` o `>` (incluye formas percent-encoded `%3C`, `%3E`)
+- `QUOTE`: `'` o `"` (incluye formas percent-encoded `%27`, `%22`)
+- `SEMICOLON`: `;` (incluye forma percent-encoded `%3B`)
+- `PAREN`: `(` o `)` (incluye formas percent-encoded `%28`, `%29`)
+- `BRACE`: `{` o `}` (incluye formas percent-encoded `%7B`, `%7D`)
+- `PIPE`: `|` (incluye forma percent-encoded `%7C`)
+- `BACKSLASH`: `\` (incluye forma percent-encoded `%5C`)
+- `SPACE`: espacio en URLs (incluye forma percent-encoded `%20`)
+- `NUL`: `\x00` (incluye forma percent-encoded `%00`)
+- `QNUL`: flag específica para NUL en valores de query (emitida junto con `NUL`)
 
-Estas flags se aplican por componente y se agregan al roll-up global `FLAGS:[...]`.
+Las flags se emiten por línea de contenido y aparecen inmediatamente después del contenido que las generó.
 
 ---
 
 ### Política por componente
 
-- Path
-	- Escanear el path canónico post-normalización (colapsado de `//`/`/.`, preservando `..`).
-	- Emitir flags según caracteres detectados. `SPACE` en path se considera sospechoso.
+- URL (`[URL]` lines)
 
-- Query
-	- Escanear claves y valores tras percent-decode por par.
-	- Para NUL (`\x00`) en valores, emitir `QNUL` además de `NUL` global.
+  - Escanear el contenido de la URL post-normalización.
+  - Emitir flags según caracteres detectados. `SPACE` en URL se considera sospechoso.
+  - Aplicar detección de script mixing.
 
-- Headers
-	- Escanear valores normalizados (desplegados y con whitespace colapsado) salvo aquellos marcados como secretos redaccionados.
+- Query (`[QUERY]` lines)
+
+  - Escanear claves y valores por separado.
+  - Para NUL (`\x00`) en valores, emitir `QNUL` además de `NUL`.
+  - Aplicar detección de script mixing.
+
+- Headers (`[HEADER]` lines)
+  - Escanear valores normalizados salvo aquellos marcados como secretos redaccionados.
+  - `SEMICOLON` no se considera peligroso en headers (legítimo en Accept-Language, Cookie, etc.).
+  - Aplicar detección de script mixing para headers sensibles.
 
 ---
 
 ### Script mixing (MIXEDSCRIPT)
 
-- Definición: presencia de caracteres pertenecientes a ≥2 escrituras entre Latín, Cirílico, Griego (extensible), en un mismo token relevante (host, segmento de path, clave/valor de query, header sensible como `host` o `referer`).
+- Definición: presencia de caracteres pertenecientes a ≥2 escrituras entre Latín, Cirílico, Griego en un mismo token relevante.
 - Detección:
-	- Calcular el conjunto de scripts dominantes por token (usando propiedades Unicode de cada codepoint).
-	- Si |scripts| ≥ 2 y no es una combinación permitida (p. ej., Latin + Common), emitir `MIXEDSCRIPT`.
+  - Analizar caracteres alfabéticos en el contenido tras percent-decode.
+  - Detectar scripts usando rangos Unicode: Latin (0x0041-0x007A), Cyrillic (0x0400-0x04FF), Greek (0x0370-0x03FF).
+  - Si se detectan ≥2 scripts diferentes, emitir `MIXEDSCRIPT`.
 - Notas:
-	- No emitir por combinación de Latin con signos de puntuación o dígitos (clase `Common`/`Inherited`).
-	- Emitir para ejemplos típicos de homógrafos: `раypal.com` (p cirílica + resto latín).
+  - Ignorar caracteres de puntuación, números y símbolos (clase `Common`/`Inherited`).
+  - Emitir para ejemplos típicos de homógrafos: `раypal.com` (p cirílica + resto latín).
+  - Se aplica a URLs, queries y headers.
 
 ---
 
 ### Interacciones
 
-- Unicode (FULLWIDTH/CONTROL): estas flags se emiten en su spec; aquí solo complementamos con `MIXEDSCRIPT`.
-- Percent-decode: el análisis se hace tras la pasada única correspondiente; entidades HTML se tratan tras su decode.
+- Unicode (FULLWIDTH/CONTROL): estas flags se emiten por otros procesadores; aquí solo complementamos con `MIXEDSCRIPT`.
+- Percent-decode: el análisis se hace tras decode automático; entidades HTML se tratan tras su decode.
 
 ---
 
 ### Ejemplos
 
-Path con `<script>`:
+URL con espacios:
+
 ```
-/a/<script>/b
-```
-Salida (fragmento):
-```
-P:/a/<script>/b
-FLAGS:[ANGLE]
+[URL] /path%20with%20spaces/folder%20name/file.exe
+SPACE
 ```
 
-Query con NUL y comillas:
+Query con NUL:
+
 ```
-?name=O%27Brien%00
-```
-Salida (fragmento):
-```
-Q:1 KEYS:name
-FLAGS:[QUOTE QNUL NUL]
+[QUERY] param=%00value
+NUL QNUL
 ```
 
-Host con homógrafos:
+URL con script mixing:
+
 ```
-U:http://раypal.com/
-```
-Salida (fragmento):
-```
-FLAGS:[MIXEDSCRIPT]
+[URL] /раypal.com/login
+MIXEDSCRIPT
 ```
 
-Backslash en path:
+Query con script mixing:
+
 ```
-/a\b/c
-```
-Salida (fragmento):
-```
-P:/a\b/c
-FLAGS:[BACKSLASH]
+[QUERY] user=аdmin
+MIXEDSCRIPT
 ```
 
+Header con script mixing:
+
+```
+[HEADER] Host: раypal.com
+MIXEDSCRIPT
+```
 
 ---
 
 ### Casos límite
 
 - Valores redactados `<SECRET:...>`: no inspeccionar caracteres internos.
-- Tokens con solo dígitos y puntuación: no `MIXEDSCRIPT`.
-- Uso de `FULLWIDTH` junto a script mixing: pueden coexistir `FULLWIDTH` y `MIXEDSCRIPT`.
+- Tokens con solo dígitos y puntuación: no emitir `MIXEDSCRIPT`.
+- Contenido con longitud < 2 caracteres: no emitir `MIXEDSCRIPT`.
+- Headers con semicolon: no emitir `SEMICOLON` (legítimo en headers).
+- Espacios fuera de URLs: no emitir `SPACE` (solo en URLs).
+- Coexistencia con otras flags: pueden aparecer múltiples flags por línea.
+
+---
+
+### Formato de salida
+
+Las flags aparecen en líneas separadas inmediatamente después del contenido que las generó:
+
+```
+[URL] /content/with/flags
+FLAG1 FLAG2 FLAG3
+[QUERY] param=value
+[QUERY] dangerous=<script>
+ANGLE
+```
 
 ---
 
 ### Requisitos de prueba
 
-- Detección de cada flag individual (`ANGLE`, `QUOTE`, etc.).
-- `MIXEDSCRIPT` en dominios mixtos y en claves/valores de query.
-- Coexistencia con `HTMLENT` y `DOUBLEPCT` (decode previo no rompe detección).
+- Detección de cada flag individual (`ANGLE`, `QUOTE`, `SEMICOLON`, `PAREN`, `BRACE`, `PIPE`, `BACKSLASH`, `SPACE`, `NUL`).
+- `QNUL` junto con `NUL` en valores de query.
+- `MIXEDSCRIPT` en URLs, queries y headers con mezcla de scripts.
+- Detección tanto de caracteres literales como percent-encoded.
+- Respeto a la política específica por componente (URLs, queries, headers).

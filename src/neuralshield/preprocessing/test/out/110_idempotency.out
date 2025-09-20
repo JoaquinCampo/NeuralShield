@@ -1,7 +1,8 @@
 [METHOD] GET
 [URL] /already/normalized/path
-[QUERY] param=value
-[QUERY] encoded=%2Etest
+[QPARAM] param
+[QPARAM] encoded
+[QMETA] count=2
 [HEADER] Host: example.com
 [HEADER] User-Agent: Test/1.0
 [HEADER] Accept: */*

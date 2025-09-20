@@ -1,0 +1,8 @@
+POST /％70％61％74％68//admin/.././../config//％２Ｅ％２Ｅ／root%00file?user=％61&#x64;%6d%69%6e&pass=%252Econfig&token=&#x3c;script&#x3e;alert('xss')&#x3c;/script&#x3e;&id=%00admin%01&data=％76％61％6c％75％65&encoded=%25252520space&special=＆amp；malicious&empty=&＝encoded&final=%252E%252E%252F%25252Econfig%00%01 HTTP/1.1
+Host: target.example.com
+Content-Type: application/x-www-form-urlencoded
+User-Agent: Mozilla/5.0 (Attack/1.0)
+X-Forwarded-For: 127.0.0.1
+Authorization: Bearer ％74％6f％6b％65％6e
+Accept: */*
+Cache-Control: no-cache

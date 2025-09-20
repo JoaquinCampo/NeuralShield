@@ -1,13 +1,11 @@
 [METHOD] GET
 [URL] /path%2520triple../test
-DOUBLEPCT
-[QUERY] param1=%25252520quintuple
-DOUBLEPCT
-[QUERY] param2=%2G%invalid
-[QUERY] param3=%%41normal
-DOUBLEPCT
-[QUERY] param4=%2e%2E%2F
-[QUERY] case=%2a%2A%2b%2B
+[QPARAM] param1 DOUBLEPCT
+[QPARAM] param2
+[QPARAM] param3
+[QPARAM] param4
+[QPARAM] case
+[QMETA] count=5 DOUBLEPCT
 [HEADER] Host: example.com
 [HEADER] User-Agent: Test/1.0
 [HEADER] Accept: */*

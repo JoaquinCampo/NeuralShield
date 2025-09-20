@@ -1,15 +1,12 @@
 [METHOD] GET
 [URL] /path/test/nested
-[QUERY] param1="quoted"
-HTMLENT
-[QUERY] param2=ABC
-HTMLENT
-[QUERY] param3=&malformed
-HTMLENT
-[QUERY] valid=<valid>
-HTMLENT
-[QUERY] script=<script>
-HTMLENT
+[QPARAM] param1
+[QPARAM] param2
+[QPARAM] param3 QEMPTYVAL
+[QPARAM] malformed QBARE
+[QPARAM] valid
+[QPARAM] script
+[QMETA] count=6 QEMPTYVAL QBARE
 [HEADER] Host: example.com
 [HEADER] User-Agent: Test/1.0
 [HEADER] Accept: */*

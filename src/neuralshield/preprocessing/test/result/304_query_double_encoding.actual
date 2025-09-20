@@ -1,0 +1,8 @@
+[METHOD] GET
+[URL] /admin
+[QPARAM] next
+[QPARAM] triple DOUBLEPCT
+[QPARAM] double
+[QPARAM] single
+[QMETA] count=4 DOUBLEPCT
+[HEADER] Host: example.com

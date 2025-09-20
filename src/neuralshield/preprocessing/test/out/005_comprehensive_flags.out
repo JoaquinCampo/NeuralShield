@@ -1,17 +1,13 @@
 [METHOD] POST
 [URL] /path/%2Econfig%00test
-CONTROL DOUBLEPCT FULLWIDTH HTMLENT
-[QUERY] param1=attack
-FULLWIDTH
-[QUERY] param2=value<script>
-HTMLENT
-[QUERY] param3=%20space
-DOUBLEPCT
-[QUERY] param4=normal
-[QUERY] param5=%00null
-CONTROL
-[QUERY] param6=<script>
-FULLWIDTH
+NUL
+[QPARAM] param1
+[QPARAM] param2
+[QPARAM] param3
+[QPARAM] param4
+[QPARAM] param5 QNUL
+[QPARAM] param6
+[QMETA] count=6 QNUL
 [HEADER] Host: example.com
 [HEADER] Content-Type: application/x-www-form-urlencoded
 [HEADER] User-Agent: Test/1.0

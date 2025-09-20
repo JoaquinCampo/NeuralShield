@@ -1,0 +1,6 @@
+[METHOD] GET
+[URL] /test
+[QPARAM] justkey QBARE
+[QPARAM] name QNUL
+[QMETA] count=2 QBARE QNUL
+[HEADER] Host: example.com

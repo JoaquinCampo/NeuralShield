@@ -1,0 +1,4 @@
+GET /path%20with%20spaces/folder%20name/file.exe?param=value%20with%20spaces&normal=nospaces HTTP/1.1
+Host: example.com
+User-Agent: Test/1.0
+Accept: */*

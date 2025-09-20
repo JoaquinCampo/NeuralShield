@@ -1,0 +1,12 @@
+[METHOD] GET
+[URL] /path/<script>alert('xss')</script>
+ANGLE PAREN QUOTE
+[QPARAM] name
+[QPARAM] cmd
+[QPARAM] file
+[QPARAM] data
+[QPARAM] backslash
+[QMETA] count=5
+[HEADER] Host: example.com
+[HEADER] User-Agent: Test/1.0
+[HEADER] Accept: */*

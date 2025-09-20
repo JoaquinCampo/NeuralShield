@@ -1,9 +1,10 @@
 [METHOD] GET
 [URL] /path
-[QUERY] x=1
-[QUERY] y=
-[QUERY] y=2
-[QUERY] z=hello+world
+[QPARAM] x
+[QPARAM] y QEMPTYVAL QREPEAT:y
+[QPARAM] y QREPEAT:y
+[QPARAM] z
+[QMETA] count=4 QEMPTYVAL
 [HEADER] host: x
 [HEADER] 	continued A
 [HEADER]   continued B

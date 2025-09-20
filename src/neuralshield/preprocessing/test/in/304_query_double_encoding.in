@@ -1,0 +1,2 @@
+GET /admin?next=%252Fadmin%253Fq%253D1&triple=%25252520encoded&double=%2520space&single=%20normal HTTP/1.1
+Host: example.com

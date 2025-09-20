@@ -1,0 +1,9 @@
+[METHOD] GET
+[URL] /path%20with%20spaces/folder%20name/file.exe
+SPACE
+[QPARAM] param
+[QPARAM] normal
+[QMETA] count=2
+[HEADER] Host: example.com
+[HEADER] User-Agent: Test/1.0
+[HEADER] Accept: */*
