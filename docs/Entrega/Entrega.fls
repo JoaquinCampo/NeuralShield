@@ -1,7 +1,7 @@
-PWD /home/mateo/OneDrive/Semestre Actual/Tesis/repos/NeuralShield/docs
+PWD /home/mateo/OneDrive/Semestre Actual/Tesis/repos/NeuralShield/docs/Entrega
 INPUT /usr/share/texmf-dist/web2c/texmf.cnf
 INPUT /var/lib/texmf/web2c/pdftex/pdflatex.fmt
-INPUT /home/mateo/OneDrive/Semestre Actual/Tesis/repos/NeuralShield/docs/Entrega.tex
+INPUT /home/mateo/OneDrive/Semestre Actual/Tesis/repos/NeuralShield/docs/Entrega/Entrega.tex
 OUTPUT Entrega.log
 INPUT /usr/share/texmf-dist/tex/latex/base/report.cls
 INPUT /usr/share/texmf-dist/tex/latex/base/report.cls

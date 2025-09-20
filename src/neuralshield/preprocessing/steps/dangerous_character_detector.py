@@ -32,15 +32,15 @@ MIXEDSCRIPT_FLAG = "MIXEDSCRIPT"
 
 # Character detection patterns (both literal and percent-encoded)
 DANGEROUS_CHARS = {
-    ANGLE_FLAG: re.compile(r"([<>]|%3[CE])", re.IGNORECASE),
-    QUOTE_FLAG: re.compile(r'([\'"]|%2[27])', re.IGNORECASE),
-    SEMICOLON_FLAG: re.compile(r"(;|%3B)", re.IGNORECASE),
-    PAREN_FLAG: re.compile(r"([()]|%2[89])", re.IGNORECASE),
-    BRACE_FLAG: re.compile(r"([{}]|%7[BD])", re.IGNORECASE),
-    PIPE_FLAG: re.compile(r"(\||%7C)", re.IGNORECASE),
-    BACKSLASH_FLAG: re.compile(r"(\\|%5C)", re.IGNORECASE),
-    SPACE_FLAG: re.compile(r"( |%20)", re.IGNORECASE),
-    NUL_FLAG: re.compile(r"(\x00|%00)", re.IGNORECASE),
+    ANGLE_FLAG: re.compile(r"([<>]|%3[CE])", re.IGNORECASE),  # < > and %3C %3E (angle brackets for HTML/XML tags)
+    QUOTE_FLAG: re.compile(r'([\'"]|%2[27])', re.IGNORECASE),  # ' " and %22 %27 (quotes for string escaping/injection)
+    SEMICOLON_FLAG: re.compile(r"(;|%3B)", re.IGNORECASE),  # ; and %3B (semicolons for command separation/SQL injection)
+    PAREN_FLAG: re.compile(r"([()]|%2[89])", re.IGNORECASE),  # ( ) and %28 %29 (parentheses for function calls/SQL injection)
+    BRACE_FLAG: re.compile(r"([{}]|%7[BD])", re.IGNORECASE),  # { } and %7B %7D (braces for template injection/code blocks)
+    PIPE_FLAG: re.compile(r"(\||%7C)", re.IGNORECASE),  # | and %7C (pipes for command chaining/shell injection)
+    BACKSLASH_FLAG: re.compile(r"(\\|%5C)", re.IGNORECASE),  # \ and %5C (backslashes for path traversal/escaping)
+    SPACE_FLAG: re.compile(r"( |%20)", re.IGNORECASE),  # space and %20 (spaces suspicious in URL paths)
+    NUL_FLAG: re.compile(r"(\x00|%00)", re.IGNORECASE),  # null byte and %00 (null byte injection/string termination)
 }
 
 

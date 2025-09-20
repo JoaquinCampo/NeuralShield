@@ -1,13 +1,13 @@
 # Fdb version 4
-["biber Entrega"] 0 "Entrega.bcf" "Entrega.bbl" "Entrega" 0 0
+["biber Entrega"] 0 "Entrega.bcf" "Entrega.bbl" "Entrega" 1758385746.74578 0
   "Entrega.bcf" 0 -1 0 "pdflatex"
   "bibliografia.bib" 0 -1 0 ""
   (generated)
   "Entrega.bbl"
   "Entrega.blg"
   (rewritten before read)
-["pdflatex"] 1757813242.88452 "/home/mateo/OneDrive/Semestre Actual/Tesis/repos/NeuralShield/docs/Entrega.tex" "Entrega.pdf" "Entrega" 1757813244.62255 0
-  "/home/mateo/OneDrive/Semestre Actual/Tesis/repos/NeuralShield/docs/Entrega.tex" 1757813239.42937 5720 be871f8514dee74c91937b6177f9edb4 ""
+["pdflatex"] 1758385745.12726 "/home/mateo/OneDrive/Semestre Actual/Tesis/repos/NeuralShield/docs/Entrega/Entrega.tex" "Entrega.pdf" "Entrega" 1758385746.747 0
+  "/home/mateo/OneDrive/Semestre Actual/Tesis/repos/NeuralShield/docs/Entrega/Entrega.tex" 1758384586.1628 5720 be871f8514dee74c91937b6177f9edb4 ""
   "/usr/share/texmf-dist/fonts/enc/dvips/lm/lm-ec.enc" 1742685315 2375 baa924870cfb487815765f9094cf3728 ""
   "/usr/share/texmf-dist/fonts/map/fontname/texfonts.map" 1742685315 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/share/texmf-dist/fonts/tfm/jknappen/ec/ecrm1200.tfm" 1755987285 3584 f80ddd985bd00e29e9a6047ebd9d4781 ""
@@ -145,14 +145,14 @@
   "/usr/share/texmf-dist/web2c/texmf.cnf" 1755987285 42087 b0f9697c952c8f5a8eede4134282cb0d ""
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1757809898 5311557 9da84c45f5b388655502706482323571 ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1757809876 2030632 f6148d56193f4fbf795cf1e0802cdc93 ""
-  "Entrega.aux" 1757813244.38962 3349 6bab06fb74d3221682564081be672927 "pdflatex"
+  "Entrega.aux" 1758385746.53057 3349 6bab06fb74d3221682564081be672927 "pdflatex"
   "Entrega.bbl" 0 -1 0 "biber Entrega"
-  "Entrega.lof" 1757813244.39699 170 ac5b3f75184f0315fba1c6fbf15825fc "pdflatex"
-  "Entrega.lot" 1757813244.39699 170 ac5b3f75184f0315fba1c6fbf15825fc "pdflatex"
-  "Entrega.out" 1757813244.39262 2201 91799b0af636a64a6b60199fb9c18548 "pdflatex"
-  "Entrega.run.xml" 1757813244.39699 2334 65b4a2c85c46bda6fdb17927b45a26d2 "pdflatex"
-  "Entrega.tex" 1757813239.42937 5720 be871f8514dee74c91937b6177f9edb4 ""
-  "Entrega.toc" 1757813244.39699 1565 55f3e760701795c355a4bff26a1b4585 "pdflatex"
+  "Entrega.lof" 1758385746.53843 170 ac5b3f75184f0315fba1c6fbf15825fc "pdflatex"
+  "Entrega.lot" 1758385746.53843 170 ac5b3f75184f0315fba1c6fbf15825fc "pdflatex"
+  "Entrega.out" 1758385746.53457 2201 91799b0af636a64a6b60199fb9c18548 "pdflatex"
+  "Entrega.run.xml" 1758385746.53843 2334 65b4a2c85c46bda6fdb17927b45a26d2 "pdflatex"
+  "Entrega.tex" 1758384586.1628 5720 be871f8514dee74c91937b6177f9edb4 ""
+  "Entrega.toc" 1758385746.53843 1565 55f3e760701795c355a4bff26a1b4585 "pdflatex"
   (generated)
   "Entrega.aux"
   "Entrega.bcf"

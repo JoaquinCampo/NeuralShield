@@ -1,0 +1,295 @@
+% Template LaTeX para Informes de Proyectos de Grado de Computación
+% InCo, Facultad de Ingeniería, Universidad de la República
+% 06/2023
+
+\documentclass{prgrado}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Datos del Proyecto:
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% título del proyecto (debe escribirse en minúscula, con excepción de la
+% letra inicial de la primera palabra y nombres propios)
+\title{Título que va a poner a su proyecto de grado}                   
+
+% autores
+\author{Joaquín Campo Nario, Mateo Hernán Daneri Dini}  
+
+% fecha de la defensa
+\date{\today}                                 
+
+% supervisor
+\supervisor{Rodrigo Martinez}                
+
+% cosupervisor (comentar si no tiene)
+\cosupervisor{Gustavo Betarte}
+
+% licencia creative commons del documento
+% opciones: by, by-sa, by-nd, by-nc, by-nc-sa y by-nc-nd
+% opción por defecto: by-nc-nd versión 4.0
+\cclicense{by}{4.0}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%links con colores 
+\hypersetup{
+  colorlinks   = true,
+  urlcolor     = blue,
+  linkcolor    = blue,
+  citecolor    = red
+}
+
+
+\begin{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Parte inicial
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\frontmatter % numeración en romanos, capitulos sin numerar
+
+% carátula
+\maketitle
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% agradecimientos
+\chapter*{Agradecimientos}
+
+Agradecer, siempre es bueno agradecer.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% resumen
+\chapter*{Resumen}
+
+El resumen (200-500 palabras) debe dar una idea completa de todo el
+proyecto, mencionando claramente los formalismos, técnicas, herramientas y lenguajes
+utilizados. No debe limitarse a describir el problema abordado, sino que debe describir
+la solución del problema, con una evaluación de la misma. No debe incluir referencias
+bibliográficas ni referencias a otras partes del informe. Tampoco debe utilizar
+acrónimos sin explicar su significado.
+
+
+\hfill \break
+\keywords{Template, Proyectos de Grado, Computación}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% índice
+\tableofcontents
+\newpage
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Parte central
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\mainmatter %numeración en arábicos, numerar capítulos 
+
+% introducción
+\chapter{Introducción}
+
+Aquí se motiva el trabajo, se plantea y define el problema, se deja claro cuales son los objetivos (general del proyecto, si correspondiese o si está inmerso en un proyecto de mayor alcance, y los específicos), se plantean los resultados esperados, se establecen resumidamente las conclusiones y se describe la
+organización general del documento.
+
+Este y los siguientes capítulos pueden incluir referencias, algunos ejemplos de referencias pueden ser \cite{CitekeyArticle}, \cite{CitekeyBook}, \cite{CitekeyInproceedings}, \cite{CitekeyManual} y \cite{CitekeyMisc}. Se sugiere citar usando el formato APA.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\chapter{Marco teórico} 
+
+% Aquí se plantean los conceptos teóricos necesarios para entender el trabajo.
+
+\section{Codificaciones en paquetes HTTP}
+
+Una codificación de un caracter es un mapeo de un caracter a una secuencia de bytes. Por ejemplo, la codificación UTF-8 mapea cada caracter a una secuencia de bytes. Los caracteres, a nivel de aplicación, son representados en diferentes formatos, como ASCII, UTF-8, UTF-16, etc.
+
+Esto lleva a que se necesite codificar y decodificar la información para que pueda ser transmitida y procesada correctamente entre el clliente y el servidor al que se quiere dirigir una solicitud o paquete.
+
+Históricamente, se han utilizado diferentes codificaciones para representar los caracteres en paquetes HTTP. En los inicios de la web, se utilizaba el formato ASCII, que es una codificación de 7 bits (permite representar 2\math{^7} = 128 caracteres como máximo). Esta cota es increiblemente baja para todos los caracteres que existen en la actualidad (simplemente basta pensar en los distintos caracteres utilizados en idiomas para ver que 127 caracteres no son suficientes). 
+
+Ante esta problemática, se propuso Unicode. Unicode puede utilizar de uno a cuatro bytes para representar un caracter. Esto permite representar mas de un millon de caracteres.
+
+Unicode entonces es una codificación la cual asigna a cada caracter (code point) un valor numérico. Este valor numérico es luego 'interpretado' en diferentes codificaciones, como UTF-8, UTF-16, etc.
+
+La mas común es UTF-8, la cual consta de un largo variable de bytes para representar un caracter. Una característica importante de UTF-8 es que los primeros 128 caracteres corresponden a los caracteres ASCII.
+
+Como mencionado anteriormente, a bajo nivel los caracteres son representados en bytes, y dependiendo de qué parte del paquete HTTP se esté hablando, se utilizará una codificación u otra. Por ejemplo, en el header de un paquete HTTP, se utilizará la codificación ASCII, mientras que en el body, se utilizará la codificación UTF-8.
+
+Hagamos un desglose de las formas de transmisión 'on the wire' de las partes del paquete que nos conciernan en nuestra investigación: método, URL y headers.
+
+\subsection{Método}
+
+El método es representado como tokens ASCII.
+
+\subsection{URL}
+
+
+\subsection{Headers}
+
+Los headers son representados como una secuencia de bytes.
+
+
+
+
+
+
+
+Los paquetes HTTP transitan la red en bytes. Por otro lado, los servidores web reciben y envían información en forma de caracteres, en diferentes formatos. Por lo tanto, es necesario codificar y decodificar la información para que pueda ser transmitida y procesada correctamente.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% antecedentes
+\chapter{Revisión de antecedentes} 
+
+Revisión de antecedentes (ya sea productos, procesos, publicaciones, etc., a nivel académico o comercial) en el tema del trabajo. Puede incluir además (si es necesario) una breve introducción a los conceptos necesarios para entender el trabajo.
+
+\section{Primera Sección}
+
+Los capítulos pueden incluir secciones como esta, que además pueden hacer referencia a otras secciones, como por ejemplo a la Sección~\ref{sec:segunda}.
+
+
+\section{Segunda Sección}\label{sec:segunda}
+
+Esta sección además tiene una subsección.
+
+\subsection{La Subsección}
+
+Esta es la subsección.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% parte central
+\chapter{Parte Central}
+% La parte central del trabajo refiere a lo que es producción propia o aporte del
+% proyecto de grado, incluyendo las decisiones tomadas. Por ejemplo, puede incluir
+% los requerimientos, el análisis y el diseño de la solución. Si el proyecto tiene una
+% implementación, debe describirse en términos de decisiones tomadas en ese sentido.
+% Los detalles de programación se dejan para los anexos.
+
+% Se pueden incluir figuras y tablas en el documento, las mismas deben estar referenciadas en el texto. Por ejemplo, la Figura~\ref{fig:logos} muestra los logos de Facultad de Ingeniería y de la Universidad de la República, mientras que la Tabla~\ref{table:datos} tiene números aleatorios.
+
+% \begin{figure}[h!]
+%     \centering
+%     \includegraphics[width=\textwidth]{figs/logo-udelar-fing.png}
+%     \caption{Logos de FIng y UdelaR}
+%     \label{fig:logos}
+% \end{figure}
+
+% \begin{table}[h!]
+% \centering
+% \begin{tabular}{| c | c | c | c |} 
+%  \hline
+%  Col1 & Col2 & Col2 & Col3 \\  
+%  \hline
+%  1 & 970 & 67 & 941 \\ 
+%  2 & 668 & 845 & 141 \\
+%  3 & 800 & 383 & 464 \\
+%  4 & 143 & 683 & 502 \\
+%  \hline
+% \end{tabular}
+% \caption{Tabla con datos}
+% \label{table:datos}
+% \end{table}
+
+\section{Preprocesamiento}
+
+Preprocesamiento: 2 etapas
+
+\subsection{Esquema de un paquete HTTP}
+
+\subsubsection{Pasos}
+
+\subsubsubsection{Normalizar y agregar flags de rarezas}
+El primer paso es normalizar la entrada a un formato más conciso para el 'tokenizador' y 'encoder' de nuestro modelo. El output esperado para un mensaje HTTP genérico es el siguiente:
+\subsubsubsection{Construir URL absoluta cuando es relativa}
+  Problema: La URL puede venir en forma particionada, es decir, con el path y el query separados.
+  Solución: Construir la URL absoluta canónica (`scheme://host[:port]/path?query`) cuando el request target viene en forma relativa (origin-form, p. ej., `GET /path HTTP/1.1`) y cómo tratar los casos de absolute-form y authority-form, así como discrepancias con el header `Host`.
+
+
+ 
+\subsection{Análisis de seguridad en valores}
+
+\subsubsection{Pasos}
+
+\subsubsubsection{Doble Encoding}
+
+Problema: La URL puede tener caracteres codificados dos veces, es decir, `%252E` = `%2E` codificado dos veces.
+Solución: Decodificar la URL una sola vez y agregar el flag `DOUBLEPCT` cuando se detecte que hay caracteres codificados dos veces.
+
+ 
+
+\subsubsubsection{HTTP Tokens} - https://www.rfc-editor.org/rfc/rfc9110.html#name-tokens
+Problema: 
+Solución: 
+
+ 
+
+ 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% experimentación
+\chapter{Experimentación}
+Puede ser necesario incluir un capítulo de Experimentación, incluyendo las pruebas realizadas (casos de prueba) y los resultados obtenidos con su respectivo análisis, que puede incluir comparaciones. 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%conclusiones
+\chapter{Conclusiones y Trabajo Futuro}
+
+En este capítulo se evalúan los resultados alcanzados y
+dificultades encontradas, se establece lo que se planteó hacer y lo que se hizo
+realmente, cuales fueron los aportes, se muestran posibles extensiones al trabajo, se
+realiza una autocrítica de lo que se hizo y lo que faltó (por problemas de tiempo,
+recursos, cómo se puede continuar, qué cosas hacer, prioridades, etc.) y se incluye
+información sobre la gestión del proyecto, si aplica
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Parte final
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+{ % inicio backmatter
+
+\backmatter % no numerar capítulos 
+
+% referencias bibliográficas
+
+\newpage
+\bibliographystyle{apacite}
+\bibliography{referencias}
+
+} % fin backmatter
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% anexos
+
+\begin{appendix}
+
+\chapter{Anexo 1}
+
+Los anexos contienen información adjunta al proyecto pero que no es fundamental
+para entender el trabajo. Por ejemplo, determinado material de los antecedentes o la
+implementación, que en el cuerpo principal del informe se encuentre resumido, aquí
+puede presentarse de forma completa. En caso de proyectos de desarrollo de
+software, se debería incluir un manual de usuario.
+
+\section{Sección del Anexo}
+
+Los anexos pueden tener secciones.
+
+\end{appendix}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{document}
