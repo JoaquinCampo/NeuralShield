@@ -1,3 +1,4 @@
 [tool.neuralshield.pipeline_order]
 order = [
+    "neuralshield.preprocessing.steps.framing_cleanup:FramingCleanup",
 ]
