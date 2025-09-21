@@ -15,16 +15,16 @@
 \title{Título que va a poner a su proyecto de grado}                   
 
 % autores
-\author{Joaquín Campo Nario, Mateo Hernán Daneri Dini}  
+\author{Nombre de Autor1, Nombre de Autor2, Nombre de Autor3 y Nombre de Autor4}  
 
 % fecha de la defensa
 \date{\today}                                 
 
 % supervisor
-\supervisor{Rodrigo Martinez}                
+\supervisor{Nombre Supervisor}                
 
 % cosupervisor (comentar si no tiene)
-\cosupervisor{Gustavo Betarte}
+\cosupervisor{Nombre Co-Supervisor}
 
 % licencia creative commons del documento
 % opciones: by, by-sa, by-nd, by-nc, by-nc-sa y by-nc-nd
@@ -131,20 +131,23 @@ El método es representado como tokens ASCII.
 
 \subsection{URL}
 
+La URL es representada como ..
 
 \subsection{Headers}
 
 Los headers son representados como una secuencia de bytes.
 
 
-
-
-
-
-
 Los paquetes HTTP transitan la red en bytes. Por otro lado, los servidores web reciben y envían información en forma de caracteres, en diferentes formatos. Por lo tanto, es necesario codificar y decodificar la información para que pueda ser transmitida y procesada correctamente.
 
+\section{dwa}
+
+
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 % antecedentes
 \chapter{Revisión de antecedentes} 
@@ -167,6 +170,7 @@ Esta es la subsección.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % parte central
+
 \chapter{Parte Central}
 % La parte central del trabajo refiere a lo que es producción propia o aporte del
 % proyecto de grado, incluyendo las decisiones tomadas. Por ejemplo, puede incluir
@@ -201,21 +205,44 @@ Esta es la subsección.
 
 \section{Preprocesamiento}
 
-Preprocesamiento: 2 etapas
+Principios:
+- Idempotente
+- 2 etapas
+- No destruir paquetes extrayendo features
 
 \subsection{Esquema de un paquete HTTP}
 
 \subsubsection{Pasos}
+- Diferenciar partes de paquete
+    Method: , Header: , Param: ...
+- Deteccion de OBS-FOLD (CRLF)
+- Separadores en cada sección (seps. header, seps. query)
+- Longitudes
+- Explicitar URL y params (digerirlos)
+- Evidenciar encodings usados en cada parte (falta .md)
+- Evidenciar uso de custom headers (falta .md)
+- Lower-case de Header names - flag si se aplicó - con cuantos caracteres.
+- RFC VARIAS
 
-\subsubsubsection{Normalizar y agregar flags de rarezas}
-El primer paso es normalizar la entrada a un formato más conciso para el 'tokenizador' y 'encoder' de nuestro modelo. El output esperado para un mensaje HTTP genérico es el siguiente:
-\subsubsubsection{Construir URL absoluta cuando es relativa}
-  Problema: La URL puede venir en forma particionada, es decir, con el path y el query separados.
-  Solución: Construir la URL absoluta canónica (`scheme://host[:port]/path?query`) cuando el request target viene en forma relativa (origin-form, p. ej., `GET /path HTTP/1.1`) y cómo tratar los casos de absolute-form y authority-form, así como discrepancias con el header `Host`.
+- Casos particulares (uso de + en URL ✓, en el resto puede ser indicador de ataque por encoding)
 
+\subsubsection{Pasos que NO hacemos}
+
+- Resolver rutas (/a/b/../c -> /a/c)
+
+\subsection{Análisis de seguridad en valores}
+
+\subsubsection{Pasos}
+
+- Caracteres peligrosos
+- Detectar encodings irregulares (double encodings, etc)
+- Header-Values shape aware ()
+- Explicitar tipos de dato en los contenidos -> (hash=14d18cd98f...` → `hash=<hex>)
+
+\subsubsection{Pasos que NO hacemos}
 
  
-\subsection{Análisis de seguridad en valores}
+ 
 
 \subsubsection{Pasos}
 
@@ -236,6 +263,7 @@ Solución:
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 % experimentación
 \chapter{Experimentación}
