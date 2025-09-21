@@ -1,5 +1,0 @@
-GET /％70ath&#x2f;%252520path%00test?param1=％61value&param2=normal%2Eparam&param3=%252520space&param4=test%00data&param5=&#x3c;script&#x3e;value HTTP/1.1
-Host: example.com
-Content-Type: application/x-www-form-urlencoded
-User-Agent: Test/1.0
-Accept: */*

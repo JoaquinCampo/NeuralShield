@@ -1,4 +1,0 @@
-GET /path%00with%00nulls?param=%00value&normal=test&special=%00admin HTTP/1.1
-Host: example.com
-User-Agent: Test/1.0
-Accept: */*

@@ -12,11 +12,11 @@ from neuralshield.preprocessing.http_preprocessor import HttpPreprocessor
 class FramingCleanup(HttpPreprocessor):
     """
     Remove framing artifacts from the absolute borders of HTTP request strings.
-    
+
     This processor removes:
     - BOM (Byte Order Mark) at the beginning
     - Non-printable control characters at the beginning and end
-    
+
     It preserves all content within the HTTP message structure and
     only modifies the absolute edges to ensure robust parsing downstream.
     """

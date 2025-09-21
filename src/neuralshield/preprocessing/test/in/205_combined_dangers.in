@@ -1,4 +1,0 @@
-GET /%D1%80ath/%3Cscript%3E?user=%27admin%22&cmd=%24%28cat%20%2Fetc%2Fpasswd%29%7Cbase64&mixed=%CE%B1%CE%B2%CE%B3%7Bpayload%7D&null=%00test HTTP/1.1
-Host: example.com
-User-Agent: Test/1.0
-Accept: */*

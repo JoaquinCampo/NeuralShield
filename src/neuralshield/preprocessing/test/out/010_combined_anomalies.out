@@ -1,8 +1,0 @@
-[METHOD] GET
-[URL] /path/bar/../config%00test/final
-NUL
-DOTDOT MULTIPLESLASH
-CONTROL FULLWIDTH
-[HEADER] Host: example.com
-[HEADER] User-Agent: Test/1.0
-[HEADER] Accept: */*

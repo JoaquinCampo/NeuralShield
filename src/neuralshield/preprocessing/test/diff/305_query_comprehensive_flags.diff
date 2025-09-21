@@ -1,9 +1,0 @@
---- 305_query_comprehensive_flags.out
-+++ 305_query_comprehensive_flags.actual
-@@ -7,5 +7,5 @@
- [QPARAM] empty QEMPTYVAL
- [QPARAM] barekey QBARE
- [QPARAM] nullval QNUL
--[QMETA] count=7 QARRAY:items[] QNONASCII QEMPTYVAL QBARE QNUL
-+[QMETA] count=7 QARRAY:items[] QBARE QEMPTYVAL QNONASCII QNUL QREPEAT:items[]
- [HEADER] Host: example.com
