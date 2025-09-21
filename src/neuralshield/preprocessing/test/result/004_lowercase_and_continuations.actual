@@ -4,7 +4,7 @@
 [QPARAM] y QEMPTYVAL QREPEAT:y
 [QPARAM] y QREPEAT:y
 [QPARAM] z
-[QMETA] count=4 QEMPTYVAL
+[QMETA] count=4 QEMPTYVAL QREPEAT:y
 [HEADER] host: x
 [HEADER] 	continued A
 [HEADER]   continued B

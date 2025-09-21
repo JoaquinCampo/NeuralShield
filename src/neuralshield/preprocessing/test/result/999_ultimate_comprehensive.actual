@@ -1,14 +1,16 @@
 [METHOD] POST
-[URL] /path/API;seg1/раypal.com/../%2Econfig%00file/../final/<script> name /ctrl/space here
+[URL] /path/API;seg1/раypal.com/../.config%00file/../final/<script>%20name%20/%01ctrl/space%20here
 ANGLE MIXEDSCRIPT NUL SEMICOLON SPACE
 DOTDOT MULTIPLESLASH
+HTMLENT
+CONTROL FULLWIDTH
 [QPARAM] items[] QARRAY:items[] QREPEAT:items[]
 [QPARAM] items[] QARRAY:items[] QREPEAT:items[]
 [QPARAM] a QREPEAT:a
 [QPARAM] a QREPEAT:a
 [QPARAM] empty QEMPTYVAL
 [QPARAM] barekey QBARE
-[QPARAM] <empty>
+[QPARAM] <empty> ANGLE
 [QPARAM] semi
 [QPARAM] nul QNUL
 [QPARAM] nonascii QNONASCII
@@ -25,7 +27,7 @@ DOTDOT MULTIPLESLASH
 [QPARAM] malformed QBARE QREPEAT:malformed
 [QPARAM] valid
 [QSEP] QRAWSEMI
-[QMETA] count=22 QARRAY:items[] QEMPTYVAL QBARE QNUL QNONASCII DOUBLEPCT
+[QMETA] count=22 DOUBLEPCT QARRAY:items[] QBARE QEMPTYVAL QNONASCII QNUL QREPEAT:a QREPEAT:items[] QREPEAT:login QREPEAT:malformed
 [HEADER] Host: раypal.com
 MIXEDSCRIPT
 [HEADER] User-Agent: Mozilla/5.0 (Attack/1.0)

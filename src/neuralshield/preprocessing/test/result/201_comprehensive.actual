@@ -1,5 +1,5 @@
 [METHOD] POST
-[URL] /path/admin/../../config/%2E%2E/root%00file
+[URL] /path/admin/../../config/../root%00file
 NUL
 DOTDOT MULTIPLESLASH
 CONTROL FULLWIDTH
@@ -12,9 +12,9 @@ CONTROL FULLWIDTH
 [QPARAM] special QEMPTYVAL
 [QPARAM] malicious QBARE
 [QPARAM] empty QEMPTYVAL
-[QPARAM] <empty>
+[QPARAM] <empty> ANGLE
 [QPARAM] final QNUL
-[QMETA] count=11 QNUL DOUBLEPCT QEMPTYVAL QBARE
+[QMETA] count=11 DOUBLEPCT QBARE QEMPTYVAL QNUL
 [HEADER] Host: target.example.com
 [HEADER] Content-Type: application/x-www-form-urlencoded
 [HEADER] User-Agent: Mozilla/5.0 (Attack/1.0)
