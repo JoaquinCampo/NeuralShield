@@ -1,1 +1,3 @@
-GET /ok HTTP/1.1\r\nHost: example.com\r\n\r\n
+[METHOD] GET
+[URL] /ok
+[HEADER] Host: example.com

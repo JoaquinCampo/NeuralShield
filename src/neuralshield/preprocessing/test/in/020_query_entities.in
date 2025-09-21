@@ -1,0 +1,3 @@
+GET /search?q=a&#x26;b&lang=en HTTP/1.1
+Host: example.com
+

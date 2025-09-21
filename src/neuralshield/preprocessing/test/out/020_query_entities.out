@@ -1,0 +1,5 @@
+[METHOD] GET
+[URL] /search
+[QUERY] q=a&#x26;b
+[QUERY] lang=en
+[HEADER] Host: example.com

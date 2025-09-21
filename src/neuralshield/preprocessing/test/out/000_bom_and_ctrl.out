@@ -1,4 +1,5 @@
-GET /path HTTP/1.1
-Host: example.com
+[METHOD] GET
+[URL] /path
+[HEADER] Host: example.com
 
 BOMREMOVED EDGECTRLREMOVED
