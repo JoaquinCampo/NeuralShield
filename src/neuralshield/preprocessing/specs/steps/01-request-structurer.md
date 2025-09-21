@@ -1,6 +1,7 @@
 ### 01 Request Structurer
 
 **Step Contract:**
+
 - Input lines considered: cleaned raw HTTP request string
 - Transformations allowed: parse into structured format with prefixes
 - Flags emitted: syntax errors as exceptions (no flags)
@@ -12,6 +13,7 @@
 ### Scope
 
 Transform raw HTTP request into structured canonical format:
+
 - `[METHOD] <method>`
 - `[URL] <path>`
 - `[QUERY] <raw-param>` (repeated per query token)
@@ -24,15 +26,18 @@ Parse without interpreting values - just structure the request into components.
 ### Rules
 
 1. **Request Line Parsing**:
+
    - Split into exactly 3 parts: method, URL, HTTP version
    - Validate method is in allowed list: GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD, TRACE, CONNECT
    - Validate HTTP version starts with "HTTP/"
 
 2. **URL/Query Splitting**:
+
    - Split URL on first `?` into path and query string
    - If no `?`, query string is empty
 
 3. **Query Tokenization**:
+
    - Split query string on `&` with HTML entity protection
    - Preserve HTML entities like `&#x3c;` during splitting
    - Each token becomes one `[QUERY]` line
@@ -47,6 +52,7 @@ Parse without interpreting values - just structure the request into components.
 ### Examples
 
 Input:
+
 ```
 GET /path?param1=value1&param2=value2 HTTP/1.1
 Host: example.com
@@ -55,6 +61,7 @@ User-Agent: Mozilla/5.0
 ```
 
 Output:
+
 ```
 [METHOD] GET
 [URL] /path
@@ -69,9 +76,11 @@ Output:
 ### HTML Entity Protection
 
 When splitting query strings, protect HTML entities from being broken:
+
 ```
 ?param=a&#x26;b&other=c
 ```
+
 Should split as: `["param=a&#x26;b", "other=c"]`, not break the entity.
 
 ---
@@ -79,6 +88,7 @@ Should split as: `["param=a&#x26;b", "other=c"]`, not break the entity.
 ### Error Handling
 
 Raise `MalformedHttpRequestError` for:
+
 - Wrong number of request line parts
 - Invalid HTTP version format
 - Invalid method
@@ -95,6 +105,7 @@ Raise `MalformedHttpRequestError` for:
 ### Good vs Bad Examples
 
 Good (properly formed request):
+
 ```
 GET /path?x=1&y=2 HTTP/1.1\n
 Host: example.com\n
@@ -103,6 +114,7 @@ User-Agent: Test/1.0\n
 ```
 
 Output:
+
 ```
 [METHOD] GET
 [URL] /path
@@ -113,6 +125,7 @@ Output:
 ```
 
 Bad (invalid request line - 2 parts only):
+
 ```
 GET /missing-version\n
 Host: example.com\n

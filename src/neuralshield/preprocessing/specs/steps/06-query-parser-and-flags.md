@@ -18,7 +18,7 @@ Comprehensive query parameter parsing with anomaly detection (preservation-first
 - Decode exactly once per token (idempotent) for analysis/shape purposes; decoding evidence and flags remain attributed to step 05
 - Multiplicidad preservation and repetition detection
 - Security-focused parameter analysis
-- Output format transformation to `[QPARAM]`, `[QSEP]`, `[QMETA]`
+- Output format: `[QUERY] {key}={value} [flags...]`; keep `[QSEP]` and `[QMETA]` for separator/summary metadata
 
 ---
 
@@ -64,10 +64,10 @@ For each parameter, detect:
 
 ### Output Format
 
-Replaces `[QUERY]` lines with structured format including non-sensitive value representation:
+Emits `[QUERY]` lines with explicit key=value and inline flags. Preserve metadata lines:
 
 ```
-[QPARAM] {key} <shape:len> [flags...]
+[QUERY] {key}={value} [flags...]
 [QSEP] [separator_flags...]
 [QMETA] count=N [global_flags...]
 ```
@@ -76,10 +76,10 @@ Replaces `[QUERY]` lines with structured format including non-sensitive value re
 
 ### Value Shape and Redaction
 
-- Emit `<shape:len>` for each value to preserve evidence without exposing raw literals
-- For sensitive keys/values, emit `<SECRET:shape:len>` per `shape-longitud-redaccion.md`
+- Render `{value}` as the decoded-once effective value by default. For sensitive keys/values or when configured, emit `<shape:len>` or `<SECRET:shape:len>` in place of the raw value.
 - Shapes include: jwt, uuid, ipv4, ipv6, b64url, b64, hex, email, uaxurl, num, lower, upper, alpha, alnum, lowernum, uppernum, mixed
 - Length is computed after decoding in steps 05/06; empty values may omit shape or use `<mixed:0>` alongside `QEMPTYVAL`
+- For bare keys (no `=` present in the original), emit `[QUERY] key QBARE` (no `=`) to preserve exact evidence
 
 ### Examples
 
@@ -94,9 +94,9 @@ Basic ampersand-separated query:
 Output:
 
 ```
-[QPARAM] name <alpha:4>
-[QPARAM] age <num:2>
-[QPARAM] city QEMPTYVAL
+[QUERY] name=John
+[QUERY] age=25
+[QUERY] city= QEMPTYVAL
 [QMETA] count=3 QEMPTYVAL
 ```
 
@@ -109,9 +109,9 @@ Semicolon-dominant pattern:
 Output:
 
 ```
-[QPARAM] mode
-[QPARAM] user
-[QPARAM] token
+[QUERY] mode=1
+[QUERY] user=alice
+[QUERY] token=xyz
 [QSEP] QSEMISEP
 [QMETA] count=3
 ```
@@ -129,11 +129,11 @@ Complex query with anomalies:
 Output:
 
 ```
-[QPARAM] items[] <num:1> QARRAY:items[] QREPEAT:items[]
-[QPARAM] items[] <num:1> QARRAY:items[] QREPEAT:items[]
-[QPARAM] bare QBARE
-[QPARAM] encoded <mixed:3> DOUBLEPCT
-[QPARAM] unicode <mixed:3> QNONASCII
+[QUERY] items[]=1 QARRAY:items[] QREPEAT:items[]
+[QUERY] items[]=2 QARRAY:items[] QREPEAT:items[]
+[QUERY] bare QBARE
+[QUERY] encoded=%2F DOUBLEPCT
+[QUERY] unicode=αβγ QNONASCII
 [QMETA] count=5 QARRAY:items[] QBARE DOUBLEPCT QNONASCII QREPEAT:items[]
 ```
 

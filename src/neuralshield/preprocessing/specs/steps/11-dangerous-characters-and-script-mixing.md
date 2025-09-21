@@ -2,7 +2,7 @@
 
 **Step Contract:**
 
-- Input lines considered: `[URL]`, `[QPARAM]`, `[HEADER]` lines
+- Input lines considered: `[URL]`, `[QUERY]`, `[HEADER]` lines
 - Transformations allowed: none (detection only)
 - Flags emitted: `ANGLE`, `QUOTE`, `SEMICOLON`, `PAREN`, `BRACE`, `PIPE`, `BACKSLASH`, `SPACE`, `NUL`, `QNUL`, `MIXEDSCRIPT`
 - Dependencies: 06, 07, 10 (after decoding and normalization)
@@ -102,14 +102,16 @@ Characters detected in both literal and percent-encoded forms:
 
 ---
 
-### Notes on `[QPARAM]` values
+### Notes on `[QUERY]` values
 
-- When step 07 emits `<shape:len>` or `<SECRET:shape:len>` for values, detection should analyze the decoded token prior to redaction to preserve dangerous-character evidence via flags, but should not reveal raw values in the output
-- For `[QPARAM]`, match detection on the effective value (decoded once) while respecting redaction
+- When the query parser emits `[QUERY] key=value` lines, detection should analyze the effective decoded token prior to any optional redaction. Preserve dangerous-character evidence via flags while respecting redaction policies.
+- For `[QUERY]`, match detection on the effective value (decoded once by prior steps). If values are redacted (e.g., `<shape:len>` or `<SECRET:shape:len>`), do not reveal raw values; append flags only.
 
 ### Examples
 
-Dangerous characters in URL:
+URL examples
+
+Input:
 
 ```
 [URL] /path<script>alert(1)</script>
@@ -122,7 +124,33 @@ Output:
 ANGLE PAREN
 ```
 
-Script mixing attack:
+Percent-encoded and structural in URL:
+
+```
+[URL] /path%20with;param=1
+```
+
+Output:
+
+```
+[URL] /path%20with;param=1
+SPACE SEMICOLON
+```
+
+Backslash in URL (traversal-style):
+
+```
+[URL] /..\\windows\\system32
+```
+
+Output:
+
+```
+[URL] /..\\windows\\system32
+BACKSLASH
+```
+
+Script mixing in URL:
 
 ```
 [URL] /раypal.com/login
@@ -135,19 +163,75 @@ Output:
 MIXEDSCRIPT
 ```
 
-Query with null byte:
+Query examples
+
+Null byte in value:
 
 ```
-[QPARAM] file=../../../etc/passwd%00.jpg
+[QUERY] file=../../../etc/passwd%00.jpg
 ```
 
 Output:
 
 ```
-[QPARAM] file <mixed:18> NUL QNUL
+[QUERY] file=../../../etc/passwd%00.jpg NUL QNUL
 ```
 
-Header with legitimate semicolon:
+Angle brackets (encoded form preserved from prior steps):
+
+```
+[QUERY] q=%3Cscript%3Ealert(1)%3C/script%3E
+```
+
+Output:
+
+```
+[QUERY] q=%3Cscript%3Ealert(1)%3C/script%3E ANGLE PAREN
+```
+
+Angle brackets (literal form):
+
+```
+[QUERY] q=<script>alert(1)</script>
+```
+
+Output:
+
+```
+[QUERY] q=<script>alert(1)</script> ANGLE PAREN
+```
+
+Command-style payload with pipe and space:
+
+```
+[QUERY] cmd=cat /etc/passwd | grep root
+```
+
+Output:
+
+```
+[QUERY] cmd=cat /etc/passwd | grep root PIPE SPACE
+```
+
+Header examples
+
+Quotes and parentheses:
+
+```
+[HEADER] etag: "abc-123"
+[HEADER] user-agent: Test/1.0 (X11; Linux)
+```
+
+Output:
+
+```
+[HEADER] etag: "abc-123"
+QUOTE
+[HEADER] user-agent: Test/1.0 (X11; Linux)
+PAREN
+```
+
+Legitimate semicolon (not flagged in headers):
 
 ```
 [HEADER] cookie: session=abc123; theme=dark
@@ -159,16 +243,30 @@ Output:
 [HEADER] cookie: session=abc123; theme=dark
 ```
 
-Mixed dangerous characters:
+Null byte in header value:
 
 ```
-[QPARAM] cmd=cat /etc/passwd | grep root
+[HEADER] x-bin: test%00payload
 ```
 
 Output:
 
 ```
-[QPARAM] cmd <mixed:27> PIPE SPACE
+[HEADER] x-bin: test%00payload
+NUL
+```
+
+Mixed script in header value:
+
+```
+[HEADER] x-mixed: раypal.com
+```
+
+Output:
+
+```
+[HEADER] x-mixed: раypal.com
+MIXEDSCRIPT
 ```
 
 ---
@@ -213,7 +311,7 @@ Good (no dangerous characters, single script):
 
 ```
 [URL] /files/readme.txt
-[QPARAM] q=search
+[QUERY] q=search
 [HEADER] accept: text/html
 ```
 
