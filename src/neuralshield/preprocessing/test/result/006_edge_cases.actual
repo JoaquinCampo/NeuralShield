@@ -1,6 +1,8 @@
 [METHOD] GET
 [URL] /path/%20path%00test
 NUL SPACE
+HTMLENT
+CONTROL FULLWIDTH
 [QPARAM] param1
 [QPARAM] param2
 [QPARAM] param3

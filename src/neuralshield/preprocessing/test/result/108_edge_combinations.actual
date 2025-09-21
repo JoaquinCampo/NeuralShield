@@ -2,17 +2,17 @@
 [URL] /../../root
 DOTDOT
 [QPARAM] empty QBARE
-[QPARAM] <empty> QREPEAT:<empty>
+[QPARAM] <empty> QREPEAT:<empty> ANGLE
 [QPARAM] emptyval QEMPTYVAL
 [QPARAM] both QEMPTYVAL
-[QPARAM] <empty> QEMPTYVAL QREPEAT:<empty>
-[QPARAM] <empty> QREPEAT:<empty>
+[QPARAM] <empty> QEMPTYVAL QREPEAT:<empty> ANGLE
+[QPARAM] <empty> QREPEAT:<empty> ANGLE
 [QPARAM] param
 [QPARAM] normal
-[QPARAM] <empty> QREPEAT:<empty>
-[QPARAM] <empty> QREPEAT:<empty>
+[QPARAM] <empty> QREPEAT:<empty> ANGLE
+[QPARAM] <empty> QREPEAT:<empty> ANGLE
 [QPARAM] double
-[QMETA] count=11 QBARE QEMPTYVAL
+[QMETA] count=11 QBARE QEMPTYVAL QREPEAT:
 [HEADER] Host: example.com
 [HEADER] Content-Length: 0
 [HEADER] User-Agent: Test/1.0

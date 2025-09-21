@@ -1,0 +1,11 @@
+--- 001_basic_get.out
++++ 001_basic_get.actual
+@@ -16,7 +16,7 @@
+ [QPARAM] multi QNONASCII QREPEAT:multi
+ [QPARAM] multi QNONASCII QREPEAT:multi
+ [QSEP] QRAWSEMI
+-[QMETA] count=14 QBARE QEMPTYVAL QNONASCII
++[QMETA] count=14 QBARE QEMPTYVAL QNONASCII QREPEAT:list QREPEAT:multi
+ [HEADER] Host: Example.com
+ [HEADER] User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 14_5) Gecko/20100101 Firefox/119.0
+ PAREN

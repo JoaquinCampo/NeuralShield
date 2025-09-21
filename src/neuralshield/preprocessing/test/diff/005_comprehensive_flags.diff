@@ -1,0 +1,11 @@
+--- 005_comprehensive_flags.out
++++ 005_comprehensive_flags.actual
+@@ -1,6 +1,8 @@
+ [METHOD] POST
+ [URL] /path/%2Econfig%00test
+ NUL
++HTMLENT
++CONTROL FULLWIDTH
+ [QPARAM] param1
+ [QPARAM] param2
+ [QPARAM] param3

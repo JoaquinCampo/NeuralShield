@@ -2,9 +2,11 @@
 [URL] /path/../%2Econfig%00file/..
 NUL
 DOTDOT
-[QPARAM] p
+HTMLENT
+CONTROL FULLWIDTH
+[QPARAM] p DOUBLEPCT
 [QPARAM] attack QNUL
-[QMETA] count=2 QNUL
+[QMETA] count=2 DOUBLEPCT QNUL
 [HEADER] Host: example.com
 [HEADER] User-Agent: Test/1.0
 [HEADER] Accept: */*

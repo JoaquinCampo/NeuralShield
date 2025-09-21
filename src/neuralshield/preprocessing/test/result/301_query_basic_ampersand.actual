@@ -5,8 +5,8 @@
 [QPARAM] empty QEMPTYVAL
 [QPARAM] items[] QARRAY:items[] QREPEAT:items[]
 [QPARAM] items[] QARRAY:items[] QREPEAT:items[]
-[QPARAM] <empty>
+[QPARAM] <empty> ANGLE
 [QPARAM] bare QBARE
-[QMETA] count=7 QEMPTYVAL QARRAY:items[] QBARE
+[QMETA] count=7 QARRAY:items[] QBARE QEMPTYVAL QREPEAT:items[] QREPEAT:login
 [HEADER] Host: example.com
 [HEADER] User-Agent: Test/1.0
