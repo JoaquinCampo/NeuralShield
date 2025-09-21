@@ -30,14 +30,12 @@ DOTDOT MULTIPLESLASH
 MIXEDSCRIPT
 [HEADER] User-Agent: Mozilla/5.0 (Attack/1.0)
 PAREN
-[HEADER] X-Obs: part1
-[HEADER] 	continued A
-[HEADER]   continued B
+[HEADER] X-Obs: part1 continued A continued B
+OBSFOLD
 [HEADER] If-None-Match: "abc","def"
 QUOTE
-[HEADER] X-Custom: first line
-[HEADER] 	second	part continued
-[HEADER]   third part
+[HEADER] X-Custom: first line second	part continued third part
+OBSFOLD
 [HEADER] Authorization: Bearer ％74％6f％6b％65％6e
 [HEADER] Cookie: sid=abc123; theme=light
 [HEADER] Accept-Language: es-ES,es;q=0.9,en;q=0.8

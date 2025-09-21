@@ -1,0 +1,6 @@
+[METHOD] GET
+[URL] /crlf
+[HEADER] Host: example.com
+[HEADER] X-Evil: start Injected: bad
+BADCRLF
+[HEADER] X-Next: safe

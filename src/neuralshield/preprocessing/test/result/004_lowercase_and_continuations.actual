@@ -5,14 +5,11 @@
 [QPARAM] y QREPEAT:y
 [QPARAM] z
 [QMETA] count=4 QEMPTYVAL
-[HEADER] host: x
-[HEADER] 	continued A
-[HEADER]   continued B
+[HEADER] host: x continued A continued B
+OBSFOLD
 [HEADER] User-Agent: TestAgent/1.0
-[HEADER] X-Obs: part1
-[HEADER] 	part2
-[HEADER] 		part3
-[HEADER]   part4
+[HEADER] X-Obs: part1 part2 part3 part4
+OBSFOLD
 [HEADER] Accept: */*
 [HEADER] Accept: application/json
 [HEADER] Foo: bar

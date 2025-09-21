@@ -1,0 +1,5 @@
+[METHOD] GET
+[URL] /badfold
+BADHDRCONT
+[HEADER] Host: example.com
+[HEADER] X-Test: ok

@@ -2,6 +2,7 @@
 order = [
   "neuralshield.preprocessing.steps.pre_parse_over_raw:RemoveFramingArtifacts",
   "neuralshield.preprocessing.steps.pre_parse_over_raw:RequestStructurer",
+  "neuralshield.preprocessing.steps.obs_fold_unfolder:ObsFoldUnfolder",
   "neuralshield.preprocessing.steps.flag_normalizer:FlagsNormalizer",
   "neuralshield.preprocessing.steps.query_processor:QueryProcessor",
   "neuralshield.preprocessing.steps.path_structure_normalizer:PathStructureNormalizer",

@@ -8,9 +8,8 @@ HOME
 [HEADER] X-Forwarded-For: 203.0.113.1, 70.41.3.18, 150.172.238.178
 [HEADER] Via: 1.1 vegur
 [HEADER] X-Request-Id: 123e4567-e89b-12d3-a456-426614174000
-[HEADER] X-Trace: start
-[HEADER] 	more
-[HEADER]   details
+[HEADER] X-Trace: start more details
+OBSFOLD
 [HEADER] If-None-Match: "abc123", "def456"
 QUOTE
 [HEADER] If-Modified-Since: Wed, 21 Oct 2015 07:28:00 GMT

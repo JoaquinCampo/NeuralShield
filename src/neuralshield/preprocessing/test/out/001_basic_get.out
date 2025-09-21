@@ -25,9 +25,8 @@ PAREN
 [HEADER] Accept: application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
 [HEADER] Accept-Language: es-ES,es;q=0.9,en;q=0.8
 [HEADER] Accept-Encoding: gzip, deflate, br
-[HEADER] X-Custom: first line
-[HEADER] 	second	part continued
-[HEADER]   third part
+[HEADER] X-Custom: first line second	part continued third part
+OBSFOLD
 [HEADER] X-Multi: αβγ
 [HEADER] X-Empty:
 [HEADER] Cache-Control: no-cache

@@ -19,9 +19,8 @@
 [HEADER] Host: x.example
 [HEADER] Accept-Language: es-ES,es;q=0.9,en;q=0.8
 [HEADER] Cache-Control: max-age=0
-[HEADER] X-Header: value
-[HEADER] 	continued 1
-[HEADER]   continued 2
+[HEADER] X-Header: value continued 1 continued 2
+OBSFOLD
 [HEADER] X-Header: another
 [HEADER] X-Header: yet another
 [HEADER] Cookie: a=1; b=2; c=3

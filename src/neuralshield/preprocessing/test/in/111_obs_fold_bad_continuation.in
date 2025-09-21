@@ -1,0 +1,4 @@
+GET /badfold HTTP/1.1
+  stray-start
+Host: example.com
+X-Test: ok
