@@ -1,5 +1,6 @@
 [tool.neuralshield.pipeline_order]
 order = [
     "neuralshield.preprocessing.steps.framing_cleanup:FramingCleanup",
+    "neuralshield.preprocessing.steps.eol_anomaly_annotator:EolAnomalyAnnotator",
     "neuralshield.preprocessing.steps.request_structurer:RequestStructurer",
 ]

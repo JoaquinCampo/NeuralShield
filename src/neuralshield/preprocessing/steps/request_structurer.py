@@ -39,20 +39,15 @@ class RequestStructurer(HttpPreprocessor):
 
         if not normalized_lines:
             raise MalformedHttpRequestError("Missing request line")
-        request_line = normalized_lines[0]
-        parts = self._parse_request_line(request_line)
+        index = self._skip_eol_flags(normalized_lines, 0)
+        if index >= len(normalized_lines):
+            raise MalformedHttpRequestError("Missing request line")
 
-        headers: List[str] = []
-        rest_start = 1
-        while rest_start < len(normalized_lines):
-            line = normalized_lines[rest_start]
-            if line == "":
-                rest_start += 1
-                break
-            if ":" not in line:
-                break
-            headers.append(line)
-            rest_start += 1
+        request_line = normalized_lines[index]
+        index += 1
+        request_flags, index = self._consume_eol_flags(normalized_lines, index)
+
+        parts = self._parse_request_line(request_line)
 
         path, query = self._split_target(parts.target)
         query_tokens = self._split_query(query)
@@ -64,10 +59,26 @@ class RequestStructurer(HttpPreprocessor):
             if token:
                 structured_lines.append(f"[QUERY] {token}")
 
-        for header in headers:
-            structured_lines.append(f"[HEADER] {header}")
+        structured_lines.extend(request_flags)
 
-        trailing_lines = normalized_lines[rest_start:]
+        headers_with_flags: List[Tuple[str, List[str]]] = []
+        while index < len(normalized_lines):
+            line = normalized_lines[index]
+            if line == "":
+                index += 1
+                break
+            if ":" not in line:
+                break
+            header_line = line
+            index += 1
+            header_flags, index = self._consume_eol_flags(normalized_lines, index)
+            headers_with_flags.append((header_line, header_flags))
+
+        for header_line, header_flags in headers_with_flags:
+            structured_lines.append(f"[HEADER] {header_line}")
+            structured_lines.extend(header_flags)
+
+        trailing_lines = normalized_lines[index:]
         if trailing_lines:
             structured_lines.append("")
             structured_lines.extend(trailing_lines)
@@ -76,6 +87,22 @@ class RequestStructurer(HttpPreprocessor):
         if structured_lines:
             result += "\n"
         return result
+
+    def _skip_eol_flags(self, lines: List[str], start: int) -> int:
+        while start < len(lines) and self._is_eol_flag(lines[start]):
+            start += 1
+        return start
+
+    def _consume_eol_flags(self, lines: List[str], start: int) -> Tuple[List[str], int]:
+        flags: List[str] = []
+        while start < len(lines) and self._is_eol_flag(lines[start]):
+            flags.append(lines[start])
+            start += 1
+        return flags, start
+
+    @staticmethod
+    def _is_eol_flag(line: str) -> bool:
+        return line.startswith("EOL_") or line == "EOLMIX"
 
     def _normalize_lines(self, request: str) -> List[str]:
         request = request.replace("\r\n", "\n")

@@ -2,4 +2,8 @@
 [URL] /search
 [QUERY] q=a&#x26;b
 [QUERY] lang=en
+EOL_BARELF
 [HEADER] Host: example.com
+EOL_BARELF
+
+EOL_BARELF

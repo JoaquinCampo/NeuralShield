@@ -1,0 +1,7 @@
+[METHOD] GET
+[URL] /multi
+[HEADER] Host: example.com
+EOLMIX
+EOL_BARELF
+[HEADER] User-Agent: test
+EOL_EOF_NOCRLF

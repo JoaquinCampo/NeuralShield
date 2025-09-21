@@ -5,8 +5,6 @@ from __future__ import annotations
 import unicodedata
 from typing import List, Tuple
 
-from loguru import logger
-
 from neuralshield.preprocessing.http_preprocessor import HttpPreprocessor
 
 
@@ -29,17 +27,13 @@ class FramingCleanup(HttpPreprocessor):
         if not flags:
             return working
 
-        logger.debug(
-            "Framing cleanup removed {} (leading_controls={}, trailing_controls={})",
-            " ".join(flags),
-            leading_removed,
-            trailing_removed,
-        )
-
         if not working.endswith(("\n", "\r")):
             working += "\n"
 
-        return f"{working}{' '.join(flags)}"
+        result = f"{working}{' '.join(flags)}"
+        if not result.endswith("\n"):
+            result += "\n"
+        return result
 
     def _strip_bom(self, request: str) -> Tuple[str, bool]:
         if request.startswith(self._BOM):

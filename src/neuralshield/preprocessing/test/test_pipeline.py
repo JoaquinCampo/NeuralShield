@@ -43,7 +43,7 @@ def run_tests() -> int:
         total += 1
         test_name = in_file.stem
 
-        raw_request = in_file.read_text(encoding="utf-8")
+        raw_request = in_file.read_bytes().decode("utf-8", errors="surrogatepass")
         actual = preprocess(raw_request)
 
         # Always write the generated processed request
