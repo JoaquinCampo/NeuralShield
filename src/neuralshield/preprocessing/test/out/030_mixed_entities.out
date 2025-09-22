@@ -1,0 +1,7 @@
+[METHOD] GET
+[URL] /search
+[QUERY] q=&lt;test&gt;&#64;domain.com&#x27;+OR+&#x31;&#x3D;&#x31; HTMLENT
+[HEADER] Host: example.com
+[HEADER] User-Agent: Test/1.0
+[QSEP] QRAWSEMI
+[QMETA] count=1 HTMLENT

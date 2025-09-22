@@ -1,0 +1,10 @@
+[METHOD] GET
+[URL] /api
+[QUERY] items[]=1 QARRAY:items[] QREPEAT:items[]
+[QUERY] items[]=2 QARRAY:items[] QREPEAT:items[]
+[QUERY] bare QBARE
+[QUERY] encoded=/ DOUBLEPCT PCTSUSPICIOUS
+[QUERY] unicode=αβγ QNONASCII
+[HEADER] Host: example.com
+[HEADER] User-Agent: Test/1.0
+[QMETA] count=5 DOUBLEPCT PCTSUSPICIOUS QARRAY:items[] QBARE QNONASCII QREPEAT:items[]

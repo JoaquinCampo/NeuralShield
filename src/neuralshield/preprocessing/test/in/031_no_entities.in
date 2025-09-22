@@ -1,0 +1,3 @@
+GET /normal/path?q=regular+search+term HTTP/1.1
+Host: example.com
+User-Agent: Test/1.0

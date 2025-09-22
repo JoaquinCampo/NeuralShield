@@ -1,3 +1,9 @@
 [tool.neuralshield.pipeline_order]
 order = [
+    "neuralshield.preprocessing.steps.00_framing_cleanup:FramingCleanup",
+    "neuralshield.preprocessing.steps.01_request_structurer:RequestStructurer",
+    "neuralshield.preprocessing.steps.03_unicode_nkfc_and_control:UnicodeNFKCAndControl",
+    "neuralshield.preprocessing.steps.04_percent_decode_once:PercentDecodeOnce",
+    "neuralshield.preprocessing.steps.05_html_entity_decode_once:HtmlEntityDecodeOnce",
+    "neuralshield.preprocessing.steps.06_query_parser_and_flags:QueryParserAndFlags",
 ]

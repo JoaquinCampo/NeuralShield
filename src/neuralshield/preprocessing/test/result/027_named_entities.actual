@@ -1,0 +1,5 @@
+[METHOD] GET
+[URL] /path&lt;script&gt;alert(1)&lt;/script&gt; HTMLENT
+[HEADER] Host: example.com
+[HEADER] User-Agent: Test/1.0
+[QMETA] count=0

@@ -1,0 +1,8 @@
+[METHOD] GET
+[URL] /search
+[QUERY] name=John
+[QUERY] age=25
+[QUERY] city= QEMPTYVAL
+[HEADER] Host: example.com
+[HEADER] User-Agent: Test/1.0
+[QMETA] count=3 QEMPTYVAL

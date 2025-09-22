@@ -1,0 +1,9 @@
+[METHOD] GET
+[URL] /api
+[QUERY] mode=1
+[QUERY] user=alice
+[QUERY] token=<SECRET:b64url:3>
+[HEADER] Host: example.com
+[HEADER] User-Agent: Test/1.0
+[QSEP] QSEMISEP
+[QMETA] count=3

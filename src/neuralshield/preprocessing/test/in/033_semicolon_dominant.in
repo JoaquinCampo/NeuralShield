@@ -1,0 +1,3 @@
+GET /api?mode=1;user=alice;token=xyz HTTP/1.1
+Host: example.com
+User-Agent: Test/1.0
