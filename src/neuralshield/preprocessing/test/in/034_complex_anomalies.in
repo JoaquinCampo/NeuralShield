@@ -1,3 +1,0 @@
-GET /api?items[]=1&items[]=2&bare&encoded=%252F&unicode=αβγ HTTP/1.1
-Host: example.com
-User-Agent: Test/1.0

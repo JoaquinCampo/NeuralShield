@@ -1,3 +1,0 @@
-GET /search?q=&lt;test&gt;&#64;domain.com&#x27;+OR+&#x31;&#x3D;&#x31; HTTP/1.1
-Host: example.com
-User-Agent: Test/1.0

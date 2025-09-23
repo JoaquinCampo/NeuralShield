@@ -1,3 +1,0 @@
-GET /path?q=test&#x3C;script&#x3E;alert(1)&#x3C;/script&#x3E; HTTP/1.1
-Host: example.com
-User-Agent: Test/1.0

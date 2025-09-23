@@ -6,4 +6,5 @@ order = [
     "neuralshield.preprocessing.steps.04_percent_decode_once:PercentDecodeOnce",
     "neuralshield.preprocessing.steps.05_html_entity_decode_once:HtmlEntityDecodeOnce",
     "neuralshield.preprocessing.steps.06_query_parser_and_flags:QueryParserAndFlags",
+    "neuralshield.preprocessing.steps.07_path_structure_normalizer:PathStructureNormalizer",
 ]

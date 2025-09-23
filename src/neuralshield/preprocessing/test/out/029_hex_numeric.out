@@ -1,7 +1,0 @@
-[METHOD] GET
-[URL] /path
-[QUERY] q=test&#x3C;script&#x3E;alert(1)&#x3C;/script&#x3E; HTMLENT
-[HEADER] Host: example.com
-[HEADER] User-Agent: Test/1.0
-[QSEP] QRAWSEMI
-[QMETA] count=1 HTMLENT

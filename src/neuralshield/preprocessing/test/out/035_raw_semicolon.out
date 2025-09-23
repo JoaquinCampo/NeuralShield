@@ -1,8 +1,0 @@
-[METHOD] GET
-[URL] /search
-[QUERY] param=a;b
-[QUERY] c=d
-[HEADER] Host: example.com
-[HEADER] User-Agent: Test/1.0
-[QSEP] QRAWSEMI
-[QMETA] count=2

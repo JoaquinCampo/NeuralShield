@@ -1,3 +1,0 @@
-GET /test?nullbyte=hello%00world&short=ok HTTP/1.1
-Host: example.com
-User-Agent: Test/1.0
