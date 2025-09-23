@@ -42,33 +42,35 @@ class HeaderUnfoldObsFold(HttpPreprocessor):
                     # This is a continuation line
                     if current_header is None:
                         # Orphaned continuation - no preceding header
-                        processed_lines.append("BADHDRCONT")
+                        processed_lines.append("[HEADER] BADHDRCONT")
                         continue  # Skip orphaned continuation
                     else:
                         # Valid continuation - join to current header
                         unfolded_header = self._unfold_header(
                             current_header, header_content
                         )
-                        processed_lines[-1] = f"[HEADER] {unfolded_header}"
+                        # Attach OBSFOLD flag inline
+                        processed_lines[-1] = f"[HEADER] {unfolded_header} OBSFOLD"
+
                         # Update current_header to allow multiple continuations
                         current_header = unfolded_header
-                        processed_lines.append("OBSFOLD")
 
-                        # Check for embedded CRLF in continuation
+                        # Check for embedded CRLF in continuation - attach inline to the header
                         if self._has_embedded_crlf(header_content):
-                            processed_lines.append("BADCRLF")
+                            processed_lines[-1] += " BADCRLF"
                 elif not self._is_valid_header_line(header_content):
                     # This is a malformed header line (no colon) - indicates embedded CRLF
                     current_header = header_content
-                    processed_lines.append(line)
-                    processed_lines.append("BADCRLF")
+                    # Attach BADCRLF flag inline
+                    processed_lines.append(f"{line} BADCRLF")
                 else:
                     # This is a new valid header line
-                    # Check for embedded CRLF in header name/value
                     current_header = header_content
-                    processed_lines.append(line)
+                    line_to_add = line
+                    # Check for embedded CRLF in header name/value - attach inline
                     if self._has_embedded_crlf(header_content):
-                        processed_lines.append("BADCRLF")
+                        line_to_add += " BADCRLF"
+                    processed_lines.append(line_to_add)
             else:
                 # Non-header line
                 processed_lines.append(line)

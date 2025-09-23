@@ -1,0 +1,8 @@
+GET /test HTTP/1.1
+Host: example.com
+X-Multi: line1
+ continuation2
+ continuation3
+ continuation4
+User-Agent: Test/1.0
+

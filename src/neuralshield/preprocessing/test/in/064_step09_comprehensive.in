@@ -1,0 +1,17 @@
+GET /test HTTP/1.1
+Host: example.com
+Content-Type: application/json
+User-Agent: Test/1.0
+Accept: text/html
+Accept: application/xml
+Cache-Control: no-cache
+Cache-Control: max-age=300
+X-Custom: value1
+X-Custom: value2
+Set-Cookie: session=abc123
+Set-Cookie: theme=dark
+Connection: keep-alive
+Te: trailers
+X_ Underscore: bad
+X-Good-Name: good
+X@Bad@Name: also_bad

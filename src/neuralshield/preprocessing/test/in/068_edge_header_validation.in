@@ -1,0 +1,17 @@
+GET /test HTTP/1.1
+Host: example.com
+X-Valid-Name: ok
+X_Invalid_Name: underscore
+X@Bad@Name: at_signs
+X[Bad]Name: brackets
+X{Bad}Name: braces
+X"Bad"Name: quotes
+X'Bad'Name: single_quotes
+X,Bad,Name: commas
+X;Bad;Name: semicolons
+X:Bad:Name: colons
+X=Bad=Name: equals
+X(Bad)Name: parens
+X<Bad>Name: angle_brackets
+User-Agent: Test/1.0
+

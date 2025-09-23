@@ -1,0 +1,4 @@
+GET /path%20with%20spaces%2520double%252520triple?param=%3D%26%2B&null=%00&control=%01%02%03&slash=%2F&backslash=%5C HTTP/1.1
+Host: example.com
+User-Agent: Test/1.0
+

@@ -1,0 +1,7 @@
+[METHOD] GET
+[URL] /../../../etc/passwd DOTDOT MULTIPLESLASH
+[HEADER] host: example.com
+[HEADER] user-agent: Test/1.0
+[HAGG] h_count=2 dup_names=0 hopbyhop=0 bad_names=0 total_bytes=19
+[HGF] HDRNORM
+[QMETA] count=0

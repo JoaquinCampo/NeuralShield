@@ -11,5 +11,13 @@ X-Folded: alpha,
 X-Mixed-Script: Latin a + Cyrillic а + Greek α
 X-Encoded: %25%32%42
 Cookie: a=1; b=2; c=%2B; d=1+2
-X-Forwarded-For: 1.2.3.4
-X-Forwarded-For: 5.6.7.8
+X-Forwarded-Host: victim.com
+ evil.com
+X-Unicode: path/файл.txt
+X-Control: normal
+X-Control: value	with	tab
+X-Control: value
+with
+newline
+Connection: keep-alive
+Content-Length: 0
