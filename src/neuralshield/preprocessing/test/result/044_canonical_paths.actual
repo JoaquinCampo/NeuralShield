@@ -1,5 +1,0 @@
-[METHOD] GET
-[URL] /a/b/c MULTIPLESLASH
-[HEADER] Host: example.com
-[HEADER] User-Agent: Test/1.0
-[QMETA] count=0

@@ -1,7 +1,0 @@
-[METHOD] GET
-[URL] /search
-[QUERY] q=user&#39;+OR+1&#61;1 HTMLENT
-[HEADER] Host: example.com
-[HEADER] User-Agent: Test/1.0
-[QSEP] QRAWSEMI
-[QMETA] count=1 HTMLENT

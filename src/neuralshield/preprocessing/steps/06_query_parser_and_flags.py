@@ -148,7 +148,7 @@ class QueryParserAndFlags(HttpPreprocessor):
                 all_params.append((param, existing_flags))
         # Now process all parameters
         parsed_params = []
-        key_counts = {}
+        key_counts: Dict[str, int] = {}
         global_flags = set()
 
         for param, existing_flags in all_params:
@@ -205,7 +205,7 @@ class QueryParserAndFlags(HttpPreprocessor):
 
         # Step 3: Parse each parameter
         parsed_params = []
-        key_counts = {}
+        key_counts: Dict[str, int] = {}
         global_flags = set()
 
         for param in parameters:
