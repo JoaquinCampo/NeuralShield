@@ -1,3 +1,5 @@
+from typing import Any
+
 from neuralshield.preprocessing.http_preprocessor import HttpPreprocessor
 
 
@@ -213,9 +215,9 @@ class HeaderNormalizationDuplicates(HttpPreprocessor):
         else:
             value = ""
 
-        # Trim whitespace from name and value
+        # Trim whitespace from name only (values handled by Step 10)
         name = name.strip()
-        value = value.strip()
+        # value = value.strip()  # Removed: Step 10 handles value whitespace
 
         # Validate that we have a non-empty name
         if not name:
@@ -252,7 +254,7 @@ class HeaderNormalizationDuplicates(HttpPreprocessor):
 
     def _process_duplicates(
         self, headers_map: dict[str, list[str]], header_flags: dict[str, set[str]]
-    ) -> dict[str, any]:
+    ) -> dict[str, Any]:
         """
         Process duplicate headers and generate appropriate flags.
 
@@ -289,7 +291,7 @@ class HeaderNormalizationDuplicates(HttpPreprocessor):
 
     def _check_hop_by_hop_headers(
         self, headers_map: dict[str, list[str]], header_flags: dict[str, set[str]]
-    ) -> dict[str, any]:
+    ) -> dict[str, Any]:
         """
         Check for hop-by-hop headers in request context.
 

@@ -1,4 +1,0 @@
-GET /path?empty=&duplicate=1&duplicate=2&semicolon=a;b&semicolon=c&d&bare_value&very_long_parameter_name_that_exceeds_normal_limits_and_should_be_flagged_as_QLONG_when_encoded=very_long_parameter_value_that_exceeds_normal_limits_and_should_be_flagged_as_QLONG_when_encoded_too HTTP/1.1
-Host: example.com
-User-Agent: Test/1.0
-

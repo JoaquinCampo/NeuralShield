@@ -1,0 +1,11 @@
+[METHOD] GET
+[URL] /test MULTIPLESLASH
+[HEADER] authorization:  <SECRET:bearer:64>
+[HEADER] cookie:  session=<SECRET:session:128>
+[HEADER] host:  example.com
+[HEADER] x-api-key:  <SECRET:apikey:32>
+[HEADER] x-custom:  normal value
+[HEADER] x-redacted-complex:  <SECRET:complex:key:value>
+[HAGG] h_count=6 dup_names=0 hopbyhop=0 bad_names=0 total_bytes=119
+[HGF] HDRNORM
+[QMETA] count=0

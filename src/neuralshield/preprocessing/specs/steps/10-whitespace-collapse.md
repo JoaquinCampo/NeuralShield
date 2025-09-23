@@ -1,6 +1,7 @@
 ### 11 Whitespace Collapse
 
 **Step Contract:**
+
 - Input lines considered: `[HEADER]` lines (after normalization)
 - Transformations allowed: collapse runs of tabs/spaces to single space
 - Flags emitted: `WSPAD`
@@ -12,6 +13,7 @@
 ### Scope
 
 Normalize whitespace within header values to eliminate formatting variations:
+
 - Collapse sequences of spaces and tabs to single space
 - Trim leading and trailing whitespace
 - Preserve semantic spacing between tokens
@@ -48,54 +50,61 @@ Normalize whitespace within header values to eliminate formatting variations:
 ### Examples
 
 Multiple spaces and tabs:
+
 ```
 [HEADER] user-agent: Mozilla   5.0	(X11;  Linux)
 ```
 
 Output:
+
 ```
-[HEADER] user-agent: Mozilla 5.0 (X11; Linux)
-WSPAD
+[HEADER] user-agent: Mozilla 5.0 (X11; Linux) WSPAD
 ```
 
 Leading/trailing whitespace:
+
 ```
-[HEADER] x-custom:   value with spaces   
+[HEADER] x-custom:   value with spaces
 ```
 
 Output:
+
 ```
-[HEADER] x-custom: value with spaces
-WSPAD
+[HEADER] x-custom: value with spaces WSPAD
 ```
 
 No changes needed:
+
 ```
 [HEADER] host: example.com
 ```
 
 Output:
+
 ```
 [HEADER] host: example.com
 ```
 
 Complex whitespace patterns:
+
 ```
 [HEADER] accept: text/html,		application/xml;  q=0.9,   image/webp
 ```
 
 Output:
+
 ```
-[HEADER] accept: text/html, application/xml; q=0.9, image/webp
-WSPAD
+[HEADER] accept: text/html, application/xml; q=0.9, image/webp WSPAD
 ```
 
 Redacted value (preserved):
+
 ```
 [HEADER] authorization: <SECRET:bearer:64>
 ```
 
 Output:
+
 ```
 [HEADER] authorization: <SECRET:bearer:64>
 ```
@@ -109,6 +118,7 @@ Output:
 3. **Change Tracking**: Flag only when actual modifications occur
 4. **Preservation Logic**: Skip redacted and special values
 5. **Idempotent Processing**: Second pass produces no changes
+6. **Flag Format**: `WSPAD` emitted inline with affected headers (BERT-optimized for ML attention alignment)
 
 ---
 
@@ -146,23 +156,25 @@ Output:
 ### Good vs Bad Examples
 
 Good (clean, minimal whitespace):
+
 ```
 [HEADER] user-agent: Test/1.0 (X11; Linux)
 ```
 
 Bad (runs of tabs/spaces → collapsed and flagged):
+
 ```
-[HEADER] user-agent:  Test\t\t1.0   (X11;  Linux)
-WSPAD
+[HEADER] user-agent:  Test		1.0   (X11;  Linux) WSPAD
 ```
 
 Good (redacted secrets preserved):
+
 ```
 [HEADER] authorization: <SECRET:bearer:64>
 ```
 
 Bad (leading/trailing whitespace → trimmed and flagged):
+
 ```
-[HEADER] x-custom:   value with spaces   
-WSPAD
+[HEADER] x-custom:   value with spaces    WSPAD
 ```

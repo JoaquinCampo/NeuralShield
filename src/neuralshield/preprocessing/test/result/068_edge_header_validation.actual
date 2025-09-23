@@ -1,20 +1,20 @@
 [METHOD] GET
 [URL] /test MULTIPLESLASH
-[HEADER] host: example.com
-[HEADER] user-agent: Test/1.0
+[HEADER] host:  example.com
+[HEADER] user-agent:  Test/1.0
 [HEADER] x: Bad:Name: colons
-[HEADER] x"bad"name: quotes BADHDRNAME
-[HEADER] x'bad'name: single_quotes
-[HEADER] x(bad)name: parens BADHDRNAME
-[HEADER] x,bad,name: commas BADHDRNAME
-[HEADER] x-valid-name: ok
-[HEADER] x;bad;name: semicolons BADHDRNAME
-[HEADER] x<bad>name: angle_brackets BADHDRNAME
-[HEADER] x=bad=name: equals BADHDRNAME
-[HEADER] x@bad@name: at_signs BADHDRNAME
-[HEADER] x[bad]name: brackets BADHDRNAME
-[HEADER] x_invalid_name: underscore
-[HEADER] x{bad}name: braces BADHDRNAME
-[HAGG] h_count=15 dup_names=0 hopbyhop=0 bad_names=9 total_bytes=130
+[HEADER] x"bad"name:  quotes BADHDRNAME
+[HEADER] x'bad'name:  single_quotes
+[HEADER] x(bad)name:  parens BADHDRNAME
+[HEADER] x,bad,name:  commas BADHDRNAME
+[HEADER] x-valid-name:  ok
+[HEADER] x;bad;name:  semicolons BADHDRNAME
+[HEADER] x<bad>name:  angle_brackets BADHDRNAME
+[HEADER] x=bad=name:  equals BADHDRNAME
+[HEADER] x@bad@name:  at_signs BADHDRNAME
+[HEADER] x[bad]name:  brackets BADHDRNAME
+[HEADER] x_invalid_name:  underscore
+[HEADER] x{bad}name:  braces BADHDRNAME
+[HAGG] h_count=15 dup_names=0 hopbyhop=0 bad_names=9 total_bytes=144
 [HGF] HDRNORM
 [QMETA] count=0

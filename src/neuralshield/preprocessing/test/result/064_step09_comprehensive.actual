@@ -1,19 +1,19 @@
 [METHOD] GET
 [URL] /test MULTIPLESLASH
-[HEADER] accept: text/html, application/xml DUPHDR,HDRMERGE
-[HEADER] cache-control: no-cache, max-age=300 DUPHDR,HDRMERGE
-[HEADER] connection: keep-alive HOPBYHOP
-[HEADER] content-type: application/json
-[HEADER] host: example.com
-[HEADER] te: trailers HOPBYHOP
-[HEADER] user-agent: Test/1.0
-[HEADER] x-custom: value1 DUPHDR
-[HEADER] x-custom: value2 DUPHDR
-[HEADER] x-good-name: good
-[HEADER] x@bad@name: also_bad BADHDRNAME
-[HEADER] x_ underscore: bad BADHDRNAME
-[HEADER] set-cookie: session=abc123 DUPHDR
-[HEADER] set-cookie: theme=dark DUPHDR
-[HAGG] h_count=14 dup_names=4 hopbyhop=1 bad_names=2 total_bytes=153
+[HEADER] accept: text/html, application/xml DUPHDR,HDRMERGE WSPAD
+[HEADER] cache-control: no-cache, max-age=300 DUPHDR,HDRMERGE WSPAD
+[HEADER] connection:  keep-alive HOPBYHOP
+[HEADER] content-type:  application/json
+[HEADER] host:  example.com
+[HEADER] te:  trailers HOPBYHOP
+[HEADER] user-agent:  Test/1.0
+[HEADER] x-custom:  value1 DUPHDR
+[HEADER] x-custom:  value2 DUPHDR
+[HEADER] x-good-name:  good
+[HEADER] x@bad@name:  also_bad BADHDRNAME
+[HEADER] x_ underscore:  bad BADHDRNAME
+[HEADER] set-cookie:  session=abc123 DUPHDR
+[HEADER] set-cookie:  theme=dark DUPHDR
+[HAGG] h_count=14 dup_names=4 hopbyhop=1 bad_names=2 total_bytes=169
 [HGF] HDRNORM
 [QMETA] count=0

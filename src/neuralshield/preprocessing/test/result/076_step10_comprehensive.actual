@@ -1,0 +1,17 @@
+[METHOD] GET
+[URL] /api/test MULTIPLESLASH
+[HEADER] accept: text/html, application/xml; q=0.9, image/webp WSPAD
+[HEADER] authorization:  <SECRET:bearer:64>
+[HEADER] host:  example.com
+[HEADER] user-agent: Mozilla 5.0 (X11; Linux) WSPAD
+[HEADER] x-api-key:  <SECRET:apikey:32>
+[HEADER] x-custom: value with spaces WSPAD
+[HEADER] x-empty: 
+[HEADER] x-many-spaces: multiple spaces everywhere WSPAD
+[HEADER] x-mixed: tabs and spaces WSPAD
+[HEADER] x-normal:  normal-value
+[HEADER] x-redacted-complex:  <SECRET:complex:key:value>
+[HEADER] x-tabs: value with tabs WSPAD
+[HAGG] h_count=12 dup_names=0 hopbyhop=0 bad_names=0 total_bytes=262
+[HGF] HDRNORM
+[QMETA] count=0

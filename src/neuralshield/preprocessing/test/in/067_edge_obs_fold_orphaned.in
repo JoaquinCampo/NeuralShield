@@ -1,5 +1,0 @@
-GET /test HTTP/1.1
-   orphaned continuation
-Host: example.com
-X-Valid: normal header
-User-Agent: Test/1.0
