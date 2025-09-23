@@ -1,7 +1,0 @@
-GET /test HTTP/1.1
-Host: example.com
-Authorization: <SECRET:bearer:64>
-X-API-Key: <SECRET:apikey:32>
-Cookie: session=<SECRET:session:128>
-X-Custom: normal value
-X-Redacted-Complex: <SECRET:complex:key:value>

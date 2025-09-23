@@ -1,8 +1,0 @@
-GET /test HTTP/1.1
-Host: example.com
-User-Agent: Mozilla   5.0	(X11;  Linux)
-Accept: text/html,		application/xml;  q=0.9,   image/webp
-X-Custom:   value with spaces   
-X-Empty:
-X-Tabs: 		value	with	tabs
-X-Mixed: 	tabs	and	spaces	 	

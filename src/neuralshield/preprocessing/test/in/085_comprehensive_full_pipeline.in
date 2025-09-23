@@ -1,0 +1,24 @@
+GET /path/to/../../../etc/passwd%00.jpg?cmd=cat%20/etc/passwd%20%7C%20grep%20root&q=<script>alert('xss')</script>&file=../../../windows/system32%5Ccmd.exe HTTP/1.1
+Host: example.com:80
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) Test/1.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Cookie: session=abc123; theme=dark; lang=en-US; auth=<SECRET:token:32>
+X-Forwarded-For: 192.168.1.1, 10.0.0.1
+X-Custom:   {json: "data"}   nul%00byte
+ETag: "abc-123"
+Content-Length: 0
+Connection: keep-alive
+X-Mixed-Script: раypal.com + αbeta + аcyrillic
+Authorization: Bearer <SECRET:jwt:128>
+Cache-Control: no-cache, no-store, must-revalidate
+Accept-Language: en-US,en;q=0.5
+X-Obs-Fold: first line
+    continued via obs-fold
+X-Obs-Fold: second line
+    more continuation
+X-Dup-Header: value1
+X-Dup-Header: value2
+X-Dup-Header: value3
+X-Unicode: path/файл.txt + control^A^B^C
+X-Encoded: %3Cscript%3Ealert%281%29%3C/script%3E
+X-HTML: &lt;script&gt;alert(&#39;xss&#39;);&lt;/script&gt;

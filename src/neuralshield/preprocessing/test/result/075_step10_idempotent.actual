@@ -1,8 +1,0 @@
-[METHOD] GET
-[URL] /test MULTIPLESLASH
-[HEADER] host:  example.com
-[HEADER] user-agent: Mozilla 5.0 (X11; Linux) WSPAD
-[HEADER] x-custom: value with spaces WSPAD
-[HAGG] h_count=3 dup_names=0 hopbyhop=0 bad_names=0 total_bytes=63
-[HGF] HDRNORM
-[QMETA] count=0
