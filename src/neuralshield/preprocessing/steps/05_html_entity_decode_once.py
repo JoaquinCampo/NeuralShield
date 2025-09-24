@@ -1,4 +1,4 @@
-import re
+import html
 
 from neuralshield.preprocessing.http_preprocessor import HttpPreprocessor
 
@@ -86,19 +86,14 @@ class HtmlEntityDecodeOnce(HttpPreprocessor):
 
     def _has_html_entities(self, text: str) -> bool:
         """
-        Detect if text contains HTML entities using regex pattern.
+        Detect if text contains valid HTML entities using html.unescape().
 
         Args:
             text: The text to check for HTML entities
 
         Returns:
-            bool: True if HTML entities are found
+            bool: True if valid HTML entities are found
         """
-        # Regex pattern from spec: &(?:[a-zA-Z][a-zA-Z0-9]*|#(?:\d+|x[0-9a-fA-F]+));
-        # This matches:
-        # - Named entities: &lt; &gt; &amp; etc.
-        # - Decimal numeric: &#64; &#60; etc.
-        # - Hexadecimal numeric: &#x40; &#x3C; etc.
-        entity_pattern = r"&(?:[a-zA-Z][a-zA-Z0-9]*|#(?:\d+|x[0-9a-fA-F]+));"
-
-        return bool(re.search(entity_pattern, text))
+        # Use html.unescape() to detect valid HTML entities
+        # If unescaping changes the string, valid entities were present
+        return html.unescape(text) != text

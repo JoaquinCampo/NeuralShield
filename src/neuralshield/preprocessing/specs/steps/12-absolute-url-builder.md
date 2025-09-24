@@ -1,9 +1,12 @@
 ### 13 Absolute URL Builder
 
 **Step Contract:**
+
 - Input lines considered: `[METHOD]`, `[URL]`, `[HEADER]` lines
 - Transformations allowed: construct absolute URL from components (additive only)
-- Flags emitted: `HOSTMISMATCH`, `IDNA`, `BADHOST`, `URLBUILT`
+- New lines added: `[URL_ABS]` with canonical absolute URL
+- Global flags emitted: `HOSTMISMATCH`
+- Inline flags emitted: `IDNA`, `BADHOST`
 - Dependencies: 10 (header normalization), 08 (path), 07 (query)
 - Idempotence: multiple applications produce same result
 
@@ -12,30 +15,36 @@
 ### Scope
 
 Construct canonical absolute URLs from HTTP request components (without mutating originals):
+
 - Build `scheme://host[:port]/path[?query]` from origin-form requests
 - Handle absolute-form, authority-form, and asterisk-form targets
-- Validate Host header consistency
-- Apply IDNA encoding for internationalized domains
-- Emit single `[URL_ABS]` line with complete URL
-- Emit `URLBUILT` to indicate synthesis occurred
+- Validate Host header consistency with security flag emission
+- Apply IDNA encoding for internationalized domains with evidence flags
+- Emit single `[URL_ABS]` line with complete canonical URL
+- Emit global flags for security issues and processing status
+- Preserve all original request structure for forensic analysis
 
 ---
 
 ### Request Target Forms (RFC 9110)
 
 **Origin-form**: `/path?query` (most common)
+
 - Extract host from `Host` header
 - Infer scheme from context (default: `http`)
 
 **Absolute-form**: `http://host:port/path?query` (proxy requests)
+
 - Parse all components from target
 - Validate against `Host` header
 
 **Authority-form**: `host:port` (CONNECT method)
+
 - Used for tunnel establishment
 - No path/query components
 
 **Asterisk-form**: `*` (OPTIONS method)
+
 - Server-wide options request
 - Combine with Host header
 
@@ -52,17 +61,30 @@ Construct canonical absolute URLs from HTTP request components (without mutating
 
 ---
 
-### Flags Emitted
+### Flag Emission Strategy
 
-- `HOSTMISMATCH`: Absolute-form target host differs from Host header
-- `IDNA`: Host header contained Unicode characters, converted to punycode
-- `BADHOST`: Host header is missing, invalid, or malformed
+**Global Flags** (emitted at end of request output):
+
+- `HOSTMISMATCH`: Absolute-form target host differs from Host header (security issue)
+
+**Inline Flags** (emitted with affected component):
+
+- `IDNA`: Host header contained Unicode characters, converted to punycode (evidence flag)
+- `BADHOST`: Host header is missing, invalid, or malformed (validation failure)
+
+### New Structured Lines
+
+- `[URL_ABS] <canonical-url>`: Canonical absolute URL representation
+  - Added when URL construction succeeds
+  - Uses normalized components from previous steps
+  - Never replaces the original `[URL]` line
 
 ---
 
 ### Examples
 
 Origin-form with default port:
+
 ```
 [METHOD] GET
 [URL] /api/users
@@ -70,6 +92,7 @@ Origin-form with default port:
 ```
 
 Output:
+
 ```
 [METHOD] GET
 [URL] /api/users
@@ -78,6 +101,7 @@ Output:
 ```
 
 Origin-form with non-standard port:
+
 ```
 [METHOD] GET
 [URL] /app
@@ -85,6 +109,7 @@ Origin-form with non-standard port:
 ```
 
 Output:
+
 ```
 [METHOD] GET
 [URL] /app
@@ -93,6 +118,7 @@ Output:
 ```
 
 Absolute-form with Host mismatch:
+
 ```
 [METHOD] GET
 [URL] http://target.com/path
@@ -100,6 +126,7 @@ Absolute-form with Host mismatch:
 ```
 
 Output:
+
 ```
 [METHOD] GET
 [URL] http://target.com/path
@@ -109,6 +136,7 @@ HOSTMISMATCH
 ```
 
 Unicode domain (IDNA):
+
 ```
 [METHOD] GET
 [URL] /search
@@ -116,21 +144,23 @@ Unicode domain (IDNA):
 ```
 
 Output:
+
 ```
 [METHOD] GET
 [URL] /search
 [URL_ABS] http://xn--e1afmkfd.com/search
-[HEADER] host: пример.com
-IDNA
+[HEADER] host: пример.com IDNA
 ```
 
 Authority-form (CONNECT):
+
 ```
 [METHOD] CONNECT
 [URL] database.internal:5432
 ```
 
 Output:
+
 ```
 [METHOD] CONNECT
 [URL] database.internal:5432
@@ -138,6 +168,7 @@ Output:
 ```
 
 Asterisk-form (OPTIONS):
+
 ```
 [METHOD] OPTIONS
 [URL] *
@@ -145,6 +176,7 @@ Asterisk-form (OPTIONS):
 ```
 
 Output:
+
 ```
 [METHOD] OPTIONS
 [URL] *
@@ -167,38 +199,42 @@ Output:
 ### Error Handling
 
 **Missing Host** (origin-form):
+
 ```
 [METHOD] GET
 [URL] /path
 ```
 
 Output:
+
 ```
 [METHOD] GET
 [URL] /path
-BADHOST
+[HEADER] host: BADHOST
 ```
 
 **Invalid Host Format**:
+
 ```
 [HEADER] host: invalid..domain
 ```
 
 Output:
+
 ```
-[HEADER] host: invalid..domain
-BADHOST
+[HEADER] host: invalid..domain BADHOST
 ```
 
 **Malformed Port**:
+
 ```
 [HEADER] host: example.com:abc
 ```
 
 Output:
+
 ```
-[HEADER] host: example.com:abc
-BADHOST
+[HEADER] host: example.com:abc BADHOST
 ```
 
 ---
@@ -211,6 +247,23 @@ BADHOST
 
 ---
 
+### Implementation Approach
+
+**Flag Emission Strategy:**
+
+- `HOSTMISMATCH`: Global flag for request-level security issues (relationship between components)
+- `IDNA`: Inline flag with affected header (evidence of Unicode processing)
+- `BADHOST`: Inline flag with affected header (validation failure of specific component)
+- Hybrid approach balances ML parseability with debugging clarity
+- Follows NeuralShield patterns (similar to Step 9: inline + global flags)
+
+**Integration with Pipeline:**
+
+- Complements Steps 8-11 security validations
+- Provides canonical URLs for downstream processing
+- Enables SSRF detection and host header attack prevention
+- Supports international domain security through IDNA
+
 ### Supersedes
 
 - New step implementing `url-absoluta-desde-relativa.md` specification
@@ -220,17 +273,18 @@ BADHOST
 ### Good vs Bad Examples
 
 Good (origin-form with valid Host):
+
 ```
 [METHOD] GET
 [URL] /ok
 [HEADER] host: example.com
 [URL_ABS] http://example.com/ok
-URLBUILT
 ```
 
 Bad (missing Host in origin-form):
+
 ```
 [METHOD] GET
 [URL] /ok
-BADHOST
+[HEADER] host: BADHOST
 ```
