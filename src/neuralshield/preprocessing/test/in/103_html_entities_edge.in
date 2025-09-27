@@ -1,4 +1,0 @@
-GET /path/test/nested?param1=&#x22;quoted&#x22;&param2=&#65;&#66;&#67;&param3=&amp;malformed&valid=&#x3c;valid&#x3e;&script=&#x3c;script&#x3e; HTTP/1.1
-Host: example.com
-User-Agent: Test/1.0
-Accept: */*

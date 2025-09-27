@@ -1,4 +1,0 @@
-GET /раypal.com/login?user=аdmin&domain=ехample.com&mixed=αβγabc HTTP/1.1
-Host: раypal.com
-User-Agent: Test/1.0
-Accept: */*

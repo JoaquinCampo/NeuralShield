@@ -1,202 +1,166 @@
-"""
-01 Request Structurer - Parse raw HTTP into structured format.
-"""
-
-import re
-
-from loguru import logger
-
 from neuralshield.preprocessing.http_preprocessor import HttpPreprocessor
 from neuralshield.preprocessing.steps.exceptions import MalformedHttpRequestError
-
-VALID_METHODS = (
-    "GET",
-    "POST", 
-    "PUT",
-    "DELETE",
-    "PATCH",
-    "OPTIONS",
-    "HEAD",
-    "TRACE",
-    "CONNECT",
-)
 
 
 class RequestStructurer(HttpPreprocessor):
     """
-    Transform HTTP request into structured [METHOD]/[URL]/[QUERY]/[HEADER] format.
-    
-    Parses the request line, splits URL from query, tokenizes query parameters,
-    and formats headers. Uses HTML-entity aware splitting to avoid breaking
-    entities during query parameter parsing.
+    Structure the HTTP request into a canonical form.
     """
 
+    VALID_METHODS = {
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE",
+        "PATCH",
+        "OPTIONS",
+        "HEAD",
+        "TRACE",
+        "CONNECT",
+    }
+
+    def process(self, request: str) -> str:
+        """
+        Structure the HTTP request into a canonical form.
+        """
+        if not request or not request.strip():
+            raise MalformedHttpRequestError("Empty request")
+
+        lines = request.split("\n")
+
+        # Parse request line
+        request_line = lines[0] if lines else ""
+        method, url, http_version = self._parse_request_line(request_line)
+
+        # Split URL and query
+        path, query_string = self._split_url_query(url)
+
+        # Parse headers (everything after request line until empty line)
+        headers = self._parse_headers(lines[1:])
+
+        # Build canonical output
+        output_lines = []
+
+        # Add method
+        output_lines.append(f"[METHOD] {method}")
+
+        # Add URL (path)
+        output_lines.append(f"[URL] {path}")
+
+        # Add query parameters
+        if query_string:
+            query_params = self._split_query_with_entity_protection(query_string)
+            for param in query_params:
+                output_lines.append(f"[QUERY] {param}")
+
+        # Add headers
+        for header in headers:
+            output_lines.append(f"[HEADER] {header}")
+
+        return "\n".join(output_lines)
+
     def _parse_request_line(self, request_line: str) -> tuple[str, str, str]:
-        """
-        Parse the HTTP request line to extract method, path, and query string.
+        """Parse the HTTP request line into method, URL, and HTTP version."""
+        parts = request_line.split(" ")
 
-        Args:
-            request_line: First line of HTTP request (e.g., "GET /path?query HTTP/1.1")
-
-        Returns:
-            Tuple of (method, path, query)
-
-        Raises:
-            MalformedHttpRequestError: If request line is malformed
-        """
-        logger.debug("Parsing HTTP request line")
-
-        parts = request_line.strip().split()
         if len(parts) != 3:
             raise MalformedHttpRequestError(
-                f"Invalid request line format: {request_line}"
+                f"Invalid request line format: expected 3 parts, got {len(parts)}"
             )
 
         method, url, http_version = parts
 
-        # Validate HTTP version format
-        if not http_version.startswith("HTTP/"):
-            raise MalformedHttpRequestError(f"Invalid HTTP version: {http_version}")
-
         # Validate method
-        if method.upper() not in VALID_METHODS:
-            raise MalformedHttpRequestError(f"Invalid method: {method}")
+        if method not in self.VALID_METHODS:
+            raise MalformedHttpRequestError(f"Invalid HTTP method: {method}")
 
-        # Extract path and query string from URL
+        # Validate HTTP version
+        if not http_version.startswith("HTTP/"):
+            raise MalformedHttpRequestError(
+                f"Invalid HTTP version format: {http_version}"
+            )
+
+        return method, url, http_version
+
+    def _split_url_query(self, url: str) -> tuple[str, str]:
+        """Split URL on first '?' into path and query string."""
         if "?" in url:
             path, query_string = url.split("?", 1)
         else:
             path, query_string = url, ""
 
-        logger.debug(
-            "Parsed request line: method={}, path={}, query={}",
-            method,
-            path,
-            query_string,
-        )
+        return path, query_string
 
-        return method, path, query_string
-
-    def _parse_query_parameters(self, query_string: str) -> list[str]:
-        """
-        Parse query string into individual parameter strings with HTML entity protection.
-
-        Args:
-            query_string: Query string portion of URL (after ?)
-
-        Returns:
-            List of query parameter strings
-        """
-        logger.debug("Parsing query parameters from: {}", query_string)
-
+    def _split_query_with_entity_protection(self, query_string: str) -> list[str]:
+        """Split query string on '&' while protecting HTML entities."""
         if not query_string:
             return []
 
-        # HTML entity pattern to protect & characters within entities
-        html_entity_pattern = re.compile(
-            r"&(?:[a-zA-Z][a-zA-Z0-9]*|#(?:\d+|x[0-9a-fA-F]+));"
-        )
+        # Use regex to split on '&' that are not part of HTML entities
+        # HTML entities like &#x26; or &#38; should not be split
+        parts = []
+        current_part = ""
+        i = 0
 
-        # Find all HTML entities and replace with temporary placeholders
-        entities: list[str] = []
+        while i < len(query_string):
+            if query_string[i] == "&":
+                # Check if this '&' is part of an HTML entity
+                if self._is_part_of_html_entity(query_string, i):
+                    current_part += query_string[i]
+                else:
+                    # This is a parameter separator
+                    if current_part:
+                        parts.append(current_part)
+                    current_part = ""
+                i += 1
+            else:
+                current_part += query_string[i]
+                i += 1
 
-        def replace_entity(match):
-            placeholder = f"__HTMLENT_{len(entities)}__"
-            entities.append(match.group(0))
-            return placeholder
+        # Add the last part
+        if current_part:
+            parts.append(current_part)
 
-        protected_query = html_entity_pattern.sub(replace_entity, query_string)
+        return parts
 
-        # Now split on & safely (HTML entity & characters are protected)
-        query_params = []
-        for param in protected_query.split("&"):
-            # Restore HTML entities in this parameter
-            restored_param = param
-            for i, entity in enumerate(entities):
-                restored_param = restored_param.replace(f"__HTMLENT_{i}__", entity)
-            query_params.append(restored_param)
+    def _is_part_of_html_entity(self, text: str, ampersand_pos: int) -> bool:
+        """Check if the '&' at the given position is part of an HTML entity."""
+        # Look ahead to see if this looks like an HTML entity
+        # Patterns: &#digits; &#xhex; &name;
+        remaining = text[ampersand_pos:]
 
-        logger.debug("Parsed {} query parameters", len(query_params))
-        return query_params
+        # Check for numeric entities: &#123; or &#x1A;
+        if remaining.startswith("&#"):
+            end_pos = remaining.find(";", 2)
+            if end_pos != -1:
+                entity_content = remaining[2:end_pos]
+                # Check if it's a valid numeric or hex entity
+                if entity_content.startswith("x") and len(entity_content) > 1:
+                    # Hex entity: check if the rest are hex digits
+                    return all(
+                        c in "0123456789abcdefABCDEF" for c in entity_content[1:]
+                    )
+                else:
+                    # Decimal entity: check if all are digits
+                    return entity_content.isdigit()
 
-    def _parse_headers(self, headers_section: str) -> list[str]:
-        """
-        Parse headers preserving original lines.
+        # Check for named entities: &amp; &lt; etc.
+        semicolon_pos = remaining.find(";")
+        if semicolon_pos != -1 and semicolon_pos > 1:
+            entity_name = remaining[1:semicolon_pos]
+            # Simple check for valid entity name (letters only)
+            return entity_name.isalpha()
 
-        Args:
-            headers_section: Raw headers section of HTTP request
+        return False
 
-        Returns:
-            List of header lines
-        """
-        logger.debug("Parsing HTTP headers")
+    def _parse_headers(self, header_lines: list[str]) -> list[str]:
+        """Parse headers until the first empty line."""
+        headers = []
 
-        if headers_section == "":
-            return []
-
-        headers = headers_section.split("\n")
-
-        logger.debug("Parsed {} headers", len(headers))
-        return headers
-
-    def process(self, request: str) -> str:
-        """
-        Transform HTTP request into structured format.
-
-        Args:
-            request: Cleaned HTTP request string
-
-        Returns:
-            Structured request string with [METHOD], [URL], [QUERY], [HEADER] prefixes
-
-        Raises:
-            MalformedHttpRequestError: If request cannot be parsed
-        """
-        logger.debug("Processing HTTP request for structuring")
-
-        if not request.strip():
-            raise MalformedHttpRequestError("Empty HTTP request")
-
-        # Split request into lines
-        lines = request.split("\n")
-
-        if not lines:
-            raise MalformedHttpRequestError("No lines in HTTP request")
-
-        # Parse request line
-        request_line = lines[0]
-        method, path, query_string = self._parse_request_line(request_line)
-
-        # Find the end of headers (first empty line)
-        headers_end = 1
-        for i in range(1, len(lines)):
-            if lines[i] == "" or lines[i] == "\r":
-                headers_end = i
+        for line in header_lines:
+            if line == "":
+                # Empty line marks end of headers
                 break
-        else:
-            # No empty line found, headers go to end of request
-            headers_end = len(lines)
+            headers.append(line)
 
-        # Extract headers section
-        headers_section = "\n".join(lines[1:headers_end])
-
-        # Parse components
-        query_params = self._parse_query_parameters(query_string)
-        headers = self._parse_headers(headers_section)
-
-        # Format output
-        result_lines = []
-        result_lines.append(f"[METHOD] {method}")
-        result_lines.append(f"[URL] {path}")
-
-        # Add query parameters
-        for param in query_params:
-            result_lines.append(f"[QUERY] {param}")
-
-        # Add headers
-        for header in headers:
-            result_lines.append(f"[HEADER] {header}")
-
-        result = "\n".join(result_lines)
-        logger.debug("Successfully structured HTTP request: {} {}", method, path)
-        return result
+        return headers

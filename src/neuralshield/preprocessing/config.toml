@@ -1,11 +1,15 @@
 [tool.neuralshield.pipeline_order]
 order = [
-  "neuralshield.preprocessing.steps.00_framing_cleanup:FramingCleanup",
-  "neuralshield.preprocessing.steps.01_request_structurer:RequestStructurer",
-  "neuralshield.preprocessing.steps.04_unicode_nfkc:UnicodeNFKC",
-  "neuralshield.preprocessing.steps.05_percent_decode_once:PercentDecodeOnce",
-  "neuralshield.preprocessing.steps.06_html_entity_decode_once:HTMLEntityDecodeOnce",
-  "neuralshield.preprocessing.steps.07_query_parser:QueryProcessor",
-  "neuralshield.preprocessing.steps.08_path_structure_normalizer:PathStructureNormalizer",
-  "neuralshield.preprocessing.steps.12_dangerous_chars:DangerousCharacterDetector",
+    "neuralshield.preprocessing.steps.00_framing_cleanup:FramingCleanup",
+    "neuralshield.preprocessing.steps.01_request_structurer:RequestStructurer",
+    "neuralshield.preprocessing.steps.08_header_unfold_obs_fold:HeaderUnfoldObsFold",
+    "neuralshield.preprocessing.steps.09_header_normalization_duplicates:HeaderNormalizationDuplicates",
+    "neuralshield.preprocessing.steps.10_whitespace_collapse:WhitespaceCollapse",
+    "neuralshield.preprocessing.steps.11_dangerous_characters_script_mixing:DangerousCharactersScriptMixing",
+    "neuralshield.preprocessing.steps.12_absolute_url_builder:AbsoluteUrlBuilder",
+    "neuralshield.preprocessing.steps.03_unicode_nkfc_and_control:UnicodeNFKCAndControl",
+    "neuralshield.preprocessing.steps.04_percent_decode_once:PercentDecodeOnce",
+    "neuralshield.preprocessing.steps.05_html_entity_decode_once:HtmlEntityDecodeOnce",
+    "neuralshield.preprocessing.steps.06_query_parser_and_flags:QueryParserAndFlags",
+    "neuralshield.preprocessing.steps.07_path_structure_normalizer:PathStructureNormalizer",
 ]
