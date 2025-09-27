@@ -29,6 +29,7 @@ class HeaderUnfoldObsFold(HttpPreprocessor):
 
         # State tracking for header context
         current_header = None
+        current_header_index = None
 
         for line in lines:
             if line.strip() == "":
@@ -49,20 +50,29 @@ class HeaderUnfoldObsFold(HttpPreprocessor):
                         unfolded_header = self._unfold_header(
                             current_header, header_content
                         )
-                        # Attach OBSFOLD flag inline
-                        processed_lines[-1] = f"[HEADER] {unfolded_header} OBSFOLD"
+                        # Rebuild the original header at its source index
+                        # Attach OBSFOLD to the updated line
+                        updated_line = f"[HEADER] {unfolded_header} OBSFOLD"
+                        if self._has_embedded_crlf(header_content):
+                            updated_line += " BADCRLF"
+                        # Replace original header line (not the last processed line)
+                        if current_header_index is not None:
+                            processed_lines[current_header_index] = updated_line
+                        else:
+                            # Fallback: if index is missing, modify the most recent line
+                            processed_lines[-1] = updated_line
 
                         # Update current_header to allow multiple continuations
                         current_header = unfolded_header
 
-                        # Check for embedded CRLF in continuation - attach inline to the header
-                        if self._has_embedded_crlf(header_content):
-                            processed_lines[-1] += " BADCRLF"
+                        # Move to next input line after handling this continuation
+                        continue
                 elif not self._is_valid_header_line(header_content):
-                    # This is a malformed header line (no colon) - indicates embedded CRLF
+                    # Malformed header (no colon) - indicates embedded CRLF
                     current_header = header_content
                     # Attach BADCRLF flag inline
                     processed_lines.append(f"{line} BADCRLF")
+                    current_header_index = len(processed_lines) - 1
                 else:
                     # This is a new valid header line
                     current_header = header_content
@@ -71,6 +81,7 @@ class HeaderUnfoldObsFold(HttpPreprocessor):
                     if self._has_embedded_crlf(header_content):
                         line_to_add += " BADCRLF"
                     processed_lines.append(line_to_add)
+                    current_header_index = len(processed_lines) - 1
             else:
                 # Non-header line
                 processed_lines.append(line)

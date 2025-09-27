@@ -130,8 +130,13 @@ class QueryParserAndFlags(HttpPreprocessor):
 
             # Split by spaces to separate key=value from existing flags
             parts = line_content.split()
-            param = parts[0]  # The key=value part
-            existing_flags = set(parts[1:]) if len(parts) > 1 else set()
+            if parts:
+                param = parts[0]
+                existing_flags = set(parts[1:]) if len(parts) > 1 else set()
+            else:
+                # Empty or malformed [QUERY] line; preserve as bare parameter
+                param = ""
+                existing_flags = set()
 
             # Check if this parameter contains separators that need splitting
             sep_type, sep_flags = self._detect_separator_type(param)
