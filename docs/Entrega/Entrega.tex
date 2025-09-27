@@ -1,0 +1,227 @@
+% -*- coding: utf-8 -*-
+% Plantilla básica de tesis en español
+\documentclass[12pt,oneside,a4paper]{report}
+
+% Paquetes
+\usepackage[spanish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{csquotes}
+\usepackage{setspace}
+\usepackage[a4paper,margin=3cm]{geometry}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{amsmath,amssymb}
+\usepackage{enumitem}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{tocbibind}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{cleveref}
+\usepackage[backend=biber,style=authoryear,sorting=nyt]{biblatex}
+
+\addbibresource{bibliografia.bib}
+
+\graphicspath{{figuras/}}
+
+\hypersetup{
+  pdftitle={Título de la tesis},
+  pdfauthor={Nombre Apellido},
+  pdfsubject={Tesis de Grado},
+  pdfkeywords={neuralshield, seguridad, aprendizaje automático},
+  colorlinks=true,
+  linkcolor=blue,
+  citecolor=teal,
+  urlcolor=blue
+}
+
+% Configuración general
+\setlength{\parindent}{15pt}
+\setlength{\parskip}{0.5em}
+
+\begin{document}
+
+% Portada
+\begin{titlepage}
+  \centering
+  {\Large Nombre de la Universidad\par}
+  {\large Facultad o Departamento\par}
+  \vspace{2cm}
+  {\Huge\bfseries Título de la Tesis\par}
+  \vspace{0.5cm}
+  {\Large Subtítulo opcional\par}
+  \vspace{2cm}
+  {\large Autor: Nombre Apellidos\par}
+  {\large Director: Nombre Apellidos\par}
+  \vfill
+  {\large Ciudad, País\par}
+  {\large Mes YYYY\par}
+\end{titlepage}
+
+\pagenumbering{roman}
+
+% Dedicatoria (opcional)
+% \chapter*{Dedicatoria}
+% \addcontentsline{toc}{chapter}{Dedicatoria}
+% Texto de dedicatoria...
+
+% Agradecimientos (opcional)
+\chapter*{Agradecimientos}
+\addcontentsline{toc}{chapter}{Agradecimientos}
+Escriba aquí sus agradecimientos.
+
+% Resumen
+\chapter*{Resumen}
+\addcontentsline{toc}{chapter}{Resumen}
+Breve resumen de la tesis en español (150–300 palabras).
+
+\textbf{Palabras clave:} lista, de, palabras, clave.
+
+% Abstract (opcional)
+% \chapter*{Abstract}
+% \addcontentsline{toc}{chapter}{Abstract}
+% Short abstract in English (150–300 words).
+% \textbf{Keywords:} list, of, keywords.
+
+\tableofcontents
+\listoffigures
+\listoftables
+
+\cleardoublepage
+\pagenumbering{arabic}
+\onehalfspacing
+
+\chapter{Introducción}
+Contexto, motivación, objetivos y contribuciones.
+% Ejemplo de figura (elimine los % cuando tenga el archivo)
+% \begin{figure}[H]
+%   \centering
+%   \includegraphics[width=0.7\textwidth]{figura-ejemplo}
+%   \caption{Ejemplo de figura.}
+%   \label{fig:ejemplo}
+% \end{figure}
+
+\chapter{Marco teórico}
+Conceptos, trabajos relacionados y fundamentos.
+
+\chapter{Metodología}
+Diseño experimental, datos y procedimientos.
+
+\chapter{Implementación}
+Detalles de implementación del sistema \emph{NeuralShield} y componentes.
+
+\section{Preprocesamiento}
+\subsection{Especificaciones}
+
+\subsubsection{Normalizar y agregar flags de rarezas}
+El primer paso es normalizar la entrada a un formato más conciso para el 'tokenizador' y 'encoder' de nuestro modelo. El output esperado para un mensaje HTTP genérico es el siguiente:
+\begin{verbatim}
+http://localhost:8080/tienda1/publico/autenticar.jsp?modo=entrar&login=chuang&pwd=visionario&remember=on&B1=Entrar
+User-Agent: Mozilla/5.0 (compatible; Konqueror/3.5; Linux) KHTML/3.5.8 (like Gecko)
+Pragma: no-cache
+Cache-control: no-cache
+Accept: text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5
+Accept-Encoding: x-gzip, x-deflate, gzip, deflate
+Accept-Charset: utf-8, utf-8;q=0.5, *;q=0.5
+Accept-Language: en
+Host: localhost:8080
+Cookie: JSESSIONID=29BDC1A4215FA40AC619614130C4A037
+Connection: close
+\end{verbatim}
+
+\begin{verbatim}
+M:GET
+U:http://localhost:8080/tienda1/publico/autenticar.jsp?modo=entrar&login=chuang&pwd=<SECRET:alpha:10>&remember=on&B1=Entrar
+H:accept=application/xhtml+xml;q1.0 application/xml;q1.0 image/png;q1.0 text/xml;q1.0 text/html;q0.9 text/plain;q0.8 */*;q0.5
+H:accept-charset=utf-8;q1.0 *;q0.5
+H:accept-encoding=deflate gzip x-deflate x-gzip
+H:accept-language=en;q1.0
+H:cache-control=no-cache
+H:connection=close
+H:cookie=JSESSIONID<len:32> [COOKIE:1]
+H:host=localhost:8080
+H:pragma=no-cache
+H:user-agent=mozilla/5.0 konqueror/3.5 khtml/3.5.8 like:gecko
+FLAGS:[HOPBYHOP:connection]
+\end{verbatim}
+
+Problema: La URL puede tener caracteres codificados dos veces, es decir, `%252E` = `%2E` codificado dos veces.
+Solución: Decodificar la URL una sola vez y agregar el flag `DOUBLEPCT` cuando se detecte que hay caracteres codificados dos veces.
+\subsubsection{Construir URL absoluta cuando es relativa}
+Problema: La URL puede venir en forma particionada, es decir, con el path y el query separados.
+Solución: Construir la URL absoluta canónica (`scheme://host[:port]/path?query`) cuando el request target viene en forma relativa (origin-form, p. ej., `GET /path HTTP/1.1`) y cómo tratar los casos de absolute-form y authority-form, así como discrepancias con el header `Host`.
+\subsubsection{Doble Encoding}
+Problema: La URL puede tener caracteres codificados dos veces, es decir, `%252E` = `%2E` codificado dos veces.
+Solución: Decodificar la URL una sola vez y agregar el flag `DOUBLEPCT` cuando se detecte que hay caracteres codificados dos veces.
+
+
+
+\subsection{Implementación}
+\subsubsection{Pipeline}
+
+
+\section{Extracción de \textit{features}}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\chapter{Resultados y discusión}
+Presentación, análisis y discusión de resultados.
+
+\chapter{Conclusiones y trabajo futuro}
+Conclusiones principales, limitaciones y líneas de trabajo futuro.
+
+\appendix
+\chapter{Apéndice: material complementario}
+Detalles adicionales, pruebas complementarias, listados de código, etc.
+
+\printbibliography
+
+\end{document}
+

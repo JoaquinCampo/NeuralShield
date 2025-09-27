@@ -1,0 +1,53 @@
+### Project Workflow Rules
+
+- Test-Driven Development
+
+  - Always write or update a test before changing logic
+  - Run the full test suite after every meaningful change
+  - Use the diff outputs in `src/neuralshield/preprocessing/test/diff/` as the primary debugging signal
+
+- Transformer Architecture
+
+  - Prefer pure functions; avoid mutable class state
+  - Use explicit data containers for state passing (e.g., LineContext, TransformResult)
+  - Single-responsibility per transformer: Unicode, Control, HTML entities, Percent-encoding
+  - Keep transformers composable and order them explicitly in the pipeline
+
+- Encoding/Normalization Rules
+
+  - Apply NFKC normalization before any decoding; flag FULLWIDTH when applicable
+  - Never decode %00; detect and flag CONTROL instead
+  - Decode multi-level percent-encoding down to a single level and flag DOUBLEPCT
+  - Preserve single-level percent-encoding by default; only decode alphanumerics when NFKC created the sequence
+  - Decode HTML entities once and flag HTMLENT
+
+- Output & Flags
+
+  - Operate on structured lines: [METHOD], [URL], [QUERY], [HEADER]
+  - Emit flags immediately after the line where they are detected
+  - Flags must be space-separated and alphabetically sorted
+
+- Spec Alignment
+
+  - Keep `src/neuralshield/preprocessing/specs/normalizar-flags.md` aligned with current behavior
+  - Update the spec first when changing behavior; then implement
+
+- Code Quality
+
+  - Add full typing; avoid untyped functions where possible
+  - Log only meaningful changes and flag additions using loguru
+  - Prefer clarity over cleverness; small, readable functions
+
+- Tests
+
+  - Maintain comprehensive tests: basic (001–004), comprehensive (005), edge cases (006)
+  - Treat whitespace differences as failures in outputs; format deterministically
+
+- Idempotency & Determinism
+  - Re-processing output must not change content or flags
+  - Same input yields same output/order every time
+    description:
+    globs:
+    alwaysApply: true
+
+---
