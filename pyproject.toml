@@ -8,10 +8,12 @@ authors = [
     { name = "Mateo Daneri", email = "matedaneri@gmail.com" },
 ]
 requires-python = ">=3.12"
+
 dependencies = [
     "idna>=3.10",
     "loguru>=0.7.3",
 ]
+
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/neuralshield"]
