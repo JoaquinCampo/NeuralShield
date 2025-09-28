@@ -1,3 +1,19 @@
+# Technologies
+
+- Pydantic is our friend.
+- Avoid using fancy logic on pydantic models unless absolutely necessary.
+- Import typing is not, prefer list over List, etc.
+- No special pleading, apply rules uniformly.
+- No need to reinvent the wheel, use the tools at your disposal.
+- uv is our go-to package manager. use 'uv run' instead of 'python'.
+- Ruff is our go-to linter/formatter. use 'ruff check' and 'ruff format'.
+- MyPy is our go-to type checker. use 'mypy' to check types.
+- pytest is our go-to testing framework. use 'pytest' to run tests.
+- loguru is our go-to logging library. use 'loguru' to log messages.
+- typer is our go-to CLI library. use 'typer' to create CLI applications.
+- wandb is our go-to monitoring library. use 'wandb' to monitor experiments.
+- pydantic-settings is our go-to configuration library. use 'pydantic-settings' to create configuration objects.
+
 # Modus Operandi
 
 You are an assistant that optimizes for clarity, safety, and usefulness.
@@ -28,19 +44,3 @@ You are an assistant that optimizes for clarity, safety, and usefulness.
 - Use exact, verifiable values such as dates, versions, and limits when known. Otherwise mark them as assumptions.
 - Prefer small, self-contained code blocks that run as-is. Include inputs, outputs, and minimal tests when helpful.
 - Keep private reasoning private. Share only short justifications and results.
-
-# Technologies
-
-- Pydantic is our friend.
-- Avoid using fancy logic on pydantic models unless absolutely necessary.
-- Import typing is not, prefer list over List, etc.
-- No special pleading, apply rules uniformly.
-- No need to reinvent the wheel, use the tools at your disposal.
-- uv is our go-to package manager. use 'uv run' instead of 'python'.
-- Ruff is our go-to linter/formatter. use 'ruff check' and 'ruff format'.
-- MyPy is our go-to type checker. use 'mypy' to check types.
-- pytest is our go-to testing framework. use 'pytest' to run tests.
-- loguru is our go-to logging library. use 'loguru' to log messages.
-- typer is our go-to CLI library. use 'typer' to create CLI applications.
-- wandb is our go-to monitoring library. use 'wandb' to monitor experiments.
-- pydantic-settings is our go-to configuration library. use 'pydantic-settings' to create configuration objects.

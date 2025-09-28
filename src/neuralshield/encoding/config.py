@@ -21,3 +21,15 @@ class EmbeddingRunConfig(BaseSettings):
     wandb_enabled: bool = False
     wandb_project: str = "neuralshield"
     wandb_entity: str | None = None
+
+
+class EmbeddingDumpConfig(EmbeddingRunConfig):
+    """Configuration for dumping embeddings with optional metadata."""
+
+    output_path: Path
+    include_requests: bool = False
+    include_flags: bool = True
+    include_labels: bool = True
+    include_ids: bool = True
+    request_id_field: str = "id"
+    sample_interval: int = 10

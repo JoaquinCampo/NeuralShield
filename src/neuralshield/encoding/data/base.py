@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Callable, Iterator
 
-import wandb
+from neuralshield.encoding.observability import PipelineObserver
 
 PipelineFunc = Callable[[str], str]
 
@@ -22,12 +22,12 @@ class DatasetReader(ABC):
         *,
         pipeline: PipelineFunc | None = None,
         use_pipeline: bool = False,
+        observer: PipelineObserver | None = None,
     ) -> None:
         self.path = Path(path)
         self._pipeline = pipeline
         self._use_pipeline = use_pipeline and pipeline is not None
-        self._wandb_enabled = wandb.run is not None
-        self._wandb_table: wandb.Table | None = None
+        self._observer = observer
 
     @abstractmethod
     def iter_batches(self, batch_size: int) -> Iterator[BatchWithLabels]:
@@ -35,25 +35,38 @@ class DatasetReader(ABC):
         ...
 
     def _maybe_process(self, request: str, *, label: str | None = None) -> str:
+        """Apply preprocessing pipeline to request if enabled.
+
+        Args:
+            request: The original request string.
+            label: Optional label associated with the request.
+
+        Returns:
+            The processed request string, or original if pipeline is disabled.
+        """
         if not self._use_pipeline:
             return request
+
         assert self._pipeline is not None
+
         processed = self._pipeline(request)
-        if self._wandb_enabled and request is not None:
-            if self._wandb_table is None:
-                self._wandb_table = wandb.Table(
-                    columns=["original_request", "processed_request", "label"]
-                )
-            self._wandb_table.add_data(request, processed, label)
+
+        if self._observer is not None:
+            self._observer.record(request, processed, label)
+
         return processed
 
-    def _flush_wandb_table(self) -> None:
-        if not self._wandb_enabled or self._wandb_table is None:
-            return
-        wandb.log({"pipeline/requests": self._wandb_table})
-        self._wandb_table = wandb.Table(
-            columns=["original_request", "processed_request", "label"]
-        )
+    def _start_new_batch(self) -> None:
+        if self._observer is not None:
+            self._observer.start_batch()
+
+    def _finalize_current_batch(self) -> None:
+        if self._observer is not None:
+            self._observer.finalize_batch()
+
+    def _flush_observer(self) -> None:
+        if self._observer is not None:
+            self._observer.flush_samples()
 
     @property
     def uses_pipeline(self) -> bool:

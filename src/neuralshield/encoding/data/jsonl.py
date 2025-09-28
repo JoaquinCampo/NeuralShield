@@ -13,6 +13,7 @@ from neuralshield.encoding.data.base import (
     DatasetReader,
     PipelineFunc,
 )
+from neuralshield.encoding.observability import PipelineObserver
 from neuralshield.encoding.data.factory import register_reader
 
 
@@ -28,8 +29,14 @@ class JSONLRequestReader(DatasetReader):
         use_pipeline: bool = False,
         encoding: str = "utf-8",
         ignore_blank: bool = True,
+        observer: PipelineObserver | None = None,
     ) -> None:
-        super().__init__(path, pipeline=pipeline, use_pipeline=use_pipeline)
+        super().__init__(
+            path,
+            pipeline=pipeline,
+            use_pipeline=use_pipeline,
+            observer=observer,
+        )
         self.encoding = encoding
         self.ignore_blank = ignore_blank
 
@@ -44,6 +51,8 @@ class JSONLRequestReader(DatasetReader):
             path=str(self.path),
             batch_size=batch_size,
         )
+
+        self._start_new_batch()
 
         with self.path.open("r", encoding=self.encoding) as handle:
             for raw_line in handle:
@@ -61,14 +70,18 @@ class JSONLRequestReader(DatasetReader):
                 labels.append(label)
 
                 if len(requests) >= batch_size:
-                    self._flush_wandb_table()
+                    self._finalize_current_batch()
+                    self._flush_observer()
                     yield self._yield_payload(requests, labels)
+                    self._start_new_batch()
                     requests = []
                     labels = []
 
         if requests:
-            self._flush_wandb_table()
+            self._finalize_current_batch()
+            self._flush_observer()
             yield self._yield_payload(requests, labels)
+            self._start_new_batch()
 
     def _yield_payload(
         self,
