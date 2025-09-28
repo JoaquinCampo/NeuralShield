@@ -1,2 +1,3 @@
-def main() -> None:
-    print("Hello from neuralshield!")
+from .settings import settings
+
+__all__ = ["settings"]
