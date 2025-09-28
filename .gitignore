@@ -30,3 +30,10 @@ node_modules/
 *.sw?
 # OS specific
 .DS_Store
+
+
+# data
+*.jsonl
+*.csv
+*.tsv
+wandb/

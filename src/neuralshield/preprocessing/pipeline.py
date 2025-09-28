@@ -1,41 +1,49 @@
-"""
-HTTP request preprocessing pipeline for neuralshield.
-
-This module creates and manages preprocessing pipelines for HTTP requests.
-Each preprocessing step is an instance of `HttpPreprocessor` implementing a
-`process()` method that takes an HTTP request string and returns a normalized
-or transformed version suitable for machine learning models.
-"""
-
 import tomllib
+from concurrent.futures import ThreadPoolExecutor
 from importlib import import_module
 from pathlib import Path
-from typing import Callable, Iterable, List, Type
+from typing import Iterable, Sequence
 
 from neuralshield.preprocessing.http_preprocessor import HttpPreprocessor
 
-PreprocessorFunc = Callable[[str], str]
+
+class PreprocessorPipeline:
+    """Callable pipeline with optional batched execution support."""
+
+    def __init__(
+        self,
+        steps: Sequence[HttpPreprocessor],
+        *,
+        max_workers: int | None = None,
+    ) -> None:
+        self._steps = tuple(steps)
+        self._max_workers = max_workers
+
+    def __call__(self, request: str) -> str:
+        """Process a single request through every configured step."""
+
+        for step in self._steps:
+            request = step.process(request)
+        return request
+
+    def batch(self, batch: Sequence[str]) -> list[str]:
+        """Process a batch of requests, preserving order."""
+
+        if not batch:
+            return []
+        if len(batch) == 1:
+            return [self(batch[0])]
+        with ThreadPoolExecutor(max_workers=self._max_workers) as executor:
+            return list(executor.map(self, batch))
 
 
-def pipeline(steps: Iterable[HttpPreprocessor]) -> PreprocessorFunc:
-    """
-    Create an HTTP request preprocessing pipeline from a sequence of steps.
-
-    Args:
-        steps: An iterable of `HttpPreprocessor` instances to execute in order.
-
-    Returns:
-        A function that applies all provided steps' `process()` in order.
-    """
+def pipeline(
+    steps: Iterable[HttpPreprocessor], *, max_workers: int | None = None
+) -> PreprocessorPipeline:
+    """Create an HTTP request preprocessing pipeline from a sequence of steps."""
 
     steps_list = list(steps)
-
-    def run(s: str) -> str:
-        for step in steps_list:
-            s = step.process(s)
-        return s
-
-    return run
+    return PreprocessorPipeline(steps_list, max_workers=max_workers)
 
 
 def resolve(dotted: str) -> HttpPreprocessor:
@@ -46,13 +54,13 @@ def resolve(dotted: str) -> HttpPreprocessor:
     and returns an instantiated `HttpPreprocessor`.
     """
     module_name, class_name = dotted.split(":", 1)
-    preprocessor_cls: Type[HttpPreprocessor] = getattr(
+    preprocessor_cls: type[HttpPreprocessor] = getattr(
         import_module(module_name), class_name
     )
     return preprocessor_cls()
 
 
-def load_order_from_config(config_path: Path) -> List[str]:
+def load_order_from_config(config_path: Path) -> list[str]:
     """
     Load the order of steps from a config file.
     """
@@ -65,7 +73,7 @@ def load_order_from_config(config_path: Path) -> List[str]:
         raise ValueError("Pipeline order not found in config")
 
 
-preprocess: PreprocessorFunc = pipeline(
+preprocess: PreprocessorPipeline = pipeline(
     resolve(name)
     for name in load_order_from_config(
         Path("src/neuralshield/preprocessing/config.toml")
