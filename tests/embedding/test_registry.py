@@ -19,7 +19,6 @@ def test_reader_registration_decorator_allows_custom_class():
     assert issubclass(factory, DatasetReader)
 
 
-
 def test_encoder_registration_allows_lookup():
     @register_encoder("dummy")
     class DummyEncoder(RequestEncoder):

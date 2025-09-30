@@ -37,3 +37,8 @@ node_modules/
 *.csv
 *.tsv
 wandb/
+*.txt
+
+# models and embeddings
+*.joblib
+*.npz

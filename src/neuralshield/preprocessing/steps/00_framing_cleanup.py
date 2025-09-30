@@ -31,7 +31,6 @@ class FramingCleanup(HttpPreprocessor):
         Returns:
             HTTP request string with edge artifacts removed
         """
-        logger.debug("Removing framing artifacts from HTTP request")
 
         original_length = len(request)
         processed = request
