@@ -23,6 +23,8 @@ dependencies = [
     "matplotlib>=3.10.6",
     "seaborn>=0.13.2",
     "numpy>=2.3.3",
+    "torch>=2.8.0",
+    "sentence-transformers>=5.1.1",
 ]
 
 
