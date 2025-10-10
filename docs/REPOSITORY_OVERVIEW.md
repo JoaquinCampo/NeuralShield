@@ -42,30 +42,36 @@ NeuralShield is a machine learning-powered Web Application Firewall focused on t
 
 - Entry point: `neuralshield.preprocessing.pipeline.preprocess`
 - Construction: `pipeline()` builds a function by composing step instances configured in `src/neuralshield/preprocessing/config.toml`
-- Configured order (at the time of writing):
-  1. `neuralshield.preprocessing.steps.pre_parse_over_raw:RequestStructurer`
-  2. `neuralshield.preprocessing.steps.pre_parse_over_raw:RemoveFramingArtifacts`
+- Configured order (see `config.toml`):
+  1. `neuralshield.preprocessing.steps.00_framing_cleanup:FramingCleanup`
+  2. `neuralshield.preprocessing.steps.01_request_structurer:RequestStructurer`
+  3. `neuralshield.preprocessing.steps.02_header_unfold_obs_fold:HeaderUnfoldObsFold`
+  4. `neuralshield.preprocessing.steps.03_header_normalization_duplicates:HeaderNormalizationDuplicates`
+  5. `neuralshield.preprocessing.steps.04_whitespace_collapse:WhitespaceCollapse`
+  6. `neuralshield.preprocessing.steps.05_dangerous_characters_script_mixing:DangerousCharactersScriptMixing`
+  7. `neuralshield.preprocessing.steps.06_absolute_url_builder:AbsoluteUrlBuilder`
+  8. `neuralshield.preprocessing.steps.07_unicode_nkfc_and_control:UnicodeNFKCAndControl`
+  9. `neuralshield.preprocessing.steps.08_percent_decode_once:PercentDecodeOnce`
+  10. `neuralshield.preprocessing.steps.09_html_entity_decode_once:HtmlEntityDecodeOnce`
+  11. `neuralshield.preprocessing.steps.10_query_parser_and_flags:QueryParserAndFlags`
+  12. `neuralshield.preprocessing.steps.11_path_structure_normalizer:PathStructureNormalizer`
 - The order is authoritative and can be changed by editing `config.toml` without code changes
 - Implementation detail: `pipeline()` materializes the steps into a list to avoid generator exhaustion across calls
 
-## Implemented steps (initial)
+## Implemented steps
 
-- RemoveFramingArtifacts
-
-  - Removes BOM at the start and trims control characters (`Unicode Cc`, excluding `\t\r\n`) at the very beginning/end of the entire request string
-  - Logs telemetry via `loguru`; preserves inner content untouched
-
-- RequestStructurer
-
-  - Parses request-line: verifies it has exactly 3 parts and that `HTTP/` version string is present; method must be one of {GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD, TRACE, CONNECT}
-  - Splits the target into `path` and raw `query_string` on the first `?`
-  - Splits query tokens by raw `&` (no percent-decoding, no `;` heuristics yet) and emits one `[QUERY]` per token
-  - Reads headers by splitting on literal `\n` and collects lines until the first empty line; emits one `[HEADER]` per line (preserves casing/spaces)
-  - Output schema (newline-joined):
-    - `[METHOD] <method>`
-    - `[URL] <path>`
-    - `[QUERY] <raw-param>` repeated per query token
-    - `[HEADER] <raw-header-line>` repeated per header line
+- **00 Framing Cleanup** trims BOM markers and leading/trailing control characters on the raw request.
+- **01 Request Structurer** parses the request line, splits query tokens, and emits `[METHOD]`, `[URL]`, `[QUERY]`, and `[HEADER]` records.
+- **02 Header Unfold (Obs-fold)** merges legacy folded header continuations, tagging `OBSFOLD`/`BADCRLF`.
+- **03 Header Normalization and Duplicates** lowercases header names, merges allowed duplicates, and emits `[HAGG]`/`[HGF]` metrics.
+- **04 Whitespace Collapse** normalizes header value spacing and flags `WSPAD` when adjustments are made.
+- **05 Dangerous Characters and Script Mixing** adds inline flags for suspicious characters and mixed-script content across URL, query, and header fields.
+- **06 Absolute URL Builder** produces `[URL_ABS]` entries and validates host header consistency (`HOSTMISMATCH`, `IDNA`, `BADHOST`).
+- **07 Unicode NFKC and Control** normalizes URL/query text with NFKC and surfaces Unicode anomaly flags.
+- **08 Percent Decode Once** applies a single, context-aware percent-decode pass while preserving dangerous encodings.
+- **09 HTML Entity Decode Once** detects entity-encoded tokens and adds the `HTMLENT` flag without mutating the source.
+- **10 Query Parser and Flags** expands query parameters, redacts sensitive shapes, and aggregates separator/metadata flags.
+- **11 Path Structure Normalizer** collapses redundant path segments while preserving traversal evidence (`DOTDOT`, `DOTCUR`, `MULTIPLESLASH`).
 
 - LineJumpCatcher (available, not enabled in config by default)
   - Scans raw text and appends a flag line on the next line for EOL anomalies per original line:
@@ -123,9 +129,9 @@ The `specs/` directory (Spanish) is the source of truth for future steps. Key to
 
 ## Current limitations (intentional)
 
-- No percent-decoding, obs-fold unfolding, header normalization, or URL building in code yet; `[QUERY]` and `[HEADER]` are raw
-- EOL normalization not applied by default; `LineJumpCatcher` is available for annotation but not enabled in config
-- No global `FLAGS:[...]` aggregation emitted yet
+- Request bodies are ignored; the pipeline currently canonicalizes only the request line, headers, and query string.
+- EOL normalization remains opt-in via `LineJumpCatcher`; canonical CRLF conversion is still a future enhancement.
+- Global flag roll-ups beyond the existing `[HAGG]`, `[HGF]`, `[QSEP]`, and `[QMETA]` records remain on the roadmap.
 
 ## How to run and interpret tests
 

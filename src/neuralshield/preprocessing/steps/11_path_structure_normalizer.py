@@ -8,7 +8,7 @@ class PathStructureNormalizer(HttpPreprocessor):
     """
     Normalize URL path structure while preserving security-relevant traversal indicators.
 
-    Step 07: Path Structure Normalizer
+    Step 11: Path Structure Normalizer
     - Collapses multiple slashes to single slashes
     - Removes current directory segments (.)
     - Preserves parent directory segments (..) for traversal detection

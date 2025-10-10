@@ -9,7 +9,7 @@ class QueryParserAndFlags(HttpPreprocessor):
     """
     Comprehensive query parameter parsing with anomaly detection.
 
-    Step 06: Query Parser and Flags
+    Step 10: Query Parser and Flags
     - Parses query parameters with intelligent separator detection (& vs ;)
     - Performs per-token percent decoding for analysis
     - Detects 9 types of parameter anomalies

@@ -7,7 +7,7 @@ class HeaderNormalizationDuplicates(HttpPreprocessor):
     """
     Normalize header names and handle duplicates.
 
-    Step 09: Header Normalization and Duplicates
+    Step 03: Header Normalization and Duplicates
     - Normalizes header names to lowercase per RFC 9110
     - Validates header name characters
     - Detects and handles duplicate headers

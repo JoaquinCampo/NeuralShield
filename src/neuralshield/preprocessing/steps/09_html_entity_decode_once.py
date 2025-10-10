@@ -7,7 +7,7 @@ class HtmlEntityDecodeOnce(HttpPreprocessor):
     """
     Detect HTML entities in URL and query components without decoding them.
 
-    Step 05: HTML Entity Decode Once
+    Step 09: HTML Entity Decode Once
     - Detects HTML entities (&lt;, &#64;, &#x40;, etc.) in [URL] and [QUERY] lines
     - Preserves entities unchanged for evidence preservation
     - Emits HTMLENT flag when entities are detected

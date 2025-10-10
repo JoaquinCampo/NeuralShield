@@ -5,7 +5,7 @@ class HeaderUnfoldObsFold(HttpPreprocessor):
     """
     Unfold obs-fold header continuations.
 
-    Step 08: Header Unfold (Obs-fold)
+    Step 02: Header Unfold (Obs-fold)
     - Detects and unfolds obsolete header folding (obs-fold) to produce
       single-line headers
     - Unfolds headers that continue on next line with SP/HTAB

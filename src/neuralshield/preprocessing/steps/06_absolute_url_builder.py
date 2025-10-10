@@ -1,5 +1,5 @@
 """
-Absolute URL Builder - Step 12
+Absolute URL Builder - Step 06
 
 This step constructs canonical absolute URLs from HTTP request components
 to enable security analysis and SSRF detection. It handles multiple request
@@ -29,7 +29,7 @@ from neuralshield.preprocessing.http_preprocessor import HttpPreprocessor
 
 class AbsoluteUrlBuilder(HttpPreprocessor):
     """
-    Absolute URL Builder - Step 12
+    Absolute URL Builder - Step 06
 
     Constructs canonical absolute URLs from HTTP request components while
     validating host header consistency and applying security checks.
@@ -45,8 +45,8 @@ class AbsoluteUrlBuilder(HttpPreprocessor):
     DEFAULT_PORTS = {"http": 80, "https": 443}
 
     # Flag definitions
-    STEP12_GLOBAL_FLAGS = {"HOSTMISMATCH"}
-    STEP12_INLINE_FLAGS = {"IDNA", "BADHOST"}
+    STEP06_GLOBAL_FLAGS = {"HOSTMISMATCH"}
+    STEP06_INLINE_FLAGS = {"IDNA", "BADHOST"}
 
     # Host validation patterns
     HOST_PATTERNS = {

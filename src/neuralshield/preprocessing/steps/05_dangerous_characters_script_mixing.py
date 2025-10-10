@@ -8,7 +8,7 @@ class DangerousCharactersScriptMixing(HttpPreprocessor):
     """
     Detect dangerous characters and script mixing for attack detection.
 
-    Step 11: Dangerous Characters and Script Mixing
+    Step 05: Dangerous Characters and Script Mixing
     - Detects 11 types of dangerous characters in URLs, queries, and headers
     - Handles both literal and percent-encoded forms
     - Applies context-specific detection rules
@@ -16,8 +16,8 @@ class DangerousCharactersScriptMixing(HttpPreprocessor):
     - Emits security flags for attack detection and evidence preservation
     """
 
-    # Step 11 specific flags (used for idempotency)
-    STEP11_FLAGS = {
+    # Step 05 specific flags (used for idempotency)
+    STEP05_FLAGS = {
         "ANGLE",
         "QUOTE",
         "SEMICOLON",
@@ -93,7 +93,7 @@ class DangerousCharactersScriptMixing(HttpPreprocessor):
 
         # Extract any existing flags (uppercase words)
         for part in parts[2:]:  # Skip "[URL]" and content
-            if part.isupper() and part in self.STEP11_FLAGS:
+            if part.isupper() and part in self.STEP05_FLAGS:
                 existing_flags.add(part)
 
         flags = set()
@@ -125,7 +125,7 @@ class DangerousCharactersScriptMixing(HttpPreprocessor):
 
         # Extract any existing flags (uppercase words)
         for part in parts[2:]:  # Skip "[QUERY]" and content
-            if part.isupper() and part in self.STEP11_FLAGS:
+            if part.isupper() and part in self.STEP05_FLAGS:
                 existing_flags.add(part)
 
         flags = set()
@@ -160,7 +160,7 @@ class DangerousCharactersScriptMixing(HttpPreprocessor):
         # Extract any existing flags (uppercase words at the end)
         filtered_parts = []
         for part in parts[1:]:  # Skip "[HEADER]"
-            if part.isupper() and part in self.STEP11_FLAGS:
+            if part.isupper() and part in self.STEP05_FLAGS:
                 existing_flags.add(part)
             else:
                 filtered_parts.append(part)

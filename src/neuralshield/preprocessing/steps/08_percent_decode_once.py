@@ -7,7 +7,7 @@ class PercentDecodeOnce(HttpPreprocessor):
     """
     Apply percent-decode exactly once per component with context-aware preservation.
 
-    Step 04: Percent Decode Once
+    Step 08: Percent Decode Once
     - Decodes %hh sequences exactly once per URL/QUERY component
     - Preserves dangerous encodings (%00, %20, controls, delimiters) as evidence
     - Detects double/multiple encoding attempts (DOUBLEPCT flag)

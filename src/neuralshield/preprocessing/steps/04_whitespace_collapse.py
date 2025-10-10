@@ -5,7 +5,7 @@ class WhitespaceCollapse(HttpPreprocessor):
     """
     Normalize whitespace within header values to eliminate formatting variations.
 
-    Step 10: Whitespace Collapse
+    Step 04: Whitespace Collapse
     - Collapses sequences of spaces and tabs to single space
     - Trims leading and trailing whitespace
     - Preserves semantic spacing between tokens
@@ -51,9 +51,6 @@ class WhitespaceCollapse(HttpPreprocessor):
         # Skip processing for redacted values
         if self._is_redacted_value(header_content):
             return line
-
-        # DEBUG: Print what we're processing
-        # print(f"DEBUG Step 10 processing: {repr(header_content)}")
 
         # Parse header name and value
         colon_index = header_content.find(":")
