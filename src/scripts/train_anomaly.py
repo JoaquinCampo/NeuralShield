@@ -3,7 +3,9 @@ from __future__ import annotations
 from pathlib import Path
 
 import joblib
+import matplotlib.pyplot as plt
 import numpy as np
+import seaborn as sns
 import typer
 from loguru import logger
 
@@ -66,8 +68,8 @@ def main(
             }
         )
 
-    # Filter for normal samples only
-    normal_mask = labels == "normal"
+    # Filter for normal samples only (handle both "normal" and "valid" labels)
+    normal_mask = (labels == "normal") | (labels == "valid")
     normal_embeddings = embeddings[normal_mask]
 
     logger.info(
@@ -147,6 +149,66 @@ def main(
                 "training/score_p75": score_stats["p75"],
             }
         )
+
+    # Create and log score distribution visualization
+    logger.info("Creating score distribution visualization")
+    fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+
+    # Histogram with KDE
+    sns.histplot(training_scores, bins=50, kde=True, ax=axes[0], color="steelblue")
+    axes[0].axvline(
+        detector.threshold_,
+        color="red",
+        linestyle="--",
+        linewidth=2,
+        label=f"Threshold ({detector.threshold_:.4f})",
+    )
+    axes[0].axvline(
+        score_stats["mean"],
+        color="green",
+        linestyle="--",
+        linewidth=1.5,
+        label=f"Mean ({score_stats['mean']:.4f})",
+    )
+    axes[0].set_xlabel("Anomaly Score", fontsize=11)
+    axes[0].set_ylabel("Frequency", fontsize=11)
+    axes[0].set_title("Training Score Distribution", fontsize=13, fontweight="bold")
+    axes[0].legend()
+    axes[0].grid(True, alpha=0.3)
+
+    # Box plot with violin overlay
+    parts = axes[1].violinplot(
+        [training_scores], positions=[0], widths=0.7, showmeans=True, showmedians=True
+    )
+    for pc in parts["bodies"]:
+        pc.set_facecolor("steelblue")
+        pc.set_alpha(0.7)
+    axes[1].axhline(
+        detector.threshold_,
+        color="red",
+        linestyle="--",
+        linewidth=2,
+        label=f"Threshold ({detector.threshold_:.4f})",
+    )
+    axes[1].set_ylabel("Anomaly Score", fontsize=11)
+    axes[1].set_title(
+        "Score Distribution (Violin Plot)", fontsize=13, fontweight="bold"
+    )
+    axes[1].set_xticks([0])
+    axes[1].set_xticklabels(["Training Samples"])
+    axes[1].legend()
+    axes[1].grid(True, alpha=0.3, axis="y")
+
+    plt.tight_layout()
+
+    # Log to wandb
+    if sink:
+        import wandb
+
+        sink.log({"training/score_distribution": wandb.Image(fig)})
+        logger.info("Logged score distribution to wandb")
+
+    plt.close(fig)
 
     # Save model
     output_path.parent.mkdir(parents=True, exist_ok=True)

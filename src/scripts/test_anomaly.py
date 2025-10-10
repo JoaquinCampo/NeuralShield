@@ -10,6 +10,7 @@ from loguru import logger
 
 import neuralshield.encoding.data.factory as data_factory
 from neuralshield.encoding.models.fastembed import FastEmbedEncoder
+from neuralshield.encoding.models.secbert import SecBERTEncoder
 from neuralshield.encoding.models.tfidf import TFIDFEncoder
 from neuralshield.evaluation.metrics import (
     calculate_classification_metrics,
@@ -41,7 +42,7 @@ def main(
     test_dataset: Path = typer.Argument(..., help="Test dataset (JSONL)"),
     model_path: Path = typer.Argument(..., help="Trained model file (.joblib)"),
     encoder_type: str = typer.Option(
-        "fastembed", "--encoder", help="Encoder type (fastembed/tfidf)"
+        "fastembed", "--encoder", help="Encoder type (fastembed/secbert/tfidf)"
     ),
     model_name: str = typer.Option(
         "BAAI/bge-small-en-v1.5",
@@ -88,6 +89,9 @@ def main(
     if encoder_type == "fastembed":
         logger.info("Using FastEmbed encoder: {model}", model=model_name)
         encoder = FastEmbedEncoder(model_name=model_name, device=device)
+    elif encoder_type == "secbert":
+        logger.info("Using SecBERT encoder: {model}", model=model_name)
+        encoder = SecBERTEncoder(model_name=model_name, device=device)
     elif encoder_type == "tfidf":
         if not vectorizer_path:
             raise ValueError("TF-IDF encoder requires --vectorizer path")
@@ -173,7 +177,150 @@ def main(
     print(f"FPR:          {metrics.false_positive_rate:.4f}")
     print("=" * 60 + "\n")
 
-    # Log to W&B
+    # Create score distribution visualization (always, not just for wandb)
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+
+    logger.info("Creating score distribution visualization")
+    scores_array = np.array(all_scores)
+    labels_array = np.array(all_labels)
+
+    # Separate normal and attack scores
+    normal_mask = (labels_array == "normal") | (labels_array == "valid")
+    attack_mask = (labels_array == "anomalous") | (labels_array == "attack")
+
+    normal_scores = scores_array[normal_mask]
+    attack_scores = scores_array[attack_mask]
+
+    logger.info(
+        f"Normal samples: {len(normal_scores)}, Attack samples: {len(attack_scores)}"
+    )
+
+    # Create comprehensive visualization
+    fig, axes = plt.subplots(2, 2, figsize=(16, 12))
+
+    # 1. Overlapping histograms with KDE
+    sns.histplot(
+        normal_scores,
+        bins=50,
+        kde=True,
+        ax=axes[0, 0],
+        color="green",
+        alpha=0.6,
+        label=f"Normal (n={len(normal_scores)})",
+    )
+    sns.histplot(
+        attack_scores,
+        bins=50,
+        kde=True,
+        ax=axes[0, 0],
+        color="red",
+        alpha=0.6,
+        label=f"Attack (n={len(attack_scores)})",
+    )
+    axes[0, 0].axvline(
+        detector.threshold_,
+        color="black",
+        linestyle="--",
+        linewidth=2,
+        label=f"Threshold ({detector.threshold_:.4f})",
+    )
+    axes[0, 0].set_xlabel("Anomaly Score", fontsize=11)
+    axes[0, 0].set_ylabel("Frequency", fontsize=11)
+    axes[0, 0].set_title(
+        "Score Distribution: Normal vs Attack", fontsize=13, fontweight="bold"
+    )
+    axes[0, 0].legend()
+    axes[0, 0].grid(True, alpha=0.3)
+
+    # 2. Separate histograms (stacked view)
+    axes[0, 1].hist(
+        [normal_scores, attack_scores],
+        bins=50,
+        label=[f"Normal (n={len(normal_scores)})", f"Attack (n={len(attack_scores)})"],
+        color=["green", "red"],
+        alpha=0.7,
+        stacked=False,
+    )
+    axes[0, 1].axvline(
+        detector.threshold_,
+        color="black",
+        linestyle="--",
+        linewidth=2,
+        label=f"Threshold ({detector.threshold_:.4f})",
+    )
+    axes[0, 1].set_xlabel("Anomaly Score", fontsize=11)
+    axes[0, 1].set_ylabel("Count", fontsize=11)
+    axes[0, 1].set_title(
+        "Score Distribution (Non-Stacked)", fontsize=13, fontweight="bold"
+    )
+    axes[0, 1].legend()
+    axes[0, 1].grid(True, alpha=0.3)
+
+    # 3. Violin plots side by side
+    data_for_violin = []
+    labels_for_violin = []
+    data_for_violin.extend(normal_scores.tolist())
+    labels_for_violin.extend(["Normal"] * len(normal_scores))
+    data_for_violin.extend(attack_scores.tolist())
+    labels_for_violin.extend(["Attack"] * len(attack_scores))
+
+    import pandas as pd
+
+    df_violin = pd.DataFrame({"Score": data_for_violin, "Type": labels_for_violin})
+    sns.violinplot(
+        data=df_violin,
+        x="Type",
+        y="Score",
+        ax=axes[1, 0],
+        palette={"Normal": "green", "Attack": "red"},
+        alpha=0.7,
+    )
+    axes[1, 0].axhline(
+        detector.threshold_,
+        color="black",
+        linestyle="--",
+        linewidth=2,
+        label=f"Threshold ({detector.threshold_:.4f})",
+    )
+    axes[1, 0].set_ylabel("Anomaly Score", fontsize=11)
+    axes[1, 0].set_title(
+        "Score Distribution (Violin Plot)", fontsize=13, fontweight="bold"
+    )
+    axes[1, 0].legend()
+    axes[1, 0].grid(True, alpha=0.3, axis="y")
+
+    # 4. Box plots with outliers
+    sns.boxplot(
+        data=df_violin,
+        x="Type",
+        y="Score",
+        ax=axes[1, 1],
+        palette={"Normal": "green", "Attack": "red"},
+        showfliers=True,
+    )
+    axes[1, 1].axhline(
+        detector.threshold_,
+        color="black",
+        linestyle="--",
+        linewidth=2,
+        label=f"Threshold ({detector.threshold_:.4f})",
+    )
+    axes[1, 1].set_ylabel("Anomaly Score", fontsize=11)
+    axes[1, 1].set_title(
+        "Score Distribution (Box Plot)", fontsize=13, fontweight="bold"
+    )
+    axes[1, 1].legend()
+    axes[1, 1].grid(True, alpha=0.3, axis="y")
+
+    plt.tight_layout()
+
+    # Save figure
+    output_path = model_path.parent / "test_score_distribution.png"
+    fig.savefig(output_path, dpi=150, bbox_inches="tight")
+    logger.info(f"Saved visualization to: {output_path}")
+
+    # Log to W&B if enabled
     if wandb_module:
         wandb_module.log(
             {
@@ -187,52 +334,14 @@ def main(
                 "fp": confusion.false_positives,
                 "tn": confusion.true_negatives,
                 "fn": confusion.false_negatives,
+                "test/score_distribution": wandb_module.Image(fig),
             }
         )
 
-        # Log score distribution
-        import matplotlib.pyplot as plt
-        import seaborn as sns
+    plt.close(fig)
 
-        scores_array = np.array(all_scores)
-        labels_array = np.array(all_labels)
-
-        fig, ax = plt.subplots(figsize=(10, 6))
-        sns.histplot(
-            data={
-                "score": scores_array[labels_array == "normal"],
-            },
-            x="score",
-            bins=50,
-            alpha=0.5,
-            label="Normal",
-            ax=ax,
-        )
-        sns.histplot(
-            data={
-                "score": scores_array[labels_array == "anomalous"],
-            },
-            x="score",
-            bins=50,
-            alpha=0.5,
-            label="Anomalous",
-            ax=ax,
-        )
-        ax.axvline(
-            detector.threshold_,
-            color="red",
-            linestyle="--",
-            label=f"Threshold ({detector.threshold_:.4f})",
-        )
-        ax.set_xlabel("Anomaly Score")
-        ax.set_ylabel("Count")
-        ax.set_title("Score Distribution")
-        ax.legend()
-
-        wandb_module.log({"score_distribution": wandb_module.Image(fig)})
-        plt.close(fig)
-
-        # Log confusion matrix
+    # Log confusion matrix to wandb
+    if wandb_module:
         from sklearn.metrics import ConfusionMatrixDisplay
 
         cm_display = ConfusionMatrixDisplay(
