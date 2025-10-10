@@ -83,12 +83,6 @@ def run_encoder(config: EmbeddingRunConfig) -> Generator[EmbeddingBatch, None, N
     for batch_index, (requests, _labels) in enumerate(
         reader.iter_batches(config.batch_size), start=1
     ):
-        logger.debug(
-            "Processing batch index={batch_index} size={size}",
-            batch_index=batch_index,
-            size=len(requests),
-        )
-
         encode_start = perf_counter()
         embeddings = encoder.encode(requests)
         encode_elapsed = perf_counter() - encode_start
@@ -105,8 +99,6 @@ def run_encoder(config: EmbeddingRunConfig) -> Generator[EmbeddingBatch, None, N
             size=len(requests),
             model_name=config.encoder_model_name,
         )
-
-        break
 
     logger.info(
         "Completed embedding run batches={batches} requests={requests}",
@@ -180,9 +172,5 @@ def cli(
         pass
 
 
-def main() -> None:
-    app()
-
-
 if __name__ == "__main__":
-    main()
+    app()
