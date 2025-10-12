@@ -29,7 +29,7 @@ class ByT5Encoder(RequestEncoder):
 
     Default model: google/byt5-small
     Output dimensions: 2 × hidden_size (mean+max pooling)
-    - byt5-small: 1472 × 2 = 2944 dims
+    - byt5-small: 1472 * 2 = 2944 dims
     """
 
     def __init__(
@@ -41,7 +41,6 @@ class ByT5Encoder(RequestEncoder):
     ) -> None:
         super().__init__(model_name=model_name, device=device)
 
-        # Use default ByT5 model
         model_id = "google/byt5-small" if model_name == "default" else model_name
 
         logger.info(f"Loading ByT5 model from {model_id} on device={device}")
@@ -69,7 +68,7 @@ class ByT5Encoder(RequestEncoder):
         """Encode a batch of HTTP requests using ByT5 + mean+max pooling.
 
         Args:
-            batch: Sequence of HTTP request strings (raw, no preprocessing!)
+            batch: Sequence of HTTP request strings
 
         Returns:
             NumPy array of shape (batch_size, output_dim) with L2-normalized embeddings
