@@ -16,7 +16,7 @@ from neuralshield.encoding.observability import init_wandb_sink
 from neuralshield.preprocessing.pipeline import PreprocessorPipeline, preprocess
 
 if TYPE_CHECKING:
-    from neuralshield.anomaly.model import EllipticEnvelopeDetector
+    from neuralshield.anomaly import MahalanobisDetector
 
 
 class TFIDFEncodingConfig(BaseModel):
@@ -195,7 +195,7 @@ def train_anomaly_from_embeddings(
 
     # Choose detector based on config
     if config.detector_type == "isolation_forest":
-        from neuralshield.anomaly.model import IsolationForestDetector
+        from neuralshield.anomaly import IsolationForestDetector
 
         detector = IsolationForestDetector(
             contamination=config.contamination,
@@ -207,14 +207,11 @@ def train_anomaly_from_embeddings(
             contamination=config.contamination,
             n_estimators=config.n_estimators,
         )
-    else:  # elliptic_envelope
-        from neuralshield.anomaly.model import EllipticEnvelopeDetector
+    else:  # mahalanobis (formerly elliptic_envelope)
+        from neuralshield.anomaly import MahalanobisDetector
 
-        detector = EllipticEnvelopeDetector(
-            contamination=config.contamination,
-            random_state=config.random_state,
-        )
-        logger.info("Fitting EllipticEnvelope", contamination=config.contamination)
+        detector = MahalanobisDetector()
+        logger.info("Fitting Mahalanobis distance detector")
 
     detector.fit(valid_embeddings)
     fit_seconds = perf_counter() - fit_start
@@ -375,7 +372,7 @@ def test(  # noqa: T201
     output: str = typer.Option("", help="Output JSONL file for predictions (optional)"),
 ) -> None:
     """Test a trained anomaly detector on a test dataset with evaluation metrics."""
-    from neuralshield.anomaly.model import IsolationForestDetector
+    from neuralshield.anomaly import IsolationForestDetector
     from neuralshield.encoding.models.tfidf import TFIDFEncoder
     from neuralshield.evaluation import ClassificationEvaluator, EvaluationConfig
 

@@ -34,7 +34,7 @@ def load_model_predictions(
             )
         elif "model" in model_data_loaded:
             # TF-IDF format - wrap in IsolationForestDetector
-            from neuralshield.anomaly.model import IsolationForestDetector
+            from neuralshield.anomaly import IsolationForestDetector
 
             model = IsolationForestDetector(
                 contamination=model_data_loaded.get("contamination", 0.01),
@@ -43,7 +43,8 @@ def load_model_predictions(
                 random_state=model_data_loaded.get("random_state"),
                 n_jobs=model_data_loaded.get("n_jobs", -1),
             )
-            model.model = model_data_loaded["model"]
+            model._model = model_data_loaded["model"]
+            model._fitted = True
             logger.info(f"[{model_name}] Model loaded successfully (TF-IDF format)")
         else:
             raise ValueError(

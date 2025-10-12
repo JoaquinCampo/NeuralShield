@@ -9,7 +9,7 @@ import seaborn as sns
 import typer
 from loguru import logger
 
-from neuralshield.anomaly.model import IsolationForestDetector
+from neuralshield.anomaly import IsolationForestDetector
 from neuralshield.encoding.observability import init_wandb_sink
 
 app = typer.Typer()

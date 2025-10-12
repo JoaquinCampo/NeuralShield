@@ -1,11 +1,25 @@
 """Anomaly detection utilities for NeuralShield."""
 
-from neuralshield.anomaly.model import (
-    IsolationForestDetector,
+from neuralshield.anomaly import (
+    isolation_forest,  # noqa: F401 - ensure registration
+    mahalanobis,  # noqa: F401 - ensure registration
 )
+from neuralshield.anomaly.base import AnomalyDetector
+from neuralshield.anomaly.factory import (
+    available_detectors,
+    get_detector,
+    register_detector,
+)
+from neuralshield.anomaly.isolation_forest import IsolationForestDetector
+from neuralshield.anomaly.mahalanobis import MahalanobisDetector
 
 __all__ = [
+    "AnomalyDetector",
     "IsolationForestDetector",
+    "MahalanobisDetector",
+    "available_detectors",
+    "get_detector",
+    "register_detector",
     "main",
 ]
 
