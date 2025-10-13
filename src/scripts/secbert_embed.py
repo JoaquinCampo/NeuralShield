@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time
 from pathlib import Path
 
 import numpy as np
@@ -8,6 +9,7 @@ from loguru import logger
 
 import neuralshield.encoding.data.factory as data_factory
 from neuralshield.encoding.models.secbert import SecBERTEncoder
+from neuralshield.encoding.observability import EncodingMetricsTracker, init_wandb_sink
 from neuralshield.preprocessing.pipeline import PreprocessorPipeline, preprocess
 
 app = typer.Typer()
@@ -45,6 +47,11 @@ def main(
     ),
     pipeline_name: str = typer.Option("", help="Pipeline name (blank=preprocess)"),
     device: str = typer.Option("cpu", help="Device (cpu/cuda/mps)"),
+    wandb_enabled: bool = typer.Option(
+        False, "--wandb/--no-wandb", help="Enable Weights & Biases logging"
+    ),
+    wandb_project: str = typer.Option("neuralshield", help="W&B project name"),
+    wandb_entity: str | None = typer.Option(None, help="W&B entity/team"),
 ) -> None:
     """Generate dense embeddings from a dataset using SecBERT."""
     logger.info(
@@ -55,6 +62,36 @@ def main(
 
     # Create output directory
     output.parent.mkdir(parents=True, exist_ok=True)
+
+    # Initialize wandb if enabled
+    config = {
+        "model": model_name,
+        "batch_size": batch_size,
+        "device": device,
+        "preprocessing": use_pipeline,
+        "pipeline": pipeline_name if pipeline_name else "preprocess",
+        "dataset": str(dataset),
+        "embedding_dim": 768,
+    }
+
+    sink, wandb_run = init_wandb_sink(
+        wandb_enabled,
+        project=wandb_project,
+        entity=wandb_entity,
+        config=config,
+    )
+
+    if wandb_run is not None:
+        wandb_run.name = f"secbert-embed-{dataset.stem}"
+        wandb_run.tags = [
+            "embedding",
+            "secbert",
+            "with-prep" if use_pipeline else "no-prep",
+        ]
+        logger.info("Wandb logging enabled: {url}", url=wandb_run.url)
+
+    # Initialize metrics tracker
+    metrics_tracker = EncodingMetricsTracker(sink=sink)
 
     # Initialize encoder
     logger.info("Loading SecBERT model: {model}", model=model_name)
@@ -88,13 +125,22 @@ def main(
         desc="Encoding",
         unit="batch",
     ):
-        # Encode batch
+        # Time encoding
+        start_time = time.time()
         embeddings = encoder.encode(batch_requests)
+        encode_seconds = time.time() - start_time
 
         # Store
         all_embeddings.append(embeddings)
         all_labels.extend(batch_labels)
         total_processed += len(batch_requests)
+
+        # Log metrics to wandb
+        metrics_tracker.record_batch(
+            requests=batch_requests,
+            embeddings=embeddings,
+            encode_seconds=encode_seconds,
+        )
 
     logger.info("Processed {count} samples", count=total_processed)
 
@@ -133,6 +179,25 @@ def main(
         dim=final_embeddings.shape[1],
         size=output.stat().st_size / (1024 * 1024),
     )
+
+    # Finalize metrics
+    summary_metrics = metrics_tracker.finalize()
+
+    # Log final summary to wandb
+    if sink is not None:
+        sink.log(
+            {
+                "summary/total_samples": final_embeddings.shape[0],
+                "summary/embedding_dim": final_embeddings.shape[1],
+                "summary/file_size_mb": output.stat().st_size / (1024 * 1024),
+            }
+        )
+        logger.info("Logged final metrics to wandb")
+
+    # Finish wandb run
+    if wandb_run is not None:
+        wandb_run.finish()
+        logger.info("Wandb run finished")
 
 
 if __name__ == "__main__":
