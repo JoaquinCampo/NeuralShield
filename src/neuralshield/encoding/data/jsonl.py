@@ -13,8 +13,8 @@ from neuralshield.encoding.data.base import (
     DatasetReader,
     PipelineFunc,
 )
-from neuralshield.encoding.observability import PipelineObserver
 from neuralshield.encoding.data.factory import register_reader
+from neuralshield.encoding.observability import PipelineObserver
 
 
 @register_reader("jsonl")
@@ -60,14 +60,20 @@ class JSONLRequestReader(DatasetReader):
                 if not line and self.ignore_blank:
                     continue
 
-                payload = json.loads(raw_line)
+                try:
+                    payload = json.loads(raw_line)
 
-                request_text = payload.get("request")
-                label = payload.get("label")
-                processed = self._maybe_process(request_text, label=label)
-                requests.append(processed)
-
-                labels.append(label)
+                    request_text = payload.get("request")
+                    label = payload.get("label")
+                    processed = self._maybe_process(request_text, label=label)
+                    requests.append(processed)
+                    labels.append(label)
+                except Exception as e:
+                    # Skip malformed/empty requests
+                    logger.debug(
+                        "Skipping malformed request: {error}", error=str(e)[:100]
+                    )
+                    continue
 
                 if len(requests) >= batch_size:
                     self._finalize_current_batch()

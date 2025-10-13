@@ -18,6 +18,13 @@ dependencies = [
     "pytest>=8.4.2",
     "typer>=0.19.2",
     "wandb>=0.22.0",
+    "scikit-learn>=1.5",
+    "tqdm>=4.66",
+    "matplotlib>=3.10.6",
+    "seaborn>=0.13.2",
+    "numpy>=2.3.3",
+    "torch>=2.8.0",
+    "sentence-transformers>=5.1.1",
 ]
 
 

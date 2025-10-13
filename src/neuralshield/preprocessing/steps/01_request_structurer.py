@@ -30,7 +30,7 @@ class RequestStructurer(HttpPreprocessor):
 
         # Parse request line
         request_line = lines[0] if lines else ""
-        method, url, http_version = self._parse_request_line(request_line)
+        method, url, http_version, flags = self._parse_request_line(request_line)
 
         # Split URL and query
         path, query_string = self._split_url_query(url)
@@ -57,11 +57,16 @@ class RequestStructurer(HttpPreprocessor):
         for header in headers:
             output_lines.append(f"[HEADER] {header}")
 
+        # Add flags if any
+        if flags:
+            output_lines.append(f"[FLAGS] {' '.join(flags)}")
+
         return "\n".join(output_lines)
 
-    def _parse_request_line(self, request_line: str) -> tuple[str, str, str]:
-        """Parse the HTTP request line into method, URL, and HTTP version."""
+    def _parse_request_line(self, request_line: str) -> tuple[str, str, str, list[str]]:
+        """Parse the HTTP request line into method, URL, HTTP version, and flags."""
         parts = request_line.split(" ")
+        flags = []
 
         if len(parts) != 3:
             raise MalformedHttpRequestError(
@@ -70,9 +75,9 @@ class RequestStructurer(HttpPreprocessor):
 
         method, url, http_version = parts
 
-        # Validate method
+        # Flag unusual methods instead of rejecting them
         if method not in self.VALID_METHODS:
-            raise MalformedHttpRequestError(f"Invalid HTTP method: {method}")
+            flags.append("UNUSUAL_METHOD")
 
         # Validate HTTP version
         if not http_version.startswith("HTTP/"):
@@ -80,7 +85,7 @@ class RequestStructurer(HttpPreprocessor):
                 f"Invalid HTTP version format: {http_version}"
             )
 
-        return method, url, http_version
+        return method, url, http_version, flags
 
     def _split_url_query(self, url: str) -> tuple[str, str]:
         """Split URL on first '?' into path and query string."""

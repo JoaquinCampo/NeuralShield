@@ -13,3 +13,9 @@ alwaysApply: true
 ## Toolset
 
 Use loguru for logging.
+
+# REMEMBER
+
+```bash
+alias gs
+```
