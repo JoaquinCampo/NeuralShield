@@ -15,7 +15,6 @@ dependencies = [
     "loguru>=0.7.3",
     "pydantic>=2.7",
     "pydantic-settings>=2.2",
-    "pyod>=2.0.0",
     "pytest>=8.4.2",
     "typer>=0.19.2",
     "wandb>=0.22.0",
