@@ -33,19 +33,39 @@ def load_model_predictions(
                 f"[{model_name}] Model loaded successfully (extracted detector from dict)"
             )
         elif "model" in model_data_loaded:
-            # TF-IDF format - wrap in IsolationForestDetector
-            from neuralshield.anomaly import IsolationForestDetector
+            # Check if it's a Mahalanobis or IsolationForest model
+            from sklearn.covariance import EmpiricalCovariance
 
-            model = IsolationForestDetector(
-                contamination=model_data_loaded.get("contamination", 0.01),
-                n_estimators=model_data_loaded.get("n_estimators", 100),
-                max_samples=model_data_loaded.get("max_samples", "auto"),
-                random_state=model_data_loaded.get("random_state"),
-                n_jobs=model_data_loaded.get("n_jobs", -1),
+            from neuralshield.anomaly import (
+                IsolationForestDetector,
+                MahalanobisDetector,
             )
-            model._model = model_data_loaded["model"]
-            model._fitted = True
-            logger.info(f"[{model_name}] Model loaded successfully (TF-IDF format)")
+
+            if isinstance(model_data_loaded["model"], EmpiricalCovariance):
+                # Mahalanobis format
+                model = MahalanobisDetector(
+                    name=model_data_loaded.get("name", "production")
+                )
+                model._model = model_data_loaded["model"]
+                model._threshold = model_data_loaded.get("threshold")
+                model._fitted = True
+                logger.info(
+                    f"[{model_name}] Model loaded successfully (Mahalanobis format)"
+                )
+            else:
+                # TF-IDF/IsolationForest format
+                model = IsolationForestDetector(
+                    contamination=model_data_loaded.get("contamination", 0.01),
+                    n_estimators=model_data_loaded.get("n_estimators", 100),
+                    max_samples=model_data_loaded.get("max_samples", "auto"),
+                    random_state=model_data_loaded.get("random_state"),
+                    n_jobs=model_data_loaded.get("n_jobs", -1),
+                )
+                model._model = model_data_loaded["model"]
+                model._fitted = True
+                logger.info(
+                    f"[{model_name}] Model loaded successfully (IsolationForest format)"
+                )
         else:
             raise ValueError(
                 f"Unknown dict format for model: {model_data_loaded.keys()}"

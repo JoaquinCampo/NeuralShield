@@ -1,0 +1,10 @@
+{
+  "nu": 0.2,
+  "gamma": "scale",
+  "threshold": 43.577335357666016,
+  "recall": 0.24109315778974666,
+  "fpr": 0.05,
+  "precision": 0.8286027697792404,
+  "true_positives": 6043,
+  "false_positives": 1250
+}
