@@ -24,11 +24,16 @@ class SecBERTEncoder(RequestEncoder):
     Max tokens: 512
     """
 
-    def __init__(self, *, model_name: str = "default", device: str = "cpu") -> None:
+    def __init__(
+        self,
+        *,
+        model_name: str = "jackaduma/SecBERT",
+        device: str = "cpu",
+    ) -> None:
         super().__init__(model_name=model_name, device=device)
 
         # Use default SecBERT model
-        model_id = "jackaduma/SecBERT" if model_name == "default" else model_name
+        model_id = "jackaduma/SecBERT"
 
         logger.info(f"Loading SecBERT tokenizer from {model_id}")
         self._tokenizer = AutoTokenizer.from_pretrained(model_id)
