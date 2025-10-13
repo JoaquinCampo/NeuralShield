@@ -58,20 +58,51 @@ The base SecBERT model was pre-trained on cybersecurity text (APTnotes, CASIE, e
 11_secbert_adapted/
 ├── README.md                                  # This file
 ├── generate_embeddings.py                     # Script to generate embeddings
+├── train_mahalanobis.py                       # Script to train Mahalanobis detector
 ├── with_preprocessing/
 │   ├── train_embeddings.npz                  # Adapted SecBERT embeddings (train)
 │   ├── test_embeddings.npz                   # Adapted SecBERT embeddings (test)
-│   └── results.txt                           # Performance metrics
+│   ├── results.json                          # Performance metrics
+│   ├── score_distribution.png                # Mahalanobis distance visualization
+│   └── confusion_matrix.png                  # Classification results
 └── RESULTS.md                                 # Final analysis and comparison
 ```
 
-## Expected Workflow
+## Workflow
 
-1. ✅ Train adapted SecBERT via MLM (completed)
-2. **Generate embeddings** using adapted model
-3. Train Mahalanobis detector on new embeddings
+1. ✅ Train adapted SecBERT via MLM (completed - perplexity 1.41)
+2. ✅ Generate embeddings using adapted model (completed - 1536 dims)
+3. **Train Mahalanobis detector** on new embeddings ← Next step
 4. Evaluate recall @ 5% FPR
 5. Compare with base SecBERT results
+
+## Running the Experiment
+
+```bash
+# Train Mahalanobis detector (with W&B logging by default)
+uv run python experiments/11_secbert_adapted/train_mahalanobis.py
+
+# With custom W&B run name
+uv run python experiments/11_secbert_adapted/train_mahalanobis.py \
+  --wandb-run-name "exp11-adapted-secbert-final"
+
+# With custom paths
+uv run python experiments/11_secbert_adapted/train_mahalanobis.py \
+  --train-embeddings experiments/11_secbert_adapted/with_preprocessing/train_embeddings.npz \
+  --test-embeddings experiments/11_secbert_adapted/with_preprocessing/test_embeddings.npz \
+  --output-dir experiments/11_secbert_adapted/with_preprocessing \
+  --max-fpr 0.05
+
+# Disable W&B logging
+uv run python experiments/11_secbert_adapted/train_mahalanobis.py --no-use-wandb
+```
+
+**Expected outputs**:
+
+- `results.json` - Performance metrics and comparison
+- `score_distribution.png` - Mahalanobis distance distributions
+- `confusion_matrix.png` - Classification confusion matrix
+- **W&B run** - Metrics, visualizations, and improvement tracking
 
 ## Success Criteria
 
