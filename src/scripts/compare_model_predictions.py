@@ -49,9 +49,16 @@ def load_model_predictions(
                 model._model = model_data_loaded["model"]
                 model._threshold = model_data_loaded.get("threshold")
                 model._fitted = True
-                logger.info(
-                    f"[{model_name}] Model loaded successfully (Mahalanobis format)"
-                )
+                # Store PCA if present
+                model._pca = model_data_loaded.get("pca", None)
+                if model._pca:
+                    logger.info(
+                        f"[{model_name}] Model loaded successfully (Mahalanobis with PCA format)"
+                    )
+                else:
+                    logger.info(
+                        f"[{model_name}] Model loaded successfully (Mahalanobis format)"
+                    )
             else:
                 # TF-IDF/IsolationForest format
                 model = IsolationForestDetector(
@@ -82,6 +89,12 @@ def load_model_predictions(
     logger.info(
         f"[{model_name}] Loaded {len(embeddings)} embeddings with shape {embeddings.shape}"
     )
+
+    # Apply PCA if model has it
+    if hasattr(model, "_pca") and model._pca is not None:
+        logger.info(f"[{model_name}] Applying PCA transformation...")
+        embeddings = model._pca.transform(embeddings)
+        logger.info(f"[{model_name}] Embeddings after PCA: {embeddings.shape}")
 
     # Generate predictions
     logger.info(f"[{model_name}] Running predictions...")

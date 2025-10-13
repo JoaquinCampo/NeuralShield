@@ -1,0 +1,17 @@
+{
+  "n_components": 300,
+  "explained_variance": 0.9193734526634216,
+  "contamination": 0.05,
+  "threshold": 0.009338523023137198,
+  "accuracy": 0.5826225906321781,
+  "precision": 0.8125656020392863,
+  "recall": 0.21619788549770597,
+  "f1_score": 0.34152643852019915,
+  "fpr": 0.05,
+  "fnr": 0.7838021145022941,
+  "true_positives": 5419,
+  "false_positives": 1250,
+  "true_negatives": 23750,
+  "false_negatives": 19646,
+  "max_fpr_constraint": 0.05
+}
