@@ -1,0 +1,14 @@
+{
+  "threshold": 11330.811312804079,
+  "accuracy": 0.5257365424947568,
+  "precision": 0.672860507720492,
+  "recall": 0.10257330939557151,
+  "f1_score": 0.17801010870317802,
+  "fpr": 0.05,
+  "fnr": 0.8974266906044285,
+  "true_positives": 2571,
+  "false_positives": 1250,
+  "true_negatives": 23750,
+  "false_negatives": 22494,
+  "max_fpr_constraint": 0.05
+}
