@@ -1,0 +1,64 @@
+================================================================================
+PREPROCESSING IMPACT EXPERIMENT - RESULTS SUMMARY
+================================================================================
+
+Experimental Setup:
+- Same hyperparameters: contamination=0.1, n_estimators=300
+- Same test dataset: CSIC test.jsonl (50,065 samples: 25,065 attacks, 25,000 normal)
+- Same architecture: IsolationForest + TF-IDF embeddings
+
+================================================================================
+RESULTS (contamination=0.1)
+================================================================================
+
+WITHOUT Preprocessing:
+  TP: 190    FP: 109    TN: 24,891    FN: 24,875
+  
+  Precision:    63.55%
+  Recall:        0.76%
+  F1-Score:      1.50%
+  Accuracy:     50.10%
+  FPR:           0.44%
+  Specificity:  99.56%
+
+WITH Preprocessing:
+  TP: 133    FP: 65     TN: 24,935    FN: 24,932
+  
+  Precision:    67.17%  (+3.62pp vs baseline)
+  Recall:        0.53%  (-0.23pp vs baseline)
+  F1-Score:      1.05%  (-0.45pp vs baseline) 
+  Accuracy:     50.07%  (-0.03pp vs baseline)
+  FPR:           0.26%  (-0.18pp vs baseline, BETTER)
+  Specificity:  99.74%  (+0.18pp vs baseline, BETTER)
+
+================================================================================
+INTERPRETATION
+================================================================================
+
+At contamination=0.1, BOTH models are extremely conservative:
+- Catching less than 1% of attacks
+- Very low false positive rates (<0.5%)
+- Both models flag test data as mostly "normal"
+
+Preprocessing Impact (at this contamination level):
+  ✓ BETTER Precision:    +3.62pp (67.17% vs 63.55%)
+  ✓ BETTER FPR:          -0.18pp (0.26% vs 0.44%) 
+  ✓ BETTER Specificity:  +0.18pp (99.74% vs 99.56%)
+  ✗ WORSE Recall:        -0.23pp (0.53% vs 0.76%)
+  
+Key Finding:
+  With preprocessing, the model is MORE SELECTIVE:
+  - Flags fewer samples overall (198 vs 299)
+  - Higher precision when it does flag something
+  - Lower false alarm rate
+  - But misses slightly more attacks
+
+The contamination=0.1 is TOO CONSERVATIVE for both models.
+We need to test with higher contamination values to see meaningful differences.
+
+================================================================================
+NEXT STEPS
+================================================================================
+
+Test both models with contamination values: 0.15, 0.2, 0.25, 0.3
+This will increase recall and allow us to better compare the models.

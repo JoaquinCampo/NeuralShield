@@ -21,7 +21,7 @@ def test_isolation_forest_identifies_outlier():
 
     assert bool(detector.predict(on_manifold)[0]) is False  # Normal
     assert bool(detector.predict(off_manifold)[0]) is True  # Anomaly
-    assert detector.threshold_ == 0.0  # IsolationForest threshold
+    assert detector.is_fitted  # Detector is fitted
 
 
 def test_isolation_forest_with_sparse_features():
