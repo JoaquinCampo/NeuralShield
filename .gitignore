@@ -42,3 +42,5 @@ wandb/
 # models and embeddings
 *.joblib
 *.npz
+
+*models/

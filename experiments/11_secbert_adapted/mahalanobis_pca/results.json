@@ -1,0 +1,23 @@
+{
+  "model": "adapted-secbert-mahalanobis-pca",
+  "pooling": "mean+max (1536 dims)",
+  "pca_dims": 256,
+  "variance_explained": 0.9628766179084778,
+  "detector": "mahalanobis",
+  "threshold": 647.8472886767082,
+  "accuracy": 0.6035753520423449,
+  "precision": 0.8380409432495465,
+  "recall": 0.25804907241172953,
+  "f1_score": 0.39459475947899825,
+  "fpr": 0.05,
+  "fnr": 0.7419509275882705,
+  "true_positives": 6468,
+  "false_positives": 1250,
+  "true_negatives": 23750,
+  "false_negatives": 18597,
+  "max_fpr_constraint": 0.05,
+  "baseline_mahalanobis_full": 0.5192,
+  "baseline_secbert": 0.4926,
+  "improvement_vs_full": -0.26115092758827047,
+  "improvement_vs_secbert": -0.23455092758827045
+}
