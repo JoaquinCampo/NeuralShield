@@ -1,0 +1,10 @@
+[METHOD] GET
+[URL] /path/API/test
+FULLWIDTH
+[QPARAM] param=value
+[QPARAM] normal=test
+[QPARAM] mixed=abc123
+[QMETA] count=3
+[HEADER] Host: example.com
+[HEADER] User-Agent: Test/1.0
+[HEADER] Accept: */*

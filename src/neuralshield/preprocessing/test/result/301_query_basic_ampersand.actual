@@ -1,0 +1,12 @@
+[METHOD] GET
+[URL] /search
+[QPARAM] login=alice QREPEAT:login
+[QPARAM] login=bob QREPEAT:login
+[QPARAM] empty= QEMPTYVAL
+[QPARAM] items[]=one QARRAY:items[] QREPEAT:items[]
+[QPARAM] items[]=two QARRAY:items[] QREPEAT:items[]
+[QPARAM] <empty>=emptykey
+[QPARAM] bare QBARE
+[QMETA] count=7 QEMPTYVAL QARRAY:items[] QBARE
+[HEADER] Host: example.com
+[HEADER] User-Agent: Test/1.0
