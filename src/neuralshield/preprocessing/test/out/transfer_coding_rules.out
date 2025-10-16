@@ -1,0 +1,11 @@
+[METHOD] GET
+[VERSION] HTTP/1.1
+[URL] / HOME
+[URL_ABS] http://example.com/
+[HEADER] connection: keep-alive HOPBYHOP
+[HEADER] host: example.com
+[HEADER] te: chunked HOPBYHOP
+[HEADER] transfer-encoding: gzip, chunked, chunked
+[HAGG] h_count=4 dup_names=0 hopbyhop=1 bad_names=0 total_bytes=54
+[HGF] HDRNORM
+[QMETA] count=0

@@ -15,6 +15,9 @@ class DangerousCharactersScriptMixing(HttpPreprocessor):
     - Identifies homograph attacks through script mixing analysis
     - Emits security flags for attack detection and evidence preservation
     """
+    # Spec references:
+    # - Dangerous character detection (internal threat model).
+    # - Unicode script mixing heuristics for homograph resilience.
 
     # Step 05 specific flags (used for idempotency)
     STEP05_FLAGS = {
@@ -72,11 +75,11 @@ class DangerousCharactersScriptMixing(HttpPreprocessor):
 
         for line in lines:
             if line.startswith("[URL] "):
-                processed_line = self._process_url_line(line)
+                processed_line = self._rule_process_url(line)
             elif line.startswith("[QUERY] "):
-                processed_line = self._process_query_line(line)
+                processed_line = self._rule_process_query(line)
             elif line.startswith("[HEADER] "):
-                processed_line = self._process_header_line(line)
+                processed_line = self._rule_process_header(line)
             else:
                 processed_line = line
 
@@ -84,7 +87,7 @@ class DangerousCharactersScriptMixing(HttpPreprocessor):
 
         return "\n".join(processed_lines)
 
-    def _process_url_line(self, line: str) -> str:
+    def _rule_process_url(self, line: str) -> str:
         """Process a URL line for dangerous characters and script mixing."""
         # Split line into content and existing flags
         parts = line.split()
@@ -99,11 +102,11 @@ class DangerousCharactersScriptMixing(HttpPreprocessor):
         flags = set()
 
         # Detect dangerous characters (all flagged in URL context)
-        char_flags = self._detect_dangerous_characters(content, context="URL")
+        char_flags = self._rule_detect_dangerous_characters(content, context="URL")
         flags.update(char_flags)
 
         # Detect script mixing
-        if self._detect_script_mixing(content):
+        if self._rule_detect_script_mixing(content):
             flags.add("MIXEDSCRIPT")
 
         # Combine with existing flags
@@ -116,7 +119,7 @@ class DangerousCharactersScriptMixing(HttpPreprocessor):
         else:
             return f"[URL] {content}"
 
-    def _process_query_line(self, line: str) -> str:
+    def _rule_process_query(self, line: str) -> str:
         """Process a query line for dangerous characters."""
         # Split line into content and existing flags
         parts = line.split()
@@ -131,7 +134,7 @@ class DangerousCharactersScriptMixing(HttpPreprocessor):
         flags = set()
 
         # Detect dangerous characters
-        char_flags = self._detect_dangerous_characters(content, context="QUERY")
+        char_flags = self._rule_detect_dangerous_characters(content, context="QUERY")
         flags.update(char_flags)
 
         # Special handling for null bytes in query context
@@ -148,7 +151,7 @@ class DangerousCharactersScriptMixing(HttpPreprocessor):
         else:
             return f"[QUERY] {content}"
 
-    def _process_header_line(self, line: str) -> str:
+    def _rule_process_header(self, line: str) -> str:
         """Process a header line for dangerous characters and script mixing."""
         # Split line into parts: "[HEADER]" "name:" "value" [flags...]
         parts = line.split()
@@ -171,11 +174,11 @@ class DangerousCharactersScriptMixing(HttpPreprocessor):
         flags = set()
 
         # Detect dangerous characters (semicolon NOT flagged in headers)
-        char_flags = self._detect_dangerous_characters(content, context="HEADER")
+        char_flags = self._rule_detect_dangerous_characters(content, context="HEADER")
         flags.update(char_flags)
 
         # Detect script mixing in header values only
-        if self._detect_script_mixing(content):
+        if self._rule_detect_script_mixing(content):
             flags.add("MIXEDSCRIPT")
 
         # Combine with existing flags
@@ -188,7 +191,7 @@ class DangerousCharactersScriptMixing(HttpPreprocessor):
         else:
             return f"[HEADER] {content}"
 
-    def _detect_dangerous_characters(self, content: str, context: str) -> Set[str]:
+    def _rule_detect_dangerous_characters(self, content: str, context: str) -> Set[str]:
         """
         Detect dangerous characters in the given content.
 
@@ -206,13 +209,13 @@ class DangerousCharactersScriptMixing(HttpPreprocessor):
             for pattern in patterns:
                 if pattern.search(content):
                     # Apply context-specific rules
-                    if self._should_flag_character(flag_name, context):
+                    if self._rule_should_flag_character(flag_name, context):
                         flags.add(flag_name)
                     break  # Found one pattern match, no need to check others
 
         return flags
 
-    def _should_flag_character(self, flag_name: str, context: str) -> bool:
+    def _rule_should_flag_character(self, flag_name: str, context: str) -> bool:
         """
         Determine if a character flag should be emitted based on context.
 
@@ -239,7 +242,7 @@ class DangerousCharactersScriptMixing(HttpPreprocessor):
         # QUERY context - all dangerous characters flagged
         return True
 
-    def _detect_script_mixing(self, content: str) -> bool:
+    def _rule_detect_script_mixing(self, content: str) -> bool:
         """
         Detect if the content contains mixed scripts (homograph attack indicator).
 
@@ -261,14 +264,14 @@ class DangerousCharactersScriptMixing(HttpPreprocessor):
         # Identify scripts for each character
         scripts_found = set()
         for char in alphabetic_chars:
-            char_script = self._identify_script(char)
+            char_script = self._rule_identify_script(char)
             if char_script:
                 scripts_found.add(char_script)
 
         # Flag if 2 or more different scripts found
         return len(scripts_found) >= 2
 
-    def _identify_script(self, char: str) -> str:
+    def _rule_identify_script(self, char: str) -> str:
         """
         Identify the script of a Unicode character.
 

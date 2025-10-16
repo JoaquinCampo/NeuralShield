@@ -1,0 +1,12 @@
+[METHOD] POST
+[VERSION] HTTP/1.1
+[URL] /submit MULTIPLESLASH
+[URL_ABS] http://example.com/submit
+[HEADER] content-length: 10 CLMISMATCH DUPHDR
+[HEADER] content-length: abc BADCL CLMISMATCH DUPHDR
+[HEADER] host: example.com
+[HEADER] transfer-encoding: chunked
+[HAGG] h_count=4 dup_names=1 hopbyhop=0 bad_names=0 total_bytes=28
+[HGF] HDRNORM
+[BFR] TECLCONFLICT
+[QMETA] count=0

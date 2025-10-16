@@ -12,6 +12,9 @@ class WhitespaceCollapse(HttpPreprocessor):
     - Flags when modifications are made for security evidence
     - Skips processing for redacted values (<SECRET:...>)
     """
+    # Spec references:
+    # - Internal style guidelines for header value normalisation.
+    # - Records `WSPAD` evidence when whitespace adjustments are made.
 
     def process(self, request: str) -> str:
         """
@@ -28,28 +31,19 @@ class WhitespaceCollapse(HttpPreprocessor):
 
         for line in lines:
             if line.startswith("[HEADER] "):
-                processed_line = self._process_header_line(line)
-                processed_lines.append(processed_line)
+                processed_lines.append(self._rule_whitespace_collapse(line))
             else:
                 processed_lines.append(line)
 
         return "\n".join(processed_lines)
 
-    def _process_header_line(self, line: str) -> str:
-        """
-        Process a single header line for whitespace normalization.
-
-        Args:
-            line: The header line in format "[HEADER] name: value"
-
-        Returns:
-            The processed header line with normalized whitespace and flags
-        """
+    def _rule_whitespace_collapse(self, line: str) -> str:
+        """Normalize header value whitespace and emit WSPAD evidence."""
         # Extract the header content after "[HEADER] "
         header_content = line[9:]
 
         # Skip processing for redacted values
-        if self._is_redacted_value(header_content):
+        if self._rule_whitespace_is_redacted_value(header_content):
             return line
 
         # Parse header name and value
@@ -69,15 +63,11 @@ class WhitespaceCollapse(HttpPreprocessor):
             value_part = after_colon  # No space after colon
 
         # Normalize whitespace in the value part
-        normalized_value = self._normalize_whitespace(value_part)
+        normalized_value = self._rule_whitespace_normalize_value(value_part)
 
         # Check for whitespace anomalies beyond normal formatting
-        # Normal format: name:  value (two spaces after colon, single spaces in value)
-        had_whitespace_issues = (
-            after_colon.startswith("   ")  # 3+ spaces after colon
-            or "  " in value_part  # Multiple spaces in value
-            or "\t" in after_colon  # Tabs after colon
-            or "\t" in value_part  # Tabs in value
+        had_whitespace_issues = self._rule_whitespace_detect_anomaly(
+            after_colon, value_part
         )
 
         if had_whitespace_issues:
@@ -87,7 +77,7 @@ class WhitespaceCollapse(HttpPreprocessor):
             # Already in correct format, return as-is
             return line
 
-    def _is_redacted_value(self, header_content: str) -> bool:
+    def _rule_whitespace_is_redacted_value(self, header_content: str) -> bool:
         """
         Check if the header contains a redacted value that should be preserved.
 
@@ -120,7 +110,7 @@ class WhitespaceCollapse(HttpPreprocessor):
         name, value = header_content.split(":", 1)
         return name.strip(), value.strip()
 
-    def _normalize_whitespace(self, value: str) -> str:
+    def _rule_whitespace_normalize_value(self, value: str) -> str:
         """
         Normalize whitespace within a header value.
 
@@ -139,3 +129,16 @@ class WhitespaceCollapse(HttpPreprocessor):
         normalized = normalized.strip()
 
         return normalized
+
+    def _rule_whitespace_detect_anomaly(
+        self, after_colon: str, value_part: str
+    ) -> bool:
+        """
+        Determine if whitespace formatting deviates from the canonical form.
+        """
+        return (
+            after_colon.startswith("   ")
+            or "  " in value_part
+            or "\t" in after_colon
+            or "\t" in value_part
+        )

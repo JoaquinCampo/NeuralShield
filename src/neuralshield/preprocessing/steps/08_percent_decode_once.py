@@ -36,7 +36,7 @@ class PercentDecodeOnce(HttpPreprocessor):
 
             # Only process URL and QUERY lines
             if line.startswith("[URL] ") or line.startswith("[QUERY] "):
-                processed_line, flags = self._process_component_line(line)
+                processed_line, flags = self._rule_process_component(line)
                 processed_lines.append(processed_line)
                 # Flags are already attached to the processed_line
             else:
@@ -45,7 +45,7 @@ class PercentDecodeOnce(HttpPreprocessor):
 
         return "\n".join(processed_lines)
 
-    def _process_component_line(self, line: str) -> tuple[str, list[str]]:
+    def _rule_process_component(self, line: str) -> tuple[str, list[str]]:
         """
         Process a single URL or QUERY line with percent decoding.
 
@@ -68,7 +68,7 @@ class PercentDecodeOnce(HttpPreprocessor):
             return line, []
 
         # Apply percent decoding with context-aware preservation
-        decoded_content, flags = self._percent_decode_once(content, context)
+        decoded_content, flags = self._rule_percent_decode_once(content, context)
 
         # Reconstruct the line with decoded content and flags
         processed_line = f"{prefix} {decoded_content}"
@@ -80,7 +80,7 @@ class PercentDecodeOnce(HttpPreprocessor):
             [],
         )  # Return empty flags since they're attached to the line
 
-    def _percent_decode_once(self, text: str, context: str) -> tuple[str, list[str]]:
+    def _rule_percent_decode_once(self, text: str, context: str) -> tuple[str, list[str]]:
         """
         Apply percent-decoding exactly once with context-aware preservation.
 
@@ -94,11 +94,11 @@ class PercentDecodeOnce(HttpPreprocessor):
         flags = []
 
         # Apply selective decoding: decode safe encodings, preserve dangerous ones
-        decoded = self._selective_percent_decode(text, context)
+        decoded = self._rule_selective_percent_decode(text, context)
 
         # Check for double encoding: look for remaining patterns that are not dangerous
         remaining_patterns_in_decoded = re.findall(r"%[0-9A-Fa-f]{2}", decoded)
-        dangerous_encodings = self._get_dangerous_encodings(context)
+        dangerous_encodings = self._rule_get_dangerous_encodings(context)
 
         # Filter out patterns that are intentionally preserved (dangerous)
         non_dangerous_patterns = [
@@ -113,16 +113,16 @@ class PercentDecodeOnce(HttpPreprocessor):
 
         # Apply context-aware flagging for preserved dangerous encodings
         if context == "URL":
-            flags.extend(self._check_url_preservation(decoded))
+            flags.extend(self._rule_check_url_preservation(decoded))
         else:  # QUERY
-            flags.extend(self._check_query_preservation(decoded))
+            flags.extend(self._rule_check_query_preservation(decoded))
 
         # Sort flags alphabetically as per spec
         flags = sorted(set(flags))  # Remove duplicates and sort
 
         return decoded, flags
 
-    def _selective_percent_decode(self, text: str, context: str) -> str:
+    def _rule_selective_percent_decode(self, text: str, context: str) -> str:
         """
         Selectively decode percent encodings based on context.
 
@@ -134,7 +134,7 @@ class PercentDecodeOnce(HttpPreprocessor):
             hex_value = encoded[1:]  # Remove %
 
             # Always preserve dangerous encodings
-            dangerous_encodings = self._get_dangerous_encodings(context)
+            dangerous_encodings = self._rule_get_dangerous_encodings(context)
             if encoded in dangerous_encodings:
                 return encoded  # Preserve as-is
 
@@ -150,7 +150,7 @@ class PercentDecodeOnce(HttpPreprocessor):
         result = re.sub(r"%[0-9A-Fa-f]{2}", should_decode_percent, text)
         return result
 
-    def _get_dangerous_encodings(self, context: str) -> set[str]:
+    def _rule_get_dangerous_encodings(self, context: str) -> set[str]:
         """
         Get the set of dangerous percent encodings that should be preserved.
         """
@@ -237,7 +237,8 @@ class PercentDecodeOnce(HttpPreprocessor):
 
         return dangerous
 
-    def _check_url_preservation(self, text: str) -> list[str]:
+
+    def _rule_check_url_preservation(self, text: str) -> list[str]:
         """
         Check for preserved encodings in URL context (conservative approach).
 
@@ -288,7 +289,7 @@ class PercentDecodeOnce(HttpPreprocessor):
 
         return flags
 
-    def _check_query_preservation(self, text: str) -> list[str]:
+    def _rule_check_query_preservation(self, text: str) -> list[str]:
         """
         Check for preserved encodings in query context (moderate preservation).
         """

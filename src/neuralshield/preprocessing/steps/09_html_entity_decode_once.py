@@ -34,7 +34,7 @@ class HtmlEntityDecodeOnce(HttpPreprocessor):
 
             # Only process URL and QUERY lines
             if line.startswith("[URL] ") or line.startswith("[QUERY] "):
-                processed_line, flags = self._process_component_line(line)
+                processed_line, flags = self._rule_process_component(line)
                 processed_lines.append(processed_line)
                 # Flags are already attached to the processed_line
             else:
@@ -43,7 +43,7 @@ class HtmlEntityDecodeOnce(HttpPreprocessor):
 
         return "\n".join(processed_lines)
 
-    def _process_component_line(self, line: str) -> tuple[str, list[str]]:
+    def _rule_process_component(self, line: str) -> tuple[str, list[str]]:
         """
         Process a single URL or QUERY line for HTML entity detection.
 
@@ -70,7 +70,7 @@ class HtmlEntityDecodeOnce(HttpPreprocessor):
 
         # Detect HTML entities
         new_flags = []
-        if self._has_html_entities(content):
+        if self._rule_has_html_entities(content):
             new_flags.append("HTMLENT")
 
         # Combine existing and new flags
@@ -84,7 +84,7 @@ class HtmlEntityDecodeOnce(HttpPreprocessor):
 
         return processed_line, []  # Return empty list since flags are attached
 
-    def _has_html_entities(self, text: str) -> bool:
+    def _rule_has_html_entities(self, text: str) -> bool:
         """
         Detect if text contains valid HTML entities using html.unescape().
 

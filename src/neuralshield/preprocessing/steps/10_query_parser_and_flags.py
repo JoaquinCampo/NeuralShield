@@ -74,7 +74,7 @@ class QueryParserAndFlags(HttpPreprocessor):
                 # Process any accumulated query data before non-query lines
                 if query_lines:
                     query_output, sep_flags, global_flags, param_count = (
-                        self._process_all_queries(query_lines)
+                        self._rule_process_all_queries(query_lines)
                     )
                     processed_lines.extend(query_output)
                     separator_flags.update(sep_flags)
@@ -87,7 +87,7 @@ class QueryParserAndFlags(HttpPreprocessor):
         # Process any remaining query data
         if query_lines:
             query_output, sep_flags, global_flags, param_count = (
-                self._process_all_queries(query_lines)
+                self._rule_process_all_queries(query_lines)
             )
             processed_lines.extend(query_output)
             separator_flags.update(sep_flags)
@@ -111,7 +111,7 @@ class QueryParserAndFlags(HttpPreprocessor):
 
         return "\n".join(processed_lines)
 
-    def _process_all_queries(
+    def _rule_process_all_queries(
         self, query_lines: List[str]
     ) -> Tuple[List[str], Set[str], Set[str], int]:
         """
@@ -139,7 +139,7 @@ class QueryParserAndFlags(HttpPreprocessor):
                 existing_flags = set()
 
             # Check if this parameter contains separators that need splitting
-            sep_type, sep_flags = self._detect_separator_type(param)
+            sep_type, sep_flags = self._rule_detect_separator_type(param)
             separator_flags.update(sep_flags)
 
             if sep_type == ";":
@@ -157,7 +157,7 @@ class QueryParserAndFlags(HttpPreprocessor):
         global_flags = set()
 
         for param, existing_flags in all_params:
-            parsed_param, new_flags = self._parse_single_parameter(param)
+            parsed_param, new_flags = self._rule_parse_single_parameter(param)
             # Combine existing flags with new flags
             combined_flags = existing_flags | new_flags
             parsed_params.append((parsed_param, combined_flags))
@@ -192,75 +192,7 @@ class QueryParserAndFlags(HttpPreprocessor):
 
         return output_lines, separator_flags, global_flags, len(parsed_params)
 
-    def _parse_query_parameters(self, query_string: str) -> List[str]:
-        """
-        Parse query string with comprehensive anomaly detection.
-
-        Args:
-            query_string: Raw query string from [QUERY] line
-
-        Returns:
-            List of output lines: [QUERY] lines + [QSEP] + [QMETA]
-        """
-        # Step 1: Detect separator type
-        separator_type, separator_flags = self._detect_separator_type(query_string)
-
-        # Step 2: Split query into parameters
-        parameters = self._split_query_parameters(query_string, separator_type)
-
-        # Step 3: Parse each parameter
-        parsed_params = []
-        key_counts: Dict[str, int] = {}
-        global_flags = set()
-
-        for param in parameters:
-            parsed_param, param_flags = self._parse_single_parameter(param)
-            parsed_params.append((parsed_param, param_flags))
-
-            # Track key repetitions
-            if "=" in param:
-                key = param.split("=", 1)[0]
-                key_counts[key] = key_counts.get(key, 0) + 1
-
-            # Collect global flags
-            global_flags.update(param_flags)
-
-        # Step 4: Apply repetition flags
-        for i, (parsed_param, param_flags) in enumerate(parsed_params):
-            if "=" in parameters[i]:
-                key = parameters[i].split("=", 1)[0]
-                if key_counts[key] > 1:
-                    param_flags.add(f"QREPEAT:{key}")
-                    global_flags.add(f"QREPEAT:{key}")
-
-            parsed_params[i] = (parsed_param, param_flags)
-
-        # Step 5: Generate output lines
-        output_lines = []
-
-        # Parameter lines
-        for parsed_param, param_flags in parsed_params:
-            flags_str = " ".join(sorted(param_flags)) if param_flags else ""
-            if flags_str:
-                output_lines.append(f"{parsed_param} {flags_str}")
-            else:
-                output_lines.append(parsed_param)
-
-        # Separator metadata
-        if separator_flags:
-            output_lines.append(f"[QSEP] {' '.join(sorted(separator_flags))}")
-
-        # Summary metadata
-        count = len(parsed_params)
-        global_flags_str = " ".join(sorted(global_flags)) if global_flags else ""
-        if global_flags_str:
-            output_lines.append(f"[QMETA] count={count} {global_flags_str}")
-        else:
-            output_lines.append(f"[QMETA] count={count}")
-
-        return output_lines
-
-    def _detect_separator_type(self, query_string: str) -> Tuple[str, Set[str]]:
+    def _rule_detect_separator_type(self, query_string: str) -> Tuple[str, Set[str]]:
         """
         Detect separator type using intelligent heuristics.
 
@@ -278,7 +210,7 @@ class QueryParserAndFlags(HttpPreprocessor):
         if semicolon_count > 0:
             # Check if semicolon is dominant
             # Pattern: k=v(;k=v)+ with few &
-            if ampersand_count <= 1 and self._is_semicolon_dominant(query_string):
+            if ampersand_count <= 1 and self._rule_is_semicolon_dominant(query_string):
                 separator_type = ";"
                 flags.add("QSEMISEP")
             else:
@@ -287,7 +219,7 @@ class QueryParserAndFlags(HttpPreprocessor):
 
         return separator_type, flags
 
-    def _is_semicolon_dominant(self, query_string: str) -> bool:
+    def _rule_is_semicolon_dominant(self, query_string: str) -> bool:
         """
         Check if semicolon-separated pattern is dominant.
         Pattern: k=v(;k=v)+ with optional trailing components
@@ -303,15 +235,7 @@ class QueryParserAndFlags(HttpPreprocessor):
 
         return kv_pairs >= 2
 
-    def _split_query_parameters(self, query_string: str, separator: str) -> List[str]:
-        """
-        Split query string by detected separator.
-        """
-        return [
-            param.strip() for param in query_string.split(separator) if param.strip()
-        ]
-
-    def _parse_single_parameter(self, param: str) -> Tuple[str, Set[str]]:
+    def _rule_parse_single_parameter(self, param: str) -> Tuple[str, Set[str]]:
         """
         Parse single parameter and detect anomalies.
 
@@ -359,12 +283,12 @@ class QueryParserAndFlags(HttpPreprocessor):
 
         # Apply redaction if needed (use decoded value for display)
         display_value = decoded_value
-        if self._should_redact_value(key, decoded_value):
-            shape = self._detect_value_shape(decoded_value)
+        if self._rule_should_redact_value(key, decoded_value):
+            shape = self._rule_detect_value_shape(decoded_value)
             length = len(decoded_value.encode("utf-8"))
             display_value = f"<SECRET:{shape}:{length}>"
-        elif self._should_shape_value(decoded_value):
-            shape = self._detect_value_shape(decoded_value)
+        elif self._rule_should_shape_value(decoded_value):
+            shape = self._rule_detect_value_shape(decoded_value)
             length = len(decoded_value.encode("utf-8"))
             display_value = f"<{shape}:{length}>"
 
@@ -373,15 +297,7 @@ class QueryParserAndFlags(HttpPreprocessor):
 
         return output, flags
 
-    def _has_double_percent_encoding(self, value: str) -> bool:
-        """
-        Check if value contains evidence of double percent encoding.
-        """
-        # Look for remaining %XX patterns after single decode
-        remaining_patterns = re.findall(r"%[0-9A-Fa-f]{2}", value)
-        return len(remaining_patterns) > 0
-
-    def _detect_value_shape(self, value: str) -> str:
+    def _rule_detect_value_shape(self, value: str) -> str:
         """
         Detect the shape/category of a value.
 
@@ -396,7 +312,7 @@ class QueryParserAndFlags(HttpPreprocessor):
         # Default to mixed
         return "mixed"
 
-    def _should_redact_value(self, key: str, value: str) -> bool:
+    def _rule_should_redact_value(self, key: str, value: str) -> bool:
         """
         Determine if a value should be redacted based on key/value patterns.
         """
@@ -415,18 +331,18 @@ class QueryParserAndFlags(HttpPreprocessor):
             return True
 
         # Redact JWTs, long hex strings, etc.
-        shape = self._detect_value_shape(value)
+        shape = self._rule_detect_value_shape(value)
         if shape in {"jwt", "hex"} and len(value) > 20:
             return True
 
         return False
 
-    def _should_shape_value(self, value: str) -> bool:
+    def _rule_should_shape_value(self, value: str) -> bool:
         """
         Determine if a value should be shaped (replaced with <shape:len>) instead of shown raw.
         """
         # Shape values that are clearly structured (JWTs, UUIDs, IPs, etc.)
-        shape = self._detect_value_shape(value)
+        shape = self._rule_detect_value_shape(value)
         structured_shapes = {"jwt", "uuid", "ipv4", "ipv6", "email", "uaxurl"}
 
         return shape in structured_shapes

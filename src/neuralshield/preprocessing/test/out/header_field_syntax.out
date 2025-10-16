@@ -1,0 +1,10 @@
+[METHOD] GET
+[VERSION] HTTP/1.1
+[URL] / HOME
+[URL_ABS] http://example.com/
+[HEADER] fold: first second OBSFOLD
+[HEADER] host: example.com PRECOLONWS
+[HEADER] x bad: value PRECOLONWS BADFIELDNAME BADHDRNAME
+[HAGG] h_count=3 dup_names=0 hopbyhop=0 bad_names=1 total_bytes=74
+[HGF] HDRNORM
+[QMETA] count=0

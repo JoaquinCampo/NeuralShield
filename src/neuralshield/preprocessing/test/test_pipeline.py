@@ -43,12 +43,18 @@ def run_tests() -> int:
         total += 1
         test_name = in_file.stem
 
-        raw_request = in_file.read_text(encoding="utf-8")
+        with in_file.open("r", encoding="utf-8", newline="") as handle:
+            raw_request = handle.read()
         actual = preprocess(raw_request)
+        if actual and not actual.endswith("\n"):
+            actual_to_write = f"{actual}\n"
+        else:
+            actual_to_write = actual
 
-        # Always write the generated processed request
         result_file = result_dir / f"{test_name}.actual"
-        result_file.write_text(actual, encoding="utf-8")
+        result_file.write_text(actual_to_write, encoding="utf-8")
+
+        actual = actual_to_write
 
         expected_file = out_dir / f"{test_name}.out"
         if not expected_file.exists():

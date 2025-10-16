@@ -6,6 +6,10 @@ from neuralshield.preprocessing.http_preprocessor import HttpPreprocessor
 class UnicodeNFKCAndControl(HttpPreprocessor):
     """
     Apply Unicode NFKC normalization to URL and QUERY content and detect anomalies.
+
+    Spec references:
+    - Unicode NFKC for canonical forms.
+    - Flagging FULLWIDTH, CONTROL, UNICODE_FORMAT, MATH_UNICODE, INVALID_UNICODE.
     """
 
     def process(self, request: str) -> str:
@@ -29,7 +33,7 @@ class UnicodeNFKCAndControl(HttpPreprocessor):
 
             # Only process URL and QUERY lines
             if line.startswith("[URL] ") or line.startswith("[QUERY] "):
-                processed_line, flags = self._process_content_line(line)
+                processed_line, flags = self._rule_process_content(line)
                 processed_lines.append(processed_line)
                 # Flags are already attached to the processed_line
             else:
@@ -38,7 +42,7 @@ class UnicodeNFKCAndControl(HttpPreprocessor):
 
         return "\n".join(processed_lines)
 
-    def _process_content_line(self, line: str) -> tuple[str, list[str]]:
+    def _rule_process_content(self, line: str) -> tuple[str, list[str]]:
         """
         Process a single URL or QUERY line: normalize content and detect anomalies.
 
@@ -59,16 +63,16 @@ class UnicodeNFKCAndControl(HttpPreprocessor):
             return line, []
 
         # Detect all Unicode security issues before normalization
-        has_fullwidth = self._has_fullwidth_characters(content)
-        has_unicode_format = self._has_unicode_formatting_chars(content)
-        has_math_unicode = self._has_mathematical_unicode(content)
-        has_invalid_unicode = self._has_invalid_unicode(content)
+        has_fullwidth = self._rule_has_fullwidth_chars(content)
+        has_unicode_format = self._rule_has_unicode_format_chars(content)
+        has_math_unicode = self._rule_has_math_unicode(content)
+        has_invalid_unicode = self._rule_has_invalid_unicode(content)
 
         # Apply NFKC normalization
         normalized_content = unicodedata.normalize("NFKC", content)
 
         # Detect control characters in normalized content
-        has_control = self._has_control_characters(normalized_content)
+        has_control = self._rule_has_control_chars(normalized_content)
 
         # Determine flags to emit
         flags = []
@@ -96,7 +100,7 @@ class UnicodeNFKCAndControl(HttpPreprocessor):
             [],
         )  # Return empty flags since they're attached to the line
 
-    def _has_fullwidth_characters(self, text: str) -> bool:
+    def _rule_has_fullwidth_chars(self, text: str) -> bool:
         """
         Detect fullwidth characters in the text (U+FF00-U+FFEF range).
 
@@ -108,7 +112,7 @@ class UnicodeNFKCAndControl(HttpPreprocessor):
                 return True
         return False
 
-    def _has_control_characters(self, text: str) -> bool:
+    def _rule_has_control_chars(self, text: str) -> bool:
         """
         Detect control characters in the text (Unicode category Cc).
 
@@ -127,7 +131,7 @@ class UnicodeNFKCAndControl(HttpPreprocessor):
 
         return False
 
-    def _has_unicode_formatting_chars(self, text: str) -> bool:
+    def _rule_has_unicode_format_chars(self, text: str) -> bool:
         """
         Detect zero-width and bidirectional formatting characters.
 
@@ -147,7 +151,7 @@ class UnicodeNFKCAndControl(HttpPreprocessor):
 
         return False
 
-    def _has_mathematical_unicode(self, text: str) -> bool:
+    def _rule_has_math_unicode(self, text: str) -> bool:
         """
         Detect mathematical alphanumeric symbols.
 
@@ -161,7 +165,7 @@ class UnicodeNFKCAndControl(HttpPreprocessor):
 
         return False
 
-    def _has_invalid_unicode(self, text: str) -> bool:
+    def _rule_has_invalid_unicode(self, text: str) -> bool:
         """
         Detect private use and invalid Unicode characters.
 

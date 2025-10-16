@@ -14,6 +14,10 @@ class HeaderNormalizationDuplicates(HttpPreprocessor):
     - Flags hop-by-hop headers in requests
     - Emits security flags for anomalies
     """
+    # RFC 9110/9112 references:
+    # - §5.1 token rules for field-names (normalisation & validation).
+    # - §5.5 header duplication and merge policy for specific fields.
+    # - §7 hop-by-hop header restrictions for requests.
 
     # Headers that can be safely merged with comma separation
     MERGEABLE_HEADERS = {
@@ -62,7 +66,7 @@ class HeaderNormalizationDuplicates(HttpPreprocessor):
         aggregates = {}
 
         headers_map, header_flags, global_flags, aggregates = (
-            self._collect_and_normalize_headers(lines)
+            self._rule_5_collect_and_normalize_headers(lines)
         )
 
         # Emit all non-header, non-flag lines (method, url, query, etc.)
@@ -105,7 +109,7 @@ class HeaderNormalizationDuplicates(HttpPreprocessor):
             or line.startswith("[HGF]")
         )
 
-    def _collect_and_normalize_headers(
+    def _rule_5_collect_and_normalize_headers(
         self, lines: list[str]
     ) -> tuple[dict[str, list[str]], dict[str, set[str]], set[str], dict[str, int]]:
         """
@@ -168,12 +172,12 @@ class HeaderNormalizationDuplicates(HttpPreprocessor):
             headers_map[normalized_name].append(value)
 
         # Process duplicates and generate header flags
-        duplicate_results = self._process_duplicates(headers_map, header_flags)
+        duplicate_results = self._rule_5_handle_duplicates(headers_map, header_flags)
         header_flags.update(duplicate_results["header_flags"])
         aggregates["dup_names"] = duplicate_results["dup_count"]
 
         # Check for hop-by-hop headers
-        hop_results = self._check_hop_by_hop_headers(headers_map, header_flags)
+        hop_results = self._rule_hop_by_hop_headers(headers_map, header_flags)
         header_flags.update(hop_results["header_flags"])
         if hop_results["has_hopbyhop"]:
             aggregates["hopbyhop"] = 1
@@ -238,7 +242,7 @@ class HeaderNormalizationDuplicates(HttpPreprocessor):
         flags = set()
         normalized_name = name.lower()
 
-        # NOTE: HDRNORM is now handled globally in _collect_and_normalize_headers
+        # NOTE: HDRNORM is now handled globally in _rule_5_collect_and_normalize_headers
 
         # Validate characters per RFC 9110 token rules
         invalid_chars = set()
@@ -252,7 +256,7 @@ class HeaderNormalizationDuplicates(HttpPreprocessor):
 
         return normalized_name, flags
 
-    def _process_duplicates(
+    def _rule_5_handle_duplicates(
         self, headers_map: dict[str, list[str]], header_flags: dict[str, set[str]]
     ) -> dict[str, Any]:
         """
@@ -289,7 +293,7 @@ class HeaderNormalizationDuplicates(HttpPreprocessor):
 
         return {"header_flags": header_flags, "dup_count": dup_count}
 
-    def _check_hop_by_hop_headers(
+    def _rule_hop_by_hop_headers(
         self, headers_map: dict[str, list[str]], header_flags: dict[str, set[str]]
     ) -> dict[str, Any]:
         """

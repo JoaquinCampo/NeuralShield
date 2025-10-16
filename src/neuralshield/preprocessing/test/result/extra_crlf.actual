@@ -1,0 +1,8 @@
+[METHOD] GET
+[VERSION] HTTP/1.1
+[URL] /extras MULTIPLESLASH
+[URL_ABS] http://example.com/extras
+[HEADER] host: example.com
+[HAGG] h_count=1 dup_names=0 hopbyhop=0 bad_names=0 total_bytes=12
+[HGF] HDRNORM
+[QMETA] count=0

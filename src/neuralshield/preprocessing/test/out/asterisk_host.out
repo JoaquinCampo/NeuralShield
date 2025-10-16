@@ -1,0 +1,7 @@
+[METHOD] OPTIONS
+[VERSION] HTTP/1.1
+[URL] *
+[HEADER] host: example.com HOSTNOTEMPTY
+[HAGG] h_count=1 dup_names=0 hopbyhop=0 bad_names=0 total_bytes=12
+[HGF] HDRNORM
+[QMETA] count=0

@@ -1,0 +1,9 @@
+[METHOD] CONNECT
+[VERSION] HTTP/1.1
+[URL] example.com:443
+[URL_ABS] example.com:443
+[HEADER] host: other.com:443
+[HAGG] h_count=1 dup_names=0 hopbyhop=0 bad_names=0 total_bytes=14
+[HGF] HDRNORM
+HOSTMISMATCH
+[QMETA] count=0

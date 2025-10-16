@@ -1,98 +1,62 @@
 """
 Absolute URL Builder - Step 06
 
-This step constructs canonical absolute URLs from HTTP request components
-to enable security analysis and SSRF detection. It handles multiple request
-forms (origin-form, absolute-form, authority-form, asterisk-form) and validates
-host header consistency.
-
-Key Features:
-- Builds canonical absolute URLs: scheme://host[:port]/path[?query]
-- Validates host header consistency with HOSTMISMATCH flag
-- Applies IDNA encoding for internationalized domains
-- Handles IPv4, IPv6, and domain name formats
-- Emits hybrid flags: HOSTMISMATCH (global), IDNA/BADHOST (inline)
-
-Security Benefits:
-- SSRF detection through URL/host header validation
-- Host header injection prevention
-- International domain spoofing detection
-- Canonical URL representation for security analysis
+Build a canonical absolute URL for each request and enforce RFC 9112 host
+requirements across the different request target forms.
 """
+
+from __future__ import annotations
 
 import ipaddress
 import re
-from typing import List, Optional, Tuple
+from dataclasses import dataclass
+from typing import Optional
+from urllib.parse import urlparse
 
 from neuralshield.preprocessing.http_preprocessor import HttpPreprocessor
 
 
+@dataclass
+class HostInfo:
+    """Structured representation of the Host header."""
+
+    value: str | None
+    host: str | None
+    port: int | None
+    was_present: bool
+    is_empty: bool
+    is_valid: bool
+    error: str | None
+
+
 class AbsoluteUrlBuilder(HttpPreprocessor):
     """
-    Absolute URL Builder - Step 06
+    Construct canonical absolute URLs while validating Host header consistency.
 
-    Constructs canonical absolute URLs from HTTP request components while
-    validating host header consistency and applying security checks.
-
-    Flag Strategy:
-    - HOSTMISMATCH: Global flag for request-level security issues
-    - IDNA: Inline flag with affected host header (Unicode processing evidence)
-    - BADHOST: Inline flag with affected host header (validation failure)
+    RFC 9112 references covered here:
+    - §3.2: host header presence, authority matching, and special-form rules.
     """
 
-    # Constants
     DEFAULT_SCHEME = "http"
     DEFAULT_PORTS = {"http": 80, "https": 443}
 
-    # Flag definitions
-    STEP06_GLOBAL_FLAGS = {"HOSTMISMATCH"}
-    STEP06_INLINE_FLAGS = {"IDNA", "BADHOST"}
-
-    # Host validation patterns
-    HOST_PATTERNS = {
-        "ipv4": re.compile(r"^(\d{1,3}\.){3}\d{1,3}$"),
-        "ipv6": re.compile(r"^\[([0-9a-fA-F:]+)\]$"),
-        "ipv6_with_port": re.compile(r"^\[([0-9a-fA-F:]+)\](?::(\d+))?$"),
-        "domain": re.compile(
-            r"^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*$"
-        ),
-    }
-
-    def __init__(self):
-        """Initialize the Absolute URL Builder."""
+    def __init__(self) -> None:
         super().__init__()
-        # Pre-compile regex patterns for performance
         self._compiled_patterns = {
             "ipv4": re.compile(r"^(\d{1,3}\.){3}\d{1,3}$"),
             "ipv6": re.compile(r"^\[([0-9a-fA-F:]+)\]$"),
             "ipv6_with_port": re.compile(r"^\[([0-9a-fA-F:]+)\]:(\d+)$"),
-            "domain": re.compile(
-                r"^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*$"
-            ),
-            "port": re.compile(r"^:(\d+)$"),
         }
 
     def process(self, request: str) -> str:
-        """
-        Process HTTP request to build absolute URLs and validate host consistency.
-
-        Args:
-            request: HTTP request as string with structured lines
-
-        Returns:
-            Enhanced request with [URL_ABS] line and security flags
-        """
         lines = request.split("\n")
-        processed_lines = []
-        global_flags = set()
+        processed_lines: list[str] = []
+        global_flags: set[str] = set()
 
-        # Extract key components
-        method = None
-        url = None
-        headers = []
-        host_header = None
+        method: str | None = None
+        url: str | None = None
+        host_header: str | None = None
 
-        # Parse the request
         for line in lines:
             if line.startswith("[METHOD] "):
                 method = line[9:].strip()
@@ -102,535 +66,440 @@ class AbsoluteUrlBuilder(HttpPreprocessor):
                 processed_lines.append(line)
             elif line.startswith("[HEADER] "):
                 header_content = line[9:].strip()
-                headers.append(header_content)
-
-                # Extract host header
                 if header_content.lower().startswith("host:"):
                     host_header = header_content
-
                 processed_lines.append(line)
             else:
                 processed_lines.append(line)
 
-        # Process URL construction and validation
         if method and url is not None:
-            url_abs_line, inline_flags, request_global_flags = self._process_request(
+            # RFC 9112 §3.2 – evaluate host requirements for the detected request form.
+            url_abs_line, inline_flags, request_global_flags = self._rule_process_request(
                 method, url, host_header
             )
 
-            # Add URL_ABS line after URL line
             if url_abs_line:
-                # Find URL line and insert URL_ABS after it
-                for i, line in enumerate(processed_lines):
+                for index, line in enumerate(processed_lines):
                     if line.startswith("[URL] "):
-                        processed_lines.insert(i + 1, url_abs_line)
+                        processed_lines.insert(index + 1, url_abs_line)
                         break
 
-            # Apply inline flags to headers
             if inline_flags:
-                processed_lines = self._apply_inline_flags(
-                    processed_lines, inline_flags
-                )
+                processed_lines = self._rule_apply_inline_flags(processed_lines, inline_flags)
 
-            # Collect global flags
             global_flags.update(request_global_flags)
 
-        # Emit global flags at end
         if global_flags:
-            processed_lines.append(self._emit_global_flags(global_flags))
+            processed_lines.append(self._rule_emit_global_flags(global_flags))
 
         return "\n".join(processed_lines)
 
-    def _process_request(
-        self, method: str, url: str, host_header: Optional[str]
-    ) -> Tuple[Optional[str], dict, set]:
-        """
-        Process a single request to build absolute URL and validate components.
+    # --------------------------------------------------------------------- #
+    # Core processing
+    # --------------------------------------------------------------------- #
 
-        Args:
-            method: HTTP method (GET, POST, etc.)
-            url: Request target URL
-            host_header: Host header content (if present)
+    def _rule_process_request(
+        self,
+        method: str,
+        url: str,
+        host_header: Optional[str],
+    ) -> tuple[str | None, dict[str, set[str]], set[str]]:
+        inline_flags: dict[str, set[str]] = {}
+        global_flags: set[str] = set()
 
-        Returns:
-            Tuple of (url_abs_line, inline_flags_dict, global_flags_set)
-        """
-        global_flags = set()
-        inline_flags = {}
+        host_info = self._rule_parse_host_header(host_header)
+        form_type = self._rule_detect_request_form(url)
 
-        # Parse host header
-        host_info = self._parse_host_header(host_header)
-        host, port, host_valid, host_error = host_info
-
-        # Detect request form
-        form_type = self._detect_request_form(url)
-
-        # Process based on form type
-        url_abs = None
+        url_abs: str | None = None
 
         if form_type == "origin-form":
-            url_abs, form_flags = self._handle_origin_form(url, host_info)
-            global_flags.update(form_flags.get("global", set()))
-            inline_flags.update(form_flags.get("inline", {}))
-
+            url_abs, inline, global_ = self._rule_handle_origin_form(url, host_info)
         elif form_type == "absolute-form":
-            url_abs, form_flags = self._handle_absolute_form(url, host_info)
-            global_flags.update(form_flags.get("global", set()))
-            inline_flags.update(form_flags.get("inline", {}))
-
+            url_abs, inline, global_ = self._rule_handle_absolute_form(url, host_info)
         elif form_type == "authority-form":
-            url_abs, form_flags = self._handle_authority_form(method, url, host_info)
-            global_flags.update(form_flags.get("global", set()))
-            inline_flags.update(form_flags.get("inline", {}))
+            url_abs, inline, global_ = self._rule_handle_authority_form(method, url, host_info)
+        else:  # asterisk-form
+            url_abs, inline, global_ = self._rule_handle_asterisk_form(method, host_info)
 
-        elif form_type == "asterisk-form":
-            url_abs, form_flags = self._handle_asterisk_form(method, host_info)
-            global_flags.update(form_flags.get("global", set()))
-            inline_flags.update(form_flags.get("inline", {}))
+        self._rule_merge_inline_flags(inline_flags, inline)
+        global_flags.update(global_)
 
-        # Create URL_ABS line if we have a result
         url_abs_line = f"[URL_ABS] {url_abs}" if url_abs else None
-
         return url_abs_line, inline_flags, global_flags
 
-    def _parse_host_header(
-        self, host_header: Optional[str]
-    ) -> Tuple[Optional[str], Optional[int], bool, Optional[str]]:
-        """
-        Parse Host header into components.
+    # --------------------------------------------------------------------- #
+    # Host parsing & validation helpers
+    # --------------------------------------------------------------------- #
 
-        Args:
-            host_header: Raw host header content (may include existing flags)
+    def _rule_parse_host_header(self, host_header: Optional[str]) -> HostInfo:
+        if host_header is None or not host_header.strip():
+            return HostInfo(
+                value=None,
+                host=None,
+                port=None,
+                was_present=False,
+                is_empty=False,
+                is_valid=False,
+                error="missing",
+            )
 
-        Returns:
-            Tuple of (host, port, is_valid, error_type)
-        """
-        if not host_header or not host_header.strip():
-            return None, None, False, "missing"
-
-        # Extract host part (remove "host:" prefix if present)
         host_content = host_header.strip()
         if host_content.lower().startswith("host:"):
             host_content = host_content[5:].strip()
 
-        if not host_content:
-            return None, None, False, "missing"
+        if host_content == "":
+            return HostInfo(
+                value="",
+                host=None,
+                port=None,
+                was_present=True,
+                is_empty=True,
+                is_valid=False,
+                error="empty",
+            )
 
-        # Strip any existing flags from previous steps (e.g., MIXEDSCRIPT, BADHOST)
-        # Split by spaces and take only the first part (the actual host:port)
-        host_parts = host_content.split()
-        if len(host_parts) > 1:
-            # First part should be the host:port, rest are flags
-            host_content = host_parts[0]
+        # Remove inline flags that previous steps may have appended.
+        host_value = host_content.split()[0]
 
-        host = None
-        port = None
+        host, port, split_error = self._split_host_port(host_value)
+        if split_error:
+            return HostInfo(
+                value=host_value,
+                host=None,
+                port=None,
+                was_present=True,
+                is_empty=False,
+                is_valid=False,
+                error=split_error,
+            )
 
-        # Handle IPv6 with port: [::1]:8080
-        ipv6_with_port_match = self._compiled_patterns["ipv6_with_port"].match(
-            host_content
+        is_valid, validation_error = self._rule_validate_host_format(host)
+
+        return HostInfo(
+            value=host_value,
+            host=host,
+            port=port,
+            was_present=True,
+            is_empty=False,
+            is_valid=is_valid,
+            error=validation_error,
         )
-        if ipv6_with_port_match:
-            host = f"[{ipv6_with_port_match.group(1)}]"
-            port_str = ipv6_with_port_match.group(2)
-            port = int(port_str) if port_str else None
-        else:
-            # Handle IPv6 without port: [::1]
-            ipv6_match = self._compiled_patterns["ipv6"].match(host_content)
-            if ipv6_match:
-                host = host_content
-                port = None
-            else:
-                # Handle IPv4/domain with optional port: example.com:8080 or 192.168.1.1:8080
-                if ":" in host_content:
-                    parts = host_content.rsplit(":", 1)
-                    if len(parts) == 2:
-                        potential_host, potential_port = parts
 
-                        # Validate port
-                        try:
-                            port = int(potential_port)
-                            if not (1 <= port <= 65535):
-                                return None, None, False, "invalid_port"
-                            host = potential_host
-                        except ValueError:
-                            return None, None, False, "invalid_port"
-                    else:
-                        host = host_content
-                else:
-                    # No port specified
-                    host = host_content
+    def _split_host_port(
+        self,
+        host_value: str,
+    ) -> tuple[str | None, int | None, str | None]:
+        match = self._compiled_patterns["ipv6_with_port"].match(host_value)
+        if match:
+            address = f"[{match.group(1)}]"
+            port = int(match.group(2))
+            if not (1 <= port <= 65535):
+                return None, None, "invalid_port"
+            return address, port, None
 
-        # Validate host format
-        if not host:
-            return None, None, False, "empty_host"
+        if self._compiled_patterns["ipv6"].match(host_value):
+            return host_value, None, None
 
-        # Validate host format
-        validation_result = self._validate_host_format(host)
-        if not validation_result[0]:
-            return None, port, False, validation_result[1]
+        if ":" in host_value:
+            potential_host, potential_port = host_value.rsplit(":", 1)
+            try:
+                port = int(potential_port)
+            except ValueError:
+                return None, None, "invalid_port"
+            if not (1 <= port <= 65535):
+                return None, None, "invalid_port"
+            return potential_host, port, None
 
-        return host, port, True, None
+        return host_value, None, None
 
-    def _validate_host_format(self, host: str) -> Tuple[bool, Optional[str]]:
-        """
-        Validate host format and return detailed error if invalid.
-
-        Args:
-            host: Host string to validate
-
-        Returns:
-            Tuple of (is_valid, error_type)
-        """
+    def _rule_validate_host_format(self, host: str | None) -> tuple[bool, str | None]:
         if not host or not host.strip():
             return False, "empty"
 
-        # First priority: Check for IPv6 format [address] or [address]:port
         if host.startswith("["):
-            if "]:" in host:
-                # IPv6 with port: [::1]:8080
-                ipv6_end = host.find("]:")
-                ipv6_addr = host[1:ipv6_end]
-                port_part = host[ipv6_end + 1 :]
-                # Remove leading colon if present
-                if port_part.startswith(":"):
-                    port_part = port_part[1:]
-                try:
-                    port_num = int(port_part)
-                    if not (1 <= port_num <= 65535):
-                        return False, "invalid_port"
-                except ValueError:
-                    return False, "invalid_port"
-            elif host.endswith("]"):
-                # IPv6 without port: [::1]
-                ipv6_addr = host[1:-1]
-            else:
+            if not host.endswith("]"):
                 return False, "invalid_ipv6"
-
-            # Validate IPv6 address using ipaddress module
             try:
-                ipaddress.IPv6Address(ipv6_addr)
+                ipaddress.IPv6Address(host[1:-1])
                 return True, None
             except ipaddress.AddressValueError:
                 return False, "invalid_ipv6"
 
-        # Second priority: Check for IPv4 format using ipaddress module
-        # First check if it looks like an IPv4 address (has 3 dots)
         if host.count(".") == 3:
             try:
                 ipaddress.IPv4Address(host)
                 return True, None
             except ipaddress.AddressValueError:
-                # Looks like IPv4 but invalid - reject completely
                 return False, "invalid_ipv4"
-        # Not an IPv4 format, continue to domain validation
 
-        # Check for domain format (allow Unicode for IDNA processing)
-        # First do basic validation before regex matching
         if ".." in host:
             return False, "consecutive_dots"
         if host.startswith("-") or host.endswith("-"):
             return False, "leading_trailing_dash"
-        if len(host.encode("utf-8")) > 253:  # RFC 1035 limit (bytes)
+        if len(host.encode("utf-8")) > 253:
             return False, "too_long"
-
-        # Use more permissive regex that allows long domains and Unicode
-        # Allow domains with at least one dot (basic FQDN check)
         if "." not in host:
             return False, "no_tld"
 
         unicode_domain_pattern = re.compile(
-            r"^[a-zA-Z0-9\u0080-\uFFFF]([a-zA-Z0-9\u0080-\uFFFF\-]*[a-zA-Z0-9\u0080-\uFFFF])?(\.[a-zA-Z0-9\u0080-\uFFFF]([a-zA-Z0-9\u0080-\uFFFF\-]*[a-zA-Z0-9\u0080-\uFFFF])?)*$"
+            r"^[a-zA-Z0-9\u0080-\uFFFF]([a-zA-Z0-9\u0080-\uFFFF\-]*[a-zA-Z0-9\u0080-\uFFFF])?"
+            r"(\.[a-zA-Z0-9\u0080-\uFFFF]([a-zA-Z0-9\u0080-\uFFFF\-]*[a-zA-Z0-9\u0080-\uFFFF])?)*$"
         )
-
         if unicode_domain_pattern.match(host):
             return True, None
 
         return False, "invalid_format"
 
-    def _detect_request_form(self, url: str) -> str:
-        """
-        Detect the HTTP request target form.
+    # --------------------------------------------------------------------- #
+    # Request form handlers
+    # --------------------------------------------------------------------- #
 
-        Args:
-            url: Request target string
+    def _rule_handle_origin_form(
+        self,
+        url: str,
+        host_info: HostInfo,
+    ) -> tuple[str | None, dict[str, set[str]], set[str]]:
+        inline: dict[str, set[str]] = {}
+        global_flags: set[str] = set()
 
-        Returns:
-            Form type: "origin-form", "absolute-form", "authority-form", "asterisk-form"
-        """
-        if url == "*":
-            return "asterisk-form"
+        if not host_info.was_present:
+            global_flags.add("HOSTMISSING")
+            return None, inline, global_flags
 
-        if "://" in url:
-            return "absolute-form"
+        if host_info.is_empty:
+            self._rule_add_inline_flag(inline, "host", "EMPTYHOST")
+            return None, inline, global_flags
 
-        if ":" in url and "/" not in url:
-            # Authority-form: host:port (no scheme, no path)
-            return "authority-form"
+        if not host_info.is_valid or not host_info.host:
+            self._rule_add_inline_flag(inline, "host", "BADHOST")
+            return None, inline, global_flags
 
-        # Default to origin-form: /path?query
-        return "origin-form"
-
-    def _handle_origin_form(
-        self, url: str, host_info: Tuple
-    ) -> Tuple[Optional[str], dict]:
-        """
-        Handle origin-form requests: /path?query
-
-        Args:
-            url: Origin-form URL (e.g., "/api/users")
-            host_info: Parsed host header info (host, port, is_valid, error)
-
-        Returns:
-            Tuple of (absolute_url, flags_dict)
-        """
-        host, port, host_valid, host_error = host_info
-        flags = {"global": set(), "inline": {}}
-
-        if not host_valid:
-            # Invalid or missing host header
-            flags["inline"]["host"] = "BADHOST"
-            return None, flags
-
-        # Apply IDNA processing if needed
-        processed_host, idna_flag = self._process_idna_encoding(host)
+        processed_host, idna_flag = self._rule_process_idna(host_info.host)
         if idna_flag:
-            flags["inline"]["host"] = "IDNA"
+            self._rule_add_inline_flag(inline, "host", "IDNA")
 
-        # Build absolute URL
         scheme = self.DEFAULT_SCHEME
-        port_str = f":{port}" if port and port != self.DEFAULT_PORTS.get(scheme) else ""
+        default_port = self.DEFAULT_PORTS.get(scheme)
+        port = host_info.port
+        port_str = f":{port}" if port and port != default_port else ""
 
         absolute_url = f"{scheme}://{processed_host}{port_str}{url}"
+        return absolute_url, inline, global_flags
 
-        return absolute_url, flags
+    def _rule_handle_absolute_form(
+        self,
+        url: str,
+        host_info: HostInfo,
+    ) -> tuple[str | None, dict[str, set[str]], set[str]]:
+        inline: dict[str, set[str]] = {}
+        global_flags: set[str] = set()
 
-    def _handle_absolute_form(
-        self, url: str, host_info: Tuple
-    ) -> Tuple[Optional[str], dict]:
-        """
-        Handle absolute-form requests: http://host:port/path?query
+        parsed = urlparse(url)
+        url_host = parsed.hostname or ""
+        url_port = parsed.port
+        scheme = parsed.scheme or self.DEFAULT_SCHEME
+        default_port = self.DEFAULT_PORTS.get(scheme)
 
-        Args:
-            url: Absolute-form URL
-            host_info: Parsed host header info
+        if not host_info.was_present:
+            global_flags.add("HOSTMISSING")
+        elif host_info.is_empty:
+            self._rule_add_inline_flag(inline, "host", "EMPTYHOST")
+        elif not host_info.is_valid or not host_info.host:
+            self._rule_add_inline_flag(inline, "host", "BADHOST")
+        else:
+            header_host_norm, header_idna = self._rule_process_idna(host_info.host)
+            if header_idna:
+                self._rule_add_inline_flag(inline, "host", "IDNA")
 
-        Returns:
-            Tuple of (absolute_url, flags_dict)
-        """
-        host, port, host_valid, host_error = host_info
-        flags = {"global": set(), "inline": {}}
+            url_host_norm, _ = self._rule_process_idna(url_host)
 
-        # For absolute-form, we use the URL as-is, but validate against Host header
-        if host_valid:
-            # Extract host from URL for comparison
-            try:
-                from urllib.parse import urlparse
+            header_port = host_info.port or default_port
+            target_port = url_port or default_port
 
-                parsed = urlparse(url)
-                url_host = parsed.hostname
-                url_port = parsed.port
+            if self._rule_hosts_mismatch(
+                header_host_norm,
+                header_port,
+                url_host_norm,
+                target_port,
+            ):
+                global_flags.add("HOSTMISMATCH")
 
-                # Apply IDNA processing to URL host if needed
-                processed_url_host, idna_flag = self._process_idna_encoding(
-                    url_host or ""
-                )
-                if idna_flag:
-                    flags["inline"]["host"] = "IDNA"
+        return url, inline, global_flags
 
-                # Compare hosts (normalize for comparison)
-                if url_host and host:
-                    url_host_normalized = processed_url_host.lower()
-                    host_normalized = (
-                        self._process_idna_encoding(host)[0].lower() if host else ""
-                    )
+    def _rule_handle_authority_form(
+        self,
+        method: str,
+        url: str,
+        host_info: HostInfo,
+    ) -> tuple[str | None, dict[str, set[str]], set[str]]:
+        inline: dict[str, set[str]] = {}
+        global_flags: set[str] = set()
 
-                    # Remove brackets from IPv6 for comparison
-                    if url_host_normalized.startswith(
-                        "["
-                    ) and url_host_normalized.endswith("]"):
-                        url_host_normalized = url_host_normalized[1:-1]
-                    if host_normalized.startswith("[") and host_normalized.endswith(
-                        "]"
-                    ):
-                        host_normalized = host_normalized[1:-1]
-
-                    if url_host_normalized != host_normalized:
-                        flags["global"].add("HOSTMISMATCH")
-
-            except Exception:
-                # If URL parsing fails, treat as valid absolute URL
-                pass
-
-        return url, flags
-
-    def _handle_authority_form(
-        self, method: str, url: str, host_info: Tuple
-    ) -> Tuple[Optional[str], dict]:
-        """
-        Handle authority-form requests: host:port (CONNECT method)
-
-        Args:
-            method: HTTP method
-            url: Authority-form target
-            host_info: Parsed host header info
-
-        Returns:
-            Tuple of (absolute_url, flags_dict)
-        """
-        flags = {"global": set(), "inline": {}}
-
-        # Authority-form is only valid for CONNECT method
         if method.upper() != "CONNECT":
-            flags["inline"]["host"] = "BADHOST"
-            return None, flags
+            self._rule_add_inline_flag(inline, "host", "BADHOST")
+            return None, inline, global_flags
 
-        # Apply IDNA processing if needed
-        processed_url, idna_flag = self._process_idna_encoding(url)
-        if idna_flag:
-            flags["inline"]["host"] = "IDNA"
+        target_host, target_port = self._rule_split_authority_target(url)
+        if target_host is None or target_port is None:
+            global_flags.add("BADAUTHORITY")
+            return None, inline, global_flags
 
-        # For CONNECT, return the authority as-is (no scheme)
-        return processed_url, flags
+        processed_target, target_idna = self._rule_process_idna(target_host)
+        if target_idna:
+            # No header line to annotate; the canonical target is already encoded.
+            pass
 
-    def _handle_asterisk_form(
-        self, method: str, host_info: Tuple
-    ) -> Tuple[Optional[str], dict]:
-        """
-        Handle asterisk-form requests: * (OPTIONS method)
+        if not host_info.was_present:
+            global_flags.add("HOSTMISSING")
+        elif host_info.is_empty:
+            self._rule_add_inline_flag(inline, "host", "EMPTYHOST")
+        elif not host_info.is_valid or not host_info.host:
+            self._rule_add_inline_flag(inline, "host", "BADHOST")
+        else:
+            header_host_norm, header_idna = self._rule_process_idna(host_info.host)
+            if header_idna:
+                self._rule_add_inline_flag(inline, "host", "IDNA")
 
-        Args:
-            method: HTTP method
-            host_info: Parsed host header info
+            if self._rule_hosts_mismatch(
+                header_host_norm,
+                host_info.port,
+                processed_target,
+                target_port,
+            ):
+                global_flags.add("HOSTMISMATCH")
 
-        Returns:
-            Tuple of (absolute_url, flags_dict)
-        """
-        host, port, host_valid, host_error = host_info
-        flags = {"global": set(), "inline": {}}
+        absolute_authority = f"{processed_target}:{target_port}"
+        return absolute_authority, inline, global_flags
 
-        if not host_valid:
-            flags["inline"]["host"] = "BADHOST"
-            return None, flags
+    def _rule_handle_asterisk_form(
+        self,
+        method: str,
+        host_info: HostInfo,
+    ) -> tuple[str | None, dict[str, set[str]], set[str]]:
+        inline: dict[str, set[str]] = {}
+        global_flags: set[str] = set()
 
-        # Apply IDNA processing if needed
-        processed_host, idna_flag = self._process_idna_encoding(host)
-        if idna_flag:
-            flags["inline"]["host"] = "IDNA"
+        if not host_info.was_present:
+            global_flags.add("HOSTMISSING")
+            return None, inline, global_flags
 
-        # Build absolute URL for OPTIONS *
-        scheme = self.DEFAULT_SCHEME
-        port_str = f":{port}" if port and port != self.DEFAULT_PORTS.get(scheme) else ""
+        if not host_info.is_empty:
+            if not host_info.is_valid:
+                self._rule_add_inline_flag(inline, "host", "BADHOST")
+            else:
+                self._rule_add_inline_flag(inline, "host", "HOSTNOTEMPTY")
 
-        absolute_url = f"{scheme}://{processed_host}{port_str}/*"
+        return None, inline, global_flags
 
-        return absolute_url, flags
+    # --------------------------------------------------------------------- #
+    # Utility helpers
+    # --------------------------------------------------------------------- #
 
-    def _process_idna_encoding(self, host: str) -> Tuple[str, bool]:
-        """
-        Apply IDNA (Internationalized Domain Names in Applications) encoding.
+    def _rule_detect_request_form(self, url: str) -> str:
+        if url == "*":
+            return "asterisk-form"
+        if "://" in url:
+            return "absolute-form"
+        if ":" in url and "/" not in url:
+            return "authority-form"
+        return "origin-form"
 
-        Args:
-            host: Host string that may contain Unicode characters
+    def _rule_split_authority_target(self, value: str) -> tuple[str | None, int | None]:
+        if ":" not in value:
+            return None, None
+        host, port_str = value.rsplit(":", 1)
+        try:
+            port = int(port_str)
+        except ValueError:
+            return None, None
+        if not (1 <= port <= 65535):
+            return None, None
+        return host, port
 
-        Returns:
-            Tuple of (processed_host, idna_flag_emitted)
-        """
+    def _rule_process_idna(self, host: str | None) -> tuple[str, bool]:
         if not host:
-            return host, False
+            return "", False
 
-        # Check if host contains non-ASCII characters
-        if not self._contains_unicode(host):
-            return host, False
-
-        # For IPv6 addresses, don't apply IDNA to the address part
         if host.startswith("[") and host.endswith("]"):
-            # IPv6 address - don't encode
             return host, False
-        elif "]:" in host:
-            # IPv6 with port: [::1]:8080 - encode only the host part
-            ipv6_end = host.find("]:")
-            ipv6_part = host[: ipv6_end + 1]  # Include the closing bracket
-            port_part = host[ipv6_end + 1 :]  # The port part
-            encoded_host = ipv6_part  # IPv6 part stays as-is
-            if port_part:
-                encoded_host += port_part
-            return encoded_host, False
 
-        # Try to apply IDNA encoding
+        if "]:" in host:
+            closing = host.find("]:")
+            ipv6_part = host[: closing + 1]
+            port_part = host[closing + 1 :]
+            return ipv6_part + port_part, False
+
+        if not any(ord(char) > 127 for char in host):
+            return host, False
+
         try:
             import idna
 
-            encoded_host = idna.encode(host).decode("ascii")
-            return encoded_host, True
-        except ImportError:
-            # IDNA module not available - for now, just flag Unicode presence
-            # In production, this should be installed
-            return host, True  # Still flag that Unicode was detected
+            encoded = idna.encode(host).decode("ascii")
+            return encoded, True
         except Exception:
-            # If IDNA encoding fails, return original and don't flag
-            # This prevents breaking valid but non-IDNA domains
-            return host, False
+            return host, True
 
-    def _contains_unicode(self, text: str) -> bool:
-        """
-        Check if text contains non-ASCII Unicode characters.
+    def _rule_hosts_mismatch(
+        self,
+        header_host: str,
+        header_port: int | None,
+        target_host: str,
+        target_port: int | None,
+    ) -> bool:
+        def normalize(value: str) -> str:
+            if value.startswith("[") and value.endswith("]"):
+                return value[1:-1].lower()
+            return value.lower()
 
-        Args:
-            text: Text to check
+        if normalize(header_host) != normalize(target_host):
+            return True
 
-        Returns:
-            True if contains Unicode characters
-        """
-        return any(ord(char) > 127 for char in text)
+        if header_port is not None and target_port is not None:
+            return header_port != target_port
 
-    def _apply_inline_flags(self, lines: List[str], inline_flags: dict) -> List[str]:
-        """
-        Apply inline flags to header lines.
+        return False
 
-        Args:
-            lines: List of processed lines
-            inline_flags: Dict mapping header types to flags
+    def _rule_add_inline_flag(
+        self,
+        inline_flags: dict[str, set[str]],
+        key: str,
+        value: str,
+    ) -> None:
+        inline_flags.setdefault(key, set()).add(value)
 
-        Returns:
-            Modified lines with inline flags applied
-        """
-        modified_lines = []
+    def _rule_merge_inline_flags(
+        self,
+        destination: dict[str, set[str]],
+        source: dict[str, set[str]],
+    ) -> None:
+        for key, values in source.items():
+            destination.setdefault(key, set()).update(values)
 
+    def _rule_apply_inline_flags(
+        self,
+        lines: list[str],
+        inline_flags: dict[str, set[str]],
+    ) -> list[str]:
+        if not inline_flags:
+            return lines
+
+        output: list[str] = []
         for line in lines:
             if line.startswith("[HEADER] "):
-                header_content = line[9:].strip()  # Remove "[HEADER] " prefix
-
-                # Check if this header needs flags
-                for flag_target, flag_value in inline_flags.items():
-                    if flag_target == "host" and header_content.lower().startswith(
-                        "host:"
-                    ):
-                        # Add flag to host header
-                        modified_line = f"[HEADER] {header_content} {flag_value}"
-                        modified_lines.append(modified_line)
-                        break
+                header_content = line[9:].strip()
+                if (
+                    "host" in inline_flags
+                    and header_content.lower().startswith("host:")
+                    and inline_flags["host"]
+                ):
+                    flags = " ".join(sorted(inline_flags["host"]))
+                    output.append(f"[HEADER] {header_content} {flags}")
                 else:
-                    # No flag needed for this header
-                    modified_lines.append(line)
+                    output.append(line)
             else:
-                modified_lines.append(line)
+                output.append(line)
+        return output
 
-        return modified_lines
-
-    def _emit_global_flags(self, global_flags: set) -> str:
-        """
-        Emit global flags in NeuralShield format.
-
-        Args:
-            global_flags: Set of global flag strings
-
-        Returns:
-            Formatted global flags line
-        """
-        if not global_flags:
-            return ""
-
-        # Sort flags alphabetically for determinism
-        sorted_flags = sorted(global_flags)
-        return " ".join(sorted_flags)
+    def _rule_emit_global_flags(self, global_flags: set[str]) -> str:
+        return " ".join(sorted(global_flags))

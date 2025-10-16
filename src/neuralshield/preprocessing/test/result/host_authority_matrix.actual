@@ -1,0 +1,9 @@
+[METHOD] GET
+[VERSION] HTTP/1.1
+[URL] http:/example.com/resource MULTIPLESLASH
+[URL_ABS] http://example.com/resource
+[HEADER] host: other.com
+[HAGG] h_count=1 dup_names=0 hopbyhop=0 bad_names=0 total_bytes=10
+[HGF] HDRNORM
+HOSTMISMATCH
+[QMETA] count=0

@@ -62,16 +62,51 @@ class FramingCleanup(HttpPreprocessor):
             processed = processed[:-1]
             trailing_controls += 1
 
+        # RFC 9112 §2.2 – remove surplus CRLF framing before/after the message.
+        processed, leading_crlf, trailing_crlf = self._rule_trim_surplus_crlf(processed)
+
         # Log what was removed
-        if bom_removed or leading_controls > 0 or trailing_controls > 0:
+        if (
+            bom_removed
+            or leading_controls > 0
+            or trailing_controls > 0
+            or leading_crlf > 0
+            or trailing_crlf > 0
+        ):
             total_removed = original_length - len(processed)
             logger.debug(
                 "Framing cleanup: removed {total} chars "
-                "(BOM: {bom}, leading controls: {lead}, trailing controls: {trail})",
+                "(BOM: {bom}, leading controls: {lead}, trailing controls: {trail}, "
+                "leading CRLF: {lead_crlf}, trailing CRLF: {trail_crlf})",
                 total=total_removed,
                 bom=bom_removed,
                 lead=leading_controls,
                 trail=trailing_controls,
+                lead_crlf=leading_crlf,
+                trail_crlf=trailing_crlf,
             )
 
         return processed
+
+    def _rule_trim_surplus_crlf(self, request: str) -> tuple[str, int, int]:
+        """RFC 9112 §2.2 – trim excess CR/LF around the entire request."""
+
+        leading = 0
+        trailing = 0
+        processed = request
+
+        while processed.startswith("\r\n"):
+            processed = processed[2:]
+            leading += 1
+        while processed.startswith("\r") or processed.startswith("\n"):
+            processed = processed[1:]
+            leading += 1
+
+        while processed.endswith("\r\n"):
+            processed = processed[:-2]
+            trailing += 1
+        while processed.endswith("\r") or processed.endswith("\n"):
+            processed = processed[:-1]
+            trailing += 1
+
+        return processed, leading, trailing

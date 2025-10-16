@@ -40,7 +40,7 @@ class PathStructureNormalizer(HttpPreprocessor):
                 url_content = line[6:]  # Remove '[URL] '
 
                 # Normalize path and get flags
-                normalized_path, flags = self._normalize_path_structure(url_content)
+                normalized_path, flags = self._rule_normalize_path(url_content)
 
                 # Reconstruct line with normalized path and flags
                 processed_line = f"[URL] {normalized_path}"
@@ -54,7 +54,7 @@ class PathStructureNormalizer(HttpPreprocessor):
 
         return "\n".join(processed_lines)
 
-    def _normalize_path_structure(self, url_path: str) -> Tuple[str, Set[str]]:
+    def _rule_normalize_path(self, url_path: str) -> Tuple[str, Set[str]]:
         """
         Normalize URL path structure according to security-first rules.
 
@@ -75,15 +75,15 @@ class PathStructureNormalizer(HttpPreprocessor):
         is_absolute = url_path.startswith("/")
 
         # Segment the path by literal slashes (not %2F)
-        segments = self._segment_path(url_path)
+        segments = self._rule_segment_path(url_path)
 
         # Track anomalies during processing
-        has_multiple_slashes = self._detect_multiple_slashes(segments)
-        has_current_dir = self._detect_current_directory(segments)
-        has_parent_dir = self._detect_parent_directory(segments)
+        has_multiple_slashes = self._rule_detect_multiple_slashes(segments)
+        has_current_dir = self._rule_detect_current_dir(segments)
+        has_parent_dir = self._rule_detect_parent_dir(segments)
 
         # Apply normalization rules
-        normalized_segments = self._normalize_segments(segments)
+        normalized_segments = self._rule_normalize_segments(segments)
 
         # Set flags based on detected anomalies
         if has_multiple_slashes:
@@ -94,7 +94,7 @@ class PathStructureNormalizer(HttpPreprocessor):
             flags.add("DOTDOT")
 
         # Reconstruct path
-        normalized_path = self._reconstruct_path(normalized_segments, is_absolute)
+        normalized_path = self._rule_reconstruct_path(normalized_segments, is_absolute)
 
         # Handle root path canonicalization
         if normalized_path == "/" or normalized_path == "":
@@ -103,7 +103,7 @@ class PathStructureNormalizer(HttpPreprocessor):
 
         return normalized_path, flags
 
-    def _segment_path(self, path: str) -> List[str]:
+    def _rule_segment_path(self, path: str) -> List[str]:
         """
         Split path into segments by literal slashes, preserving %2F encoding.
 
@@ -122,7 +122,7 @@ class PathStructureNormalizer(HttpPreprocessor):
 
         return segments
 
-    def _detect_multiple_slashes(self, segments: List[str]) -> bool:
+    def _rule_detect_multiple_slashes(self, segments: List[str]) -> bool:
         """
         Detect if path contains multiple consecutive slashes.
 
@@ -134,7 +134,7 @@ class PathStructureNormalizer(HttpPreprocessor):
         """
         return "" in segments  # Empty segments indicate multiple slashes
 
-    def _detect_current_directory(self, segments: List[str]) -> bool:
+    def _rule_detect_current_dir(self, segments: List[str]) -> bool:
         """
         Detect if path contains current directory segments (.).
 
@@ -146,7 +146,7 @@ class PathStructureNormalizer(HttpPreprocessor):
         """
         return "." in segments
 
-    def _detect_parent_directory(self, segments: List[str]) -> bool:
+    def _rule_detect_parent_dir(self, segments: List[str]) -> bool:
         """
         Detect if path contains parent directory segments (..).
 
@@ -158,7 +158,7 @@ class PathStructureNormalizer(HttpPreprocessor):
         """
         return ".." in segments
 
-    def _normalize_segments(self, segments: List[str]) -> List[str]:
+    def _rule_normalize_segments(self, segments: List[str]) -> List[str]:
         """
         Apply normalization rules to path segments.
 
@@ -183,7 +183,7 @@ class PathStructureNormalizer(HttpPreprocessor):
 
         return normalized
 
-    def _reconstruct_path(self, segments: List[str], is_absolute: bool) -> str:
+    def _rule_reconstruct_path(self, segments: List[str], is_absolute: bool) -> str:
         """
         Reconstruct path from normalized segments.
 
