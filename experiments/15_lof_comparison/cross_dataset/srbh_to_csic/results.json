@@ -1,0 +1,18 @@
+{
+  "scenario": "SRBH_to_CSIC",
+  "n_train": 100000,
+  "n_test": 50065,
+  "n_test_normal": 25000,
+  "n_test_attack": 25065,
+  "explained_variance": 0.7243697807691046,
+  "threshold": -0.11863172054290771,
+  "recall": 0.10057849591063235,
+  "precision": 0.6767785234899328,
+  "f1_score": 0.17513025356026396,
+  "accuracy": 0.5256566463597323,
+  "fpr": 0.04816,
+  "true_positives": 2521,
+  "false_positives": 1204,
+  "true_negatives": 23796,
+  "false_negatives": 22544
+}

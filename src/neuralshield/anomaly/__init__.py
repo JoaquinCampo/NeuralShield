@@ -2,7 +2,9 @@
 
 from neuralshield.anomaly import (
     deep_svdd,  # noqa: F401 - ensure registration
+    gmm,  # noqa: F401 - ensure registration
     isolation_forest,  # noqa: F401 - ensure registration
+    lof,  # noqa: F401 - ensure registration
     mahalanobis,  # noqa: F401 - ensure registration
     ocsvm,  # noqa: F401 - ensure registration
 )
@@ -13,14 +15,18 @@ from neuralshield.anomaly.factory import (
     get_detector,
     register_detector,
 )
+from neuralshield.anomaly.gmm import GMMDetector
 from neuralshield.anomaly.isolation_forest import IsolationForestDetector
+from neuralshield.anomaly.lof import LOFDetector
 from neuralshield.anomaly.mahalanobis import MahalanobisDetector
 from neuralshield.anomaly.ocsvm import OCSVMDetector
 
 __all__ = [
     "AnomalyDetector",
     "DeepSVDDDetector",
+    "GMMDetector",
     "IsolationForestDetector",
+    "LOFDetector",
     "MahalanobisDetector",
     "OCSVMDetector",
     "available_detectors",

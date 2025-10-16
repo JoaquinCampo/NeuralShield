@@ -1,0 +1,69 @@
+{
+  "lof_cross_dataset": {
+    "csic_to_srbh": {
+      "scenario": "CSIC_to_SRBH",
+      "n_train": 47000,
+      "n_test": 807815,
+      "n_test_normal": 425195,
+      "n_test_attack": 382620,
+      "explained_variance": 0.9300813206393654,
+      "threshold": 0.4732856750488281,
+      "recall": 0.05520620981652815,
+      "precision": 0.49901958468189656,
+      "f1_score": 0.0994142826550951,
+      "accuracy": 0.5262492030972438,
+      "fpr": 0.04987358741283411,
+      "true_positives": 21123,
+      "false_positives": 21206,
+      "true_negatives": 403989,
+      "false_negatives": 361497
+    },
+    "srbh_to_csic": {
+      "scenario": "SRBH_to_CSIC",
+      "n_train": 100000,
+      "n_test": 50065,
+      "n_test_normal": 25000,
+      "n_test_attack": 25065,
+      "explained_variance": 0.7243697807691046,
+      "threshold": -0.11863172054290771,
+      "recall": 0.10057849591063235,
+      "precision": 0.6767785234899328,
+      "f1_score": 0.17513025356026396,
+      "accuracy": 0.5256566463597323,
+      "fpr": 0.04816,
+      "true_positives": 2521,
+      "false_positives": 1204,
+      "true_negatives": 23796,
+      "false_negatives": 22544
+    }
+  },
+  "secbert_cross_dataset_reference": {
+    "srbh_to_csic": {
+      "recall": 0.1026,
+      "precision": 0.6729,
+      "f1": 0.178
+    },
+    "csic_to_srbh": {
+      "recall": 0.1076,
+      "precision": 0.6595,
+      "f1": 0.185
+    }
+  },
+  "same_dataset_baselines": {
+    "lof_csic": {
+      "recall": 0.642,
+      "precision": 0.9295,
+      "f1": 0.7595
+    },
+    "secbert_csic": {
+      "recall": 0.4926,
+      "precision": 0.9081,
+      "f1": 0.6387
+    },
+    "secbert_srbh": {
+      "recall": 0.5412,
+      "precision": 0.9069,
+      "f1": 0.6779
+    }
+  }
+}

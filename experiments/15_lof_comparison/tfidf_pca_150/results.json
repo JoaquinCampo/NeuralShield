@@ -1,0 +1,103 @@
+{
+  "n_components": 150,
+  "explained_variance": 0.9695445581052852,
+  "detectors": [
+    {
+      "detector": "LOF_k5",
+      "recall": 0.5677239178136845,
+      "precision": 0.92091638622832,
+      "f1_score": 0.7024212059135672,
+      "accuracy": 0.7591730750024968,
+      "fpr": 0.04888,
+      "threshold": 1325064.125,
+      "true_positives": 14230,
+      "false_positives": 1222,
+      "true_negatives": 23778,
+      "false_negatives": 10835,
+      "n_neighbors": 5
+    },
+    {
+      "detector": "LOF_k10",
+      "recall": 0.545342110512667,
+      "precision": 0.9207814078814416,
+      "f1_score": 0.6849912302681032,
+      "accuracy": 0.7488864476180965,
+      "fpr": 0.04704,
+      "threshold": 1325064.25,
+      "true_positives": 13669,
+      "false_positives": 1176,
+      "true_negatives": 23824,
+      "false_negatives": 11396,
+      "n_neighbors": 10
+    },
+    {
+      "detector": "LOF_k20",
+      "recall": 0.6005186515060842,
+      "precision": 0.9266190593449889,
+      "f1_score": 0.7287516037667335,
+      "accuracy": 0.7761909517627085,
+      "fpr": 0.04768,
+      "threshold": 1260472.625,
+      "true_positives": 15052,
+      "false_positives": 1192,
+      "true_negatives": 23808,
+      "false_negatives": 10013,
+      "n_neighbors": 20
+    },
+    {
+      "detector": "LOF_k30",
+      "recall": 0.6135647316975863,
+      "precision": 0.9387742644365767,
+      "f1_score": 0.7421043742611045,
+      "accuracy": 0.7864975531808649,
+      "fpr": 0.04012,
+      "threshold": 1227801.875,
+      "true_positives": 15379,
+      "false_positives": 1003,
+      "true_negatives": 23997,
+      "false_negatives": 9686,
+      "n_neighbors": 30
+    },
+    {
+      "detector": "LOF_k50",
+      "recall": 0.6048274486335528,
+      "precision": 0.9318908286206049,
+      "f1_score": 0.7335543028572812,
+      "accuracy": 0.780025966243883,
+      "fpr": 0.04432,
+      "threshold": 541873.75,
+      "true_positives": 15160,
+      "false_positives": 1108,
+      "true_negatives": 23892,
+      "false_negatives": 9905,
+      "n_neighbors": 50
+    },
+    {
+      "detector": "LOF_k100",
+      "recall": 0.6184320766008379,
+      "precision": 0.9308232750855702,
+      "f1_score": 0.7431324608082842,
+      "accuracy": 0.7859582542694498,
+      "fpr": 0.04608,
+      "threshold": 541873.875,
+      "true_positives": 15501,
+      "false_positives": 1152,
+      "true_negatives": 23848,
+      "false_negatives": 9564,
+      "n_neighbors": 100
+    },
+    {
+      "detector": "Mahalanobis",
+      "recall": 0.1052064631956912,
+      "precision": 0.6792890262751159,
+      "f1_score": 0.18219504611876877,
+      "accuracy": 0.5271546988914412,
+      "fpr": 0.0498,
+      "threshold": 821.0082397460938,
+      "true_positives": 2637,
+      "false_positives": 1245,
+      "true_negatives": 23755,
+      "false_negatives": 22428
+    }
+  ]
+}

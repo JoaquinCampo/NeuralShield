@@ -1,0 +1,14 @@
+{
+  "model": "LOF_TF-IDF_PCA150_k100_NoPrep",
+  "n_neighbors": 100,
+  "n_components": 150,
+  "explained_variance": 0.9300813206393654,
+  "preprocessing": false,
+  "threshold": 1073827.625,
+  "recall": 0.6420107719928186,
+  "precision": 0.9294749610119564,
+  "f1_score": 0.7594506583604701,
+  "fpr": 0.04884,
+  "true_positives": 16092,
+  "false_positives": 1221
+}
