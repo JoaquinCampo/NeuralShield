@@ -1,0 +1,334 @@
+{
+  "sample_sizes": {
+    "valid": 100000,
+    "attack": 382620
+  },
+  "source_totals": {
+    "valid_train_total": 100000,
+    "attack_pool_total": 382620
+  },
+  "label_stats": {
+    "valid": {
+      "flag_count_summary": {
+        "mean": 4.32423,
+        "median": 4.0,
+        "p90": 5.0,
+        "p95": 7.0,
+        "p99": 9.0,
+        "max": 16.0,
+        "min": 2.0
+      },
+      "unique_flag_summary": {
+        "mean": 4.17935,
+        "median": 4.0,
+        "p90": 5.0,
+        "p95": 6.0,
+        "p99": 7.0,
+        "max": 10.0,
+        "min": 2.0
+      },
+      "zero_flag_fraction": 0.0,
+      "top_flags": [
+        {
+          "flag": "HDRNORM",
+          "total": 100000,
+          "per_request": 1.0,
+          "presence_rate": 1.0
+        },
+        {
+          "flag": "PAREN",
+          "total": 98871,
+          "per_request": 0.98871,
+          "presence_rate": 0.98871
+        },
+        {
+          "flag": "HOPBYHOP",
+          "total": 70479,
+          "per_request": 0.70479,
+          "presence_rate": 0.70479
+        },
+        {
+          "flag": "HOME",
+          "total": 56656,
+          "per_request": 0.56656,
+          "presence_rate": 0.56656
+        },
+        {
+          "flag": "MULTIPLESLASH",
+          "total": 43342,
+          "per_request": 0.43342,
+          "presence_rate": 0.43342
+        },
+        {
+          "flag": "PIPE",
+          "total": 20274,
+          "per_request": 0.20274,
+          "presence_rate": 0.18778
+        },
+        {
+          "flag": "PCTSLASH",
+          "total": 13223,
+          "per_request": 0.13223,
+          "presence_rate": 0.13223
+        },
+        {
+          "flag": "QUOTE",
+          "total": 10066,
+          "per_request": 0.10066,
+          "presence_rate": 0.05134
+        },
+        {
+          "flag": "SEMICOLON",
+          "total": 5482,
+          "per_request": 0.05482,
+          "presence_rate": 0.02736
+        },
+        {
+          "flag": "BACKSLASH",
+          "total": 4586,
+          "per_request": 0.04586,
+          "presence_rate": 0.02345
+        },
+        {
+          "flag": "ANGLE",
+          "total": 2669,
+          "per_request": 0.02669,
+          "presence_rate": 0.01362
+        },
+        {
+          "flag": "PCTBACKSLASH",
+          "total": 2180,
+          "per_request": 0.0218,
+          "presence_rate": 0.0218
+        },
+        {
+          "flag": "BRACE",
+          "total": 1719,
+          "per_request": 0.01719,
+          "presence_rate": 0.00875
+        },
+        {
+          "flag": "SPACE",
+          "total": 1248,
+          "per_request": 0.01248,
+          "presence_rate": 0.00624
+        },
+        {
+          "flag": "PCTSPACE",
+          "total": 679,
+          "per_request": 0.00679,
+          "presence_rate": 0.00624
+        },
+        {
+          "flag": "QBARE",
+          "total": 412,
+          "per_request": 0.00412,
+          "presence_rate": 0.00206
+        },
+        {
+          "flag": "NUL",
+          "total": 370,
+          "per_request": 0.0037,
+          "presence_rate": 0.0037
+        },
+        {
+          "flag": "WSPAD",
+          "total": 83,
+          "per_request": 0.00083,
+          "presence_rate": 0.00083
+        },
+        {
+          "flag": "QARRAY:load[]",
+          "total": 54,
+          "per_request": 0.00054,
+          "presence_rate": 0.00027
+        },
+        {
+          "flag": "QEMPTYVAL",
+          "total": 20,
+          "per_request": 0.0002,
+          "presence_rate": 0.0001
+        },
+        {
+          "flag": "QSEMISEP",
+          "total": 10,
+          "per_request": 0.0001,
+          "presence_rate": 0.0001
+        }
+      ]
+    },
+    "attack": {
+      "flag_count_summary": {
+        "mean": 5.142864983534578,
+        "median": 5.0,
+        "p90": 6.0,
+        "p95": 8.0,
+        "p99": 10.0,
+        "max": 17.0,
+        "min": 1.0
+      },
+      "unique_flag_summary": {
+        "mean": 4.535026919659192,
+        "median": 5.0,
+        "p90": 6.0,
+        "p95": 6.0,
+        "p99": 7.0,
+        "max": 10.0,
+        "min": 1.0
+      },
+      "zero_flag_fraction": 0.0,
+      "top_flags": [
+        {
+          "flag": "HDRNORM",
+          "total": 382588,
+          "per_request": 0.999916366107365,
+          "presence_rate": 0.999916366107365
+        },
+        {
+          "flag": "MULTIPLESLASH",
+          "total": 381827,
+          "per_request": 0.9979274475981391,
+          "presence_rate": 0.9979274475981391
+        },
+        {
+          "flag": "PAREN",
+          "total": 379013,
+          "per_request": 0.9905728921645497,
+          "presence_rate": 0.9905728921645497
+        },
+        {
+          "flag": "QUOTE",
+          "total": 303463,
+          "per_request": 0.7931184987716272,
+          "presence_rate": 0.401853013433694
+        },
+        {
+          "flag": "PIPE",
+          "total": 150873,
+          "per_request": 0.3943155088599655,
+          "presence_rate": 0.38001411321938217
+        },
+        {
+          "flag": "HOPBYHOP",
+          "total": 111550,
+          "per_request": 0.2915425226072866,
+          "presence_rate": 0.2915425226072866
+        },
+        {
+          "flag": "PCTSLASH",
+          "total": 60374,
+          "per_request": 0.1577910198107783,
+          "presence_rate": 0.1577910198107783
+        },
+        {
+          "flag": "SEMICOLON",
+          "total": 46550,
+          "per_request": 0.1216611781924625,
+          "presence_rate": 0.06038367048246302
+        },
+        {
+          "flag": "BRACE",
+          "total": 46035,
+          "per_request": 0.12031519523286811,
+          "presence_rate": 0.06586953112748942
+        },
+        {
+          "flag": "PCTSPACE",
+          "total": 30567,
+          "per_request": 0.07988866238042967,
+          "presence_rate": 0.07250013067795724
+        },
+        {
+          "flag": "SPACE",
+          "total": 28808,
+          "per_request": 0.07529141184465005,
+          "presence_rate": 0.03764570592232502
+        },
+        {
+          "flag": "BACKSLASH",
+          "total": 15345,
+          "per_request": 0.04010506507762271,
+          "presence_rate": 0.02047462234070357
+        },
+        {
+          "flag": "ANGLE",
+          "total": 10907,
+          "per_request": 0.028506089592807485,
+          "presence_rate": 0.01454707020019863
+        },
+        {
+          "flag": "PCTBACKSLASH",
+          "total": 7778,
+          "per_request": 0.020328263028592336,
+          "presence_rate": 0.020328263028592336
+        },
+        {
+          "flag": "UNUSUAL_METHOD",
+          "total": 4078,
+          "per_request": 0.01065809419267158,
+          "presence_rate": 0.01065809419267158
+        },
+        {
+          "flag": "QBARE",
+          "total": 3502,
+          "per_request": 0.009152684125241754,
+          "presence_rate": 0.00479849458993257
+        },
+        {
+          "flag": "QARRAY:load[]",
+          "total": 2498,
+          "per_request": 0.006528670743818933,
+          "presence_rate": 0.0032669489310543096
+        },
+        {
+          "flag": "QRAWSEMI",
+          "total": 788,
+          "per_request": 0.002059484606136637,
+          "presence_rate": 0.002059484606136637
+        },
+        {
+          "flag": "WSPAD",
+          "total": 480,
+          "per_request": 0.001254508389524855,
+          "presence_rate": 0.001254508389524855
+        },
+        {
+          "flag": "HOME",
+          "total": 340,
+          "per_request": 0.0008886101092467723,
+          "presence_rate": 0.0008886101092467723
+        },
+        {
+          "flag": "QNUL",
+          "total": 174,
+          "per_request": 0.00045475929120275993,
+          "presence_rate": 0.00022737964560137997
+        },
+        {
+          "flag": "QSEMISEP",
+          "total": 172,
+          "per_request": 0.000449532172913073,
+          "presence_rate": 0.000449532172913073
+        },
+        {
+          "flag": "QREPEAT:load[]",
+          "total": 21,
+          "per_request": 5.48847420417124e-05,
+          "presence_rate": 1.5681354869060686e-05
+        },
+        {
+          "flag": "QEMPTYVAL",
+          "total": 16,
+          "per_request": 4.1816946317495164e-05,
+          "presence_rate": 2.0908473158747582e-05
+        },
+        {
+          "flag": "QREPEAT:user_email",
+          "total": 3,
+          "per_request": 7.840677434530343e-06,
+          "presence_rate": 2.6135591448434478e-06
+        }
+      ]
+    }
+  }
+}

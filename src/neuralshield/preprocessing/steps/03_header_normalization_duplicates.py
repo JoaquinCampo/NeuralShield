@@ -1,6 +1,9 @@
 from typing import Any
 
 from neuralshield.preprocessing.http_preprocessor import HttpPreprocessor
+from neuralshield.preprocessing.steps.structure_metadata import (
+    merge_structure_flags,
+)
 
 
 class HeaderNormalizationDuplicates(HttpPreprocessor):
@@ -54,6 +57,7 @@ class HeaderNormalizationDuplicates(HttpPreprocessor):
         """
         lines = request.split("\n")
         processed_lines = []
+        structure_flags: set[str] = set()
 
         # Two-pass processing: collect then emit
         headers_map: dict[str, list[str]] = {}
@@ -61,9 +65,24 @@ class HeaderNormalizationDuplicates(HttpPreprocessor):
         global_flags: set[str] = {}
         aggregates = {}
 
-        headers_map, header_flags, global_flags, aggregates = (
-            self._collect_and_normalize_headers(lines)
-        )
+        (
+            headers_map,
+            header_flags,
+            global_flags,
+            aggregates,
+            struct_updates,
+        ) = self._collect_and_normalize_headers(lines)
+
+        structure_flags.update(struct_updates)
+
+        hop_results = self._check_hop_by_hop_headers(headers_map, header_flags)
+        header_flags.update(hop_results["header_flags"])
+        if hop_results["has_hopbyhop"]:
+            aggregates["hopbyhop"] = 1
+            structure_flags.add("HOPBYHOP")
+
+        for flags in header_flags.values():
+            flags.discard("HOPBYHOP")
 
         # Emit all non-header, non-flag lines (method, url, query, etc.)
         # Skip existing flags to avoid duplication on reprocessing
@@ -80,6 +99,8 @@ class HeaderNormalizationDuplicates(HttpPreprocessor):
         # Emit global flags if any
         if global_flags:
             processed_lines.append(self._emit_global_flags(global_flags))
+
+        merge_structure_flags(processed_lines, structure_flags)
 
         return "\n".join(processed_lines)
 
@@ -107,21 +128,29 @@ class HeaderNormalizationDuplicates(HttpPreprocessor):
 
     def _collect_and_normalize_headers(
         self, lines: list[str]
-    ) -> tuple[dict[str, list[str]], dict[str, set[str]], set[str], dict[str, int]]:
+    ) -> tuple[
+        dict[str, list[str]],
+        dict[str, set[str]],
+        set[str],
+        dict[str, int],
+        set[str],
+    ]:
         """
         First pass: collect all headers, normalize names,
         detect duplicates and anomalies.
 
         Returns:
-            Tuple of (headers_map, header_flags, global_flags, aggregates) where:
+            Tuple of (headers_map, header_flags, global_flags, aggregates, structure_flags) where:
             - headers_map: dict[normalized_name, list[values]]
             - header_flags: dict[normalized_name, set[flag_strings]]
             - global_flags: set of global flag strings
             - aggregates: dict of statistical aggregates
+            - structure_flags: set of structural evidence flags
         """
         headers_map: dict[str, list[str]] = {}
         header_flags: dict[str, set[str]] = {}
         global_flags: set[str] = set()
+        structure_flags: set[str] = set()
         aggregates = {
             "h_count": 0,
             "dup_names": 0,
@@ -180,7 +209,7 @@ class HeaderNormalizationDuplicates(HttpPreprocessor):
 
         # Set HDRNORM if any normalization occurred
         if has_normalization_changes:
-            global_flags.add("HDRNORM")
+            structure_flags.add("HDRNORM")
 
         # Calculate aggregates
         aggregates["h_count"] = sum(len(values) for values in headers_map.values())
@@ -188,7 +217,7 @@ class HeaderNormalizationDuplicates(HttpPreprocessor):
             len(",".join(values)) for values in headers_map.values()
         )
 
-        return headers_map, header_flags, global_flags, aggregates
+        return headers_map, header_flags, global_flags, aggregates, structure_flags
 
     def _parse_header_line(self, header_content: str) -> tuple[str | None, str]:
         """

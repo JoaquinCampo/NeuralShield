@@ -21,6 +21,11 @@ class QueryParserAndFlags(HttpPreprocessor):
     # Configuration
     LONG_VALUE_THRESHOLD = 1024  # bytes
 
+    # Rarity thresholds for noisy flags
+    NONASCII_MIN_COUNT = 2
+    NONASCII_MIN_RATIO = 0.15
+    RAW_SEMICOLON_MIN_COUNT = 2
+
     # Value shape patterns
     SHAPE_PATTERNS = {
         "jwt": re.compile(r"^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]*$"),
@@ -281,7 +286,7 @@ class QueryParserAndFlags(HttpPreprocessor):
             if ampersand_count <= 1 and self._is_semicolon_dominant(query_string):
                 separator_type = ";"
                 flags.add("QSEMISEP")
-            else:
+            elif semicolon_count >= self.RAW_SEMICOLON_MIN_COUNT:
                 # Raw semicolon present but not dominant
                 flags.add("QRAWSEMI")
 
@@ -331,6 +336,13 @@ class QueryParserAndFlags(HttpPreprocessor):
         # Split key and value
         key, value = param.split("=", 1)
 
+        if not key:
+            flags.add("QKEY_EMPTY")
+        else:
+            key_to_validate = key[:-2] if key.endswith("[]") else key
+            if key_to_validate and not re.fullmatch(r"[A-Za-z0-9_.-]+", key_to_validate):
+                flags.add("QKEY_SYMBOL")
+
         # Check for empty value
         if not value:
             flags.add("QEMPTYVAL")
@@ -346,7 +358,13 @@ class QueryParserAndFlags(HttpPreprocessor):
             flags.add("QNUL")
 
         # Check for non-ASCII
-        if not all(ord(c) < 128 for c in key + decoded_value):
+        combined = key + decoded_value
+        non_ascii_count = sum(1 for c in combined if ord(c) >= 128)
+        total_chars = len(combined) or 1
+        if (
+            non_ascii_count >= self.NONASCII_MIN_COUNT
+            and (non_ascii_count / total_chars) >= self.NONASCII_MIN_RATIO
+        ):
             flags.add("QNONASCII")
 
         # Check for array notation
