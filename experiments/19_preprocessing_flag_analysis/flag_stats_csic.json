@@ -1,0 +1,172 @@
+{
+  "sample_sizes": {
+    "valid": 72000,
+    "attack": 25065
+  },
+  "source_totals": {
+    "valid_train_total": 72000,
+    "attack_pool_total": 25065
+  },
+  "label_stats": {
+    "valid": {
+      "flag_count_summary": {
+        "mean": 4.003347222222223,
+        "median": 4.0,
+        "p90": 4.0,
+        "p95": 4.0,
+        "p99": 4.0,
+        "max": 7.0,
+        "min": 4.0
+      },
+      "unique_flag_summary": {
+        "mean": 4.001666666666667,
+        "median": 4.0,
+        "p90": 4.0,
+        "p95": 4.0,
+        "p99": 4.0,
+        "max": 5.0,
+        "min": 4.0
+      },
+      "zero_flag_fraction": 0.0,
+      "top_flags": [
+        {
+          "flag": "HDRNORM",
+          "total": 72000,
+          "per_request": 1.0,
+          "presence_rate": 1.0
+        },
+        {
+          "flag": "HOPBYHOP",
+          "total": 72000,
+          "per_request": 1.0,
+          "presence_rate": 1.0
+        },
+        {
+          "flag": "MULTIPLESLASH",
+          "total": 72000,
+          "per_request": 1.0,
+          "presence_rate": 1.0
+        },
+        {
+          "flag": "PAREN",
+          "total": 72000,
+          "per_request": 1.0,
+          "presence_rate": 1.0
+        },
+        {
+          "flag": "QUOTE",
+          "total": 209,
+          "per_request": 0.0029027777777777776,
+          "presence_rate": 0.0014444444444444444
+        },
+        {
+          "flag": "QNONASCII",
+          "total": 32,
+          "per_request": 0.00044444444444444447,
+          "presence_rate": 0.00022222222222222223
+        }
+      ]
+    },
+    "attack": {
+      "flag_count_summary": {
+        "mean": 4.3340115699182125,
+        "median": 4.0,
+        "p90": 4.0,
+        "p95": 6.0,
+        "p99": 9.0,
+        "max": 11.0,
+        "min": 4.0
+      },
+      "unique_flag_summary": {
+        "mean": 4.17969279872332,
+        "median": 4.0,
+        "p90": 4.0,
+        "p95": 5.0,
+        "p99": 7.0,
+        "max": 8.0,
+        "min": 4.0
+      },
+      "zero_flag_fraction": 0.0,
+      "top_flags": [
+        {
+          "flag": "HDRNORM",
+          "total": 25065,
+          "per_request": 1.0,
+          "presence_rate": 1.0
+        },
+        {
+          "flag": "HOPBYHOP",
+          "total": 25065,
+          "per_request": 1.0,
+          "presence_rate": 1.0
+        },
+        {
+          "flag": "MULTIPLESLASH",
+          "total": 25065,
+          "per_request": 1.0,
+          "presence_rate": 1.0
+        },
+        {
+          "flag": "PAREN",
+          "total": 25065,
+          "per_request": 1.0,
+          "presence_rate": 1.0
+        },
+        {
+          "flag": "QUOTE",
+          "total": 4100,
+          "per_request": 0.16357470576501096,
+          "presence_rate": 0.08142828645521644
+        },
+        {
+          "flag": "SEMICOLON",
+          "total": 1692,
+          "per_request": 0.06750448833034112,
+          "presence_rate": 0.03375224416517056
+        },
+        {
+          "flag": "ANGLE",
+          "total": 1296,
+          "per_request": 0.05170556552962298,
+          "presence_rate": 0.02585278276481149
+        },
+        {
+          "flag": "QRAWSEMI",
+          "total": 654,
+          "per_request": 0.02609216038300419,
+          "presence_rate": 0.02609216038300419
+        },
+        {
+          "flag": "PIPE",
+          "total": 216,
+          "per_request": 0.008617594254937163,
+          "presence_rate": 0.004308797127468581
+        },
+        {
+          "flag": "PCTSPACE",
+          "total": 186,
+          "per_request": 0.007420706163973669,
+          "presence_rate": 0.0037103530819868344
+        },
+        {
+          "flag": "QNUL",
+          "total": 180,
+          "per_request": 0.00718132854578097,
+          "presence_rate": 0.003590664272890485
+        },
+        {
+          "flag": "QNONASCII",
+          "total": 24,
+          "per_request": 0.0009575104727707959,
+          "presence_rate": 0.00047875523638539794
+        },
+        {
+          "flag": "QBARE",
+          "total": 24,
+          "per_request": 0.0009575104727707959,
+          "presence_rate": 0.00047875523638539794
+        }
+      ]
+    }
+  }
+}

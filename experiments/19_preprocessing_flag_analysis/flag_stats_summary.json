@@ -1,0 +1,172 @@
+{
+  "sample_sizes": {
+    "valid": 10000,
+    "attack": 10000
+  },
+  "source_totals": {
+    "valid_train_total": 47000,
+    "attack_pool_total": 25065
+  },
+  "label_stats": {
+    "valid": {
+      "flag_count_summary": {
+        "mean": 4.0039,
+        "median": 4.0,
+        "p90": 4.0,
+        "p95": 4.0,
+        "p99": 4.0,
+        "max": 7.0,
+        "min": 4.0
+      },
+      "unique_flag_summary": {
+        "mean": 4.0019,
+        "median": 4.0,
+        "p90": 4.0,
+        "p95": 4.0,
+        "p99": 4.0,
+        "max": 5.0,
+        "min": 4.0
+      },
+      "zero_flag_fraction": 0.0,
+      "top_flags": [
+        {
+          "flag": "HDRNORM",
+          "total": 10000,
+          "per_request": 1.0,
+          "presence_rate": 1.0
+        },
+        {
+          "flag": "HOPBYHOP",
+          "total": 10000,
+          "per_request": 1.0,
+          "presence_rate": 1.0
+        },
+        {
+          "flag": "MULTIPLESLASH",
+          "total": 10000,
+          "per_request": 1.0,
+          "presence_rate": 1.0
+        },
+        {
+          "flag": "PAREN",
+          "total": 10000,
+          "per_request": 1.0,
+          "presence_rate": 1.0
+        },
+        {
+          "flag": "QUOTE",
+          "total": 35,
+          "per_request": 0.0035,
+          "presence_rate": 0.0017
+        },
+        {
+          "flag": "QNONASCII",
+          "total": 4,
+          "per_request": 0.0004,
+          "presence_rate": 0.0002
+        }
+      ]
+    },
+    "attack": {
+      "flag_count_summary": {
+        "mean": 4.3359,
+        "median": 4.0,
+        "p90": 4.0,
+        "p95": 6.0,
+        "p99": 9.0,
+        "max": 10.0,
+        "min": 4.0
+      },
+      "unique_flag_summary": {
+        "mean": 4.1809,
+        "median": 4.0,
+        "p90": 4.0,
+        "p95": 5.0,
+        "p99": 7.0,
+        "max": 7.0,
+        "min": 4.0
+      },
+      "zero_flag_fraction": 0.0,
+      "top_flags": [
+        {
+          "flag": "HDRNORM",
+          "total": 10000,
+          "per_request": 1.0,
+          "presence_rate": 1.0
+        },
+        {
+          "flag": "HOPBYHOP",
+          "total": 10000,
+          "per_request": 1.0,
+          "presence_rate": 1.0
+        },
+        {
+          "flag": "MULTIPLESLASH",
+          "total": 10000,
+          "per_request": 1.0,
+          "presence_rate": 1.0
+        },
+        {
+          "flag": "PAREN",
+          "total": 10000,
+          "per_request": 1.0,
+          "presence_rate": 1.0
+        },
+        {
+          "flag": "QUOTE",
+          "total": 1636,
+          "per_request": 0.1636,
+          "presence_rate": 0.0814
+        },
+        {
+          "flag": "SEMICOLON",
+          "total": 692,
+          "per_request": 0.0692,
+          "presence_rate": 0.0346
+        },
+        {
+          "flag": "ANGLE",
+          "total": 524,
+          "per_request": 0.0524,
+          "presence_rate": 0.0262
+        },
+        {
+          "flag": "QRAWSEMI",
+          "total": 267,
+          "per_request": 0.0267,
+          "presence_rate": 0.0267
+        },
+        {
+          "flag": "PIPE",
+          "total": 84,
+          "per_request": 0.0084,
+          "presence_rate": 0.0042
+        },
+        {
+          "flag": "PCTSPACE",
+          "total": 80,
+          "per_request": 0.008,
+          "presence_rate": 0.004
+        },
+        {
+          "flag": "QNUL",
+          "total": 60,
+          "per_request": 0.006,
+          "presence_rate": 0.003
+        },
+        {
+          "flag": "QBARE",
+          "total": 8,
+          "per_request": 0.0008,
+          "presence_rate": 0.0004
+        },
+        {
+          "flag": "QNONASCII",
+          "total": 8,
+          "per_request": 0.0008,
+          "presence_rate": 0.0004
+        }
+      ]
+    }
+  }
+}

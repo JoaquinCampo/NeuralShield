@@ -2,6 +2,9 @@ import re
 from typing import List, Set, Tuple
 
 from neuralshield.preprocessing.http_preprocessor import HttpPreprocessor
+from neuralshield.preprocessing.steps.structure_metadata import (
+    merge_structure_flags,
+)
 
 
 class PathStructureNormalizer(HttpPreprocessor):
@@ -29,6 +32,7 @@ class PathStructureNormalizer(HttpPreprocessor):
         """
         lines = request.split("\n")
         processed_lines = []
+        structure_flags: set[str] = set()
 
         for line in lines:
             if line.strip() == "":
@@ -37,13 +41,18 @@ class PathStructureNormalizer(HttpPreprocessor):
 
             if line.startswith("[URL] "):
                 # Extract URL content and normalize path structure
-                url_content = line[6:]  # Remove '[URL] '
+                url_content = line[6:].strip()  # Remove '[URL] ' and trim whitespace
 
                 # Normalize path and get flags
                 normalized_path, flags = self._normalize_path_structure(url_content)
 
                 # Reconstruct line with normalized path and flags
                 processed_line = f"[URL] {normalized_path}"
+
+                if "MULTIPLESLASH" in flags:
+                    flags.remove("MULTIPLESLASH")
+                    structure_flags.add("MULTIPLESLASH")
+
                 if flags:
                     processed_line += f" {' '.join(sorted(flags))}"
 
@@ -51,6 +60,8 @@ class PathStructureNormalizer(HttpPreprocessor):
             else:
                 # Pass through other lines unchanged
                 processed_lines.append(line)
+
+        merge_structure_flags(processed_lines, structure_flags)
 
         return "\n".join(processed_lines)
 
