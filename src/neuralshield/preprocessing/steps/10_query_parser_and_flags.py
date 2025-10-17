@@ -399,6 +399,7 @@ class QueryParserAndFlags(HttpPreprocessor):
         remaining_patterns = re.findall(r"%[0-9A-Fa-f]{2}", value)
         return len(remaining_patterns) > 0
 
+
     def _detect_value_shape(self, value: str) -> str:
         """
         Detect the shape/category of a value.
@@ -448,3 +449,55 @@ class QueryParserAndFlags(HttpPreprocessor):
         structured_shapes = {"jwt", "uuid", "ipv4", "ipv6", "email", "uaxurl"}
 
         return shape in structured_shapes
+
+
+class QueryParserAndFlagsCsic(QueryParserAndFlags):
+    """CSIC-tuned variant that highlights raw semicolons and quote+semicolon combos."""
+
+    RAW_SEMICOLON_MIN_COUNT = 1
+
+    def _parse_single_parameter(self, param: str) -> Tuple[str, Set[str]]:
+        output, flags = super()._parse_single_parameter(param)
+        raw_lower = param.lower()
+        if (
+            ("'" in param or '"' in param or "%27" in raw_lower or "%22" in raw_lower)
+            and (";" in param or "%3b" in raw_lower)
+        ):
+            flags.add("QSQLI_QUOTE_SEMI")
+        return output, flags
+
+
+class QueryParserAndFlagsSrbh(QueryParserAndFlags):
+    """SR_BH-tuned variant that emphasises mixed whitespace encodings."""
+
+    def _process_all_queries(
+        self, query_lines: List[str]
+    ) -> Tuple[List[str], Set[str], Set[str], int]:
+        output_lines, separator_flags, global_flags, param_count = super()._process_all_queries(
+            query_lines
+        )
+
+        updated_lines: List[str] = []
+        for line in output_lines:
+            if not line.startswith("[QUERY] "):
+                updated_lines.append(line)
+                continue
+
+            tokens = line.split()
+            if len(tokens) <= 2:
+                updated_lines.append(line)
+                continue
+
+            prefix = tokens[:2]
+            flag_tokens = tokens[2:]
+            if "PCTSPACE" in flag_tokens and "SPACE" in flag_tokens:
+                flag_tokens_set = set(flag_tokens)
+                if "PCTSPACE_PAIR" not in flag_tokens_set:
+                    flag_tokens_set.add("PCTSPACE_PAIR")
+                    global_flags.add("PCTSPACE_PAIR")
+                flag_tokens = sorted(flag_tokens_set)
+                updated_lines.append(" ".join(prefix + flag_tokens))
+            else:
+                updated_lines.append(line)
+
+        return updated_lines, separator_flags, global_flags, param_count

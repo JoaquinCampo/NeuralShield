@@ -1,0 +1,23 @@
+[METHOD] GET
+[VERSION] HTTP/1.1
+[URL] /store/search MULTIPLESLASH
+[URL_ABS] http://shop.example.com/store/search
+[QUERY] q=laptop
+[QUERY] sort=price
+[QUERY] order=asc
+[HEADER] accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+[HEADER] accept-encoding: gzip, deflate, br
+[HEADER] accept-language: en-US,en;q=0.5
+[HEADER] cache-control: max-age=0
+[HEADER] connection: keep-alive HOPBYHOP
+[HEADER] content-length: 0
+[HEADER] cookie: sessionid=abc123xyz; csrftoken=def456uvw
+[HEADER] host: shop.example.com
+[HEADER] referer: https://shop.example.com/home
+[HEADER] upgrade-insecure-requests: 1
+[HEADER] user-agent: SecureClient/5.2
+[HEADER] x-forwarded-for: 203.0.113.5
+[HEADER] x-requested-with: XMLHttpRequest
+[HAGG] h_count=13 dup_names=0 hopbyhop=1 bad_names=0 total_bytes=254
+[HGF] HDRNORM
+[QMETA] count=3

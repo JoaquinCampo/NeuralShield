@@ -131,7 +131,7 @@ class FlagStatsAccumulator:
         }
 
         top_flags: list[dict[str, object]] = []
-        for flag, total_hits in self.freq.most_common(25):
+        for flag, total_hits in self.freq.most_common(50):
             per_request = total_hits / total
             presence_rate = self.presence[flag] / total
             top_flags.append(
@@ -192,13 +192,32 @@ FLAG_SET = {
     "QNUL",
     "QNONASCII",
     "QLONG",
+    "QSQLI_QUOTE_SEMI",
+    "PCTSPACE_PAIR",
     "HOME",
     "MULTIPLESLASH",
+    "MULTIPLESLASH_HEAVY",
     "DOTCUR",
     "DOTDOT",
+    "XSS_TAG",
+    "FLAG_RISK_HIGH",
+    "FLAG_OVERFLOW",
+    "PIPE_REPEAT",
+    "BRACE_REPEAT",
+    "STRUCT_GAP",
+    "FLAG_RISK_HIGH_SUPERFLAGTOKEN_EXPERIMENTAL",
+    "QUOTE_SUPERFLAGTOKEN_EXPERIMENTAL",
+    "SEMICOLON_SUPERFLAGTOKEN_EXPERIMENTAL",
+    "QSQLI_QUOTE_SEMI_SUPERFLAGTOKEN_EXPERIMENTAL",
+    "QRAWSEMI_SUPERFLAGTOKEN_EXPERIMENTAL",
+    "ANGLE_SUPERFLAGTOKEN_EXPERIMENTAL",
+    "XSS_TAG_SUPERFLAGTOKEN_EXPERIMENTAL",
+    "PIPE_SUPERFLAGTOKEN_EXPERIMENTAL",
+    "PCTSPACE_SUPERFLAGTOKEN_EXPERIMENTAL",
+    "QNUL_SUPERFLAGTOKEN_EXPERIMENTAL",
 }
 
-PREFIX_FLAGS = ("QARRAY:", "QREPEAT:")
+PREFIX_FLAGS = ("QARRAY:", "QREPEAT:", "STRUCT_GAP:")
 
 
 def is_flag(token: str) -> bool:
@@ -341,6 +360,12 @@ def main() -> None:
         help="Random seed used for reservoir sampling.",
     )
     parser.add_argument(
+        "--pipeline",
+        choices=("balanced", "csic-overfit", "srbh-overfit"),
+        default="balanced",
+        help="Which preprocessing pipeline to execute.",
+    )
+    parser.add_argument(
         "--output",
         type=Path,
         default=Path(__file__).with_name("flag_stats_summary.json"),
@@ -351,7 +376,18 @@ def main() -> None:
     ensure_optional_dependencies()
 
     # Import after we have stubs in place.
-    from neuralshield.preprocessing.pipeline import preprocess
+    if args.pipeline == "balanced":
+        from neuralshield.preprocessing.pipeline import preprocess
+    elif args.pipeline == "csic-overfit":
+        from neuralshield.preprocessing.pipeline_csic_overfit import (
+            preprocess_csic_overfit as preprocess,
+        )
+    elif args.pipeline == "srbh-overfit":
+        from neuralshield.preprocessing.pipeline_srbh_overfit import (
+            preprocess_srbh_overfit as preprocess,
+        )
+    else:
+        raise ValueError(f"Unsupported pipeline '{args.pipeline}'")
 
     rng = random.Random(args.seed)
 

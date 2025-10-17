@@ -1,8 +1,0 @@
-[METHOD] GET
-[URL] /already/normalized/path
-[QPARAM] param=value
-[QPARAM] encoded=.test
-[QMETA] count=2
-[HEADER] Host: example.com
-[HEADER] User-Agent: Test/1.0
-[HEADER] Accept: */*

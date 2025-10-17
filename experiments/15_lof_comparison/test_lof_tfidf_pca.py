@@ -1,11 +1,15 @@
 """Test LOF on TF-IDF + PCA embeddings.
 
-Generates TF-IDF embeddings with 150-dimensional PCA and tests LOF detector.
-Compares against Mahalanobis baseline from experiment 10.
+Generates TF-IDF embeddings with PCA-reduced TF-IDF vectors and evaluates LOF
+against a Mahalanobis baseline. This script now accepts command-line arguments
+so we can swap datasets, preprocessing pipelines, and detector parameters.
 """
 
+import argparse
+import importlib
 import json
 from pathlib import Path
+from typing import Callable
 
 import numpy as np
 from loguru import logger
@@ -14,14 +18,59 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 
 from neuralshield.anomaly import LOFDetector, MahalanobisDetector
 from neuralshield.encoding.data.jsonl import JSONLRequestReader
-from neuralshield.preprocessing.pipeline import preprocess
+
+
+def resolve_preprocess(spec: str) -> Callable[[str], str] | None:
+    """Resolve a preprocessing pipeline specifier into a callable."""
+
+    if spec in {"none", "skip", ""}:
+        return None
+
+    if spec == "default":
+        from neuralshield.preprocessing.pipeline import preprocess
+
+        return preprocess
+
+    if spec == "csic-overfit":
+        from neuralshield.preprocessing.pipeline_csic_overfit import (
+            preprocess_csic_overfit,
+        )
+
+        return preprocess_csic_overfit
+
+    if spec == "srbh-overfit":
+        from neuralshield.preprocessing.pipeline_srbh_overfit import (
+            preprocess_srbh_overfit,
+        )
+
+        return preprocess_srbh_overfit
+
+    if spec == "csic-long-flags":
+        from neuralshield.preprocessing.pipeline_csic_long_flags import (
+            preprocess_csic_long_flags,
+        )
+
+        return preprocess_csic_long_flags
+
+    if spec.startswith("import:"):
+        _, target = spec.split(":", 1)
+        module_name, attr_name = target.split(":")
+        module = importlib.import_module(module_name)
+        return getattr(module, attr_name)
+
+    raise ValueError(
+        f"Unsupported preprocess spec '{spec}'. Use 'default', 'csic-overfit', "
+        "'srbh-overfit', 'csic-long-flags', 'none', or 'import:module:callable'."
+    )
 
 
 def load_and_embed_tfidf(
     train_path: Path,
     test_path: Path,
     n_components: int = 150,
-    with_preprocessing: bool = True,
+    preprocess_fn: Callable[[str], str] | None = None,
+    max_train_samples: int | None = None,
+    max_test_samples: int | None = None,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, float]:
     """Load data, apply TF-IDF, and reduce with PCA.
 
@@ -34,9 +83,13 @@ def load_and_embed_tfidf(
 
     for batch, _ in train_dataset.iter_batches(batch_size=1000):
         for text in batch:
-            if with_preprocessing:
-                text = preprocess(text)
+            if preprocess_fn is not None:
+                text = preprocess_fn(text)
             train_texts.append(text)
+            if max_train_samples and len(train_texts) >= max_train_samples:
+                break
+        if max_train_samples and len(train_texts) >= max_train_samples:
+            break
 
     logger.info(f"Loaded {len(train_texts)} training samples")
 
@@ -47,10 +100,14 @@ def load_and_embed_tfidf(
 
     for batch, labels in test_dataset.iter_batches(batch_size=1000):
         for text, label in zip(batch, labels):
-            if with_preprocessing:
-                text = preprocess(text)
+            if preprocess_fn is not None:
+                text = preprocess_fn(text)
             test_texts.append(text)
             test_labels.append(1 if label == "attack" else 0)
+            if max_test_samples and len(test_texts) >= max_test_samples:
+                break
+        if max_test_samples and len(test_texts) >= max_test_samples:
+            break
 
     logger.info(f"Loaded {len(test_texts)} test samples")
 
@@ -144,24 +201,88 @@ def evaluate_detector(
     }
 
 
+def build_arg_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Evaluate LOF and Mahalanobis on TF-IDF + PCA embeddings."
+    )
+    parser.add_argument(
+        "--train-path",
+        type=Path,
+        default=Path("src/neuralshield/data/CSIC/train.jsonl"),
+        help="Path to JSONL file containing training requests.",
+    )
+    parser.add_argument(
+        "--test-path",
+        type=Path,
+        default=Path("src/neuralshield/data/CSIC/test.jsonl"),
+        help="Path to JSONL file containing test requests.",
+    )
+    parser.add_argument(
+        "--preprocess",
+        type=str,
+        default="default",
+        help=(
+            "Preprocessing pipeline spec. "
+            "Use 'default', 'csic-overfit', 'srbh-overfit', 'csic-long-flags', "
+            "'none', or 'import:module:callable'."
+        ),
+    )
+    parser.add_argument(
+        "--n-components",
+        type=int,
+        default=150,
+        help="Number of PCA components.",
+    )
+    parser.add_argument(
+        "--max-train-samples",
+        type=int,
+        default=None,
+        help="Optional cap on the number of training samples.",
+    )
+    parser.add_argument(
+        "--max-test-samples",
+        type=int,
+        default=None,
+        help="Optional cap on the number of test samples.",
+    )
+    parser.add_argument(
+        "--lof-neighbors",
+        type=int,
+        nargs="+",
+        default=[5, 10, 20, 30, 50, 100],
+        help="List of neighbor counts to evaluate for LOF.",
+    )
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        default=None,
+        help="Directory to store results (defaults to experiments/15_lof_comparison/tfidf_pca_<n>).",
+    )
+    return parser
+
+
 def main():
-    """Run LOF vs Mahalanobis comparison on TF-IDF + PCA."""
+    parser = build_arg_parser()
+    args = parser.parse_args()
+
+    preprocess_fn = resolve_preprocess(args.preprocess)
+
     logger.info("=" * 80)
-    logger.info("LOF vs Mahalanobis: TF-IDF + 150D PCA")
+    logger.info(
+        "LOF vs Mahalanobis: TF-IDF + {}D PCA | preprocess={}",
+        args.n_components,
+        args.preprocess,
+    )
     logger.info("=" * 80)
 
-    # Paths
-    data_dir = Path("src/neuralshield/data")
-    train_path = data_dir / "CSIC" / "train.jsonl"
-    test_path = data_dir / "CSIC" / "test.jsonl"
-
-    # Load and embed
     train_embeddings, test_embeddings, test_labels, explained_variance = (
         load_and_embed_tfidf(
-            train_path,
-            test_path,
-            n_components=150,
-            with_preprocessing=True,
+            args.train_path,
+            args.test_path,
+            n_components=args.n_components,
+            preprocess_fn=preprocess_fn,
+            max_train_samples=args.max_train_samples,
+            max_test_samples=args.max_test_samples,
         )
     )
 
@@ -170,14 +291,16 @@ def main():
     logger.info("=" * 80)
 
     results = {
-        "n_components": 150,
+        "n_components": args.n_components,
         "explained_variance": explained_variance,
+        "preprocess": args.preprocess,
+        "train_path": str(args.train_path),
+        "test_path": str(args.test_path),
         "detectors": [],
     }
 
-    # Test LOF with multiple k values
-    for n_neighbors in [5, 10, 20, 30, 50, 100]:
-        logger.info(f"\nTesting LOF with n_neighbors={n_neighbors}")
+    for n_neighbors in args.lof_neighbors:
+        logger.info("\nTesting LOF with n_neighbors={}", n_neighbors)
         detector = LOFDetector(n_neighbors=n_neighbors)
         result = evaluate_detector(
             detector,
@@ -189,7 +312,6 @@ def main():
         result["n_neighbors"] = n_neighbors
         results["detectors"].append(result)
 
-    # Test Mahalanobis baseline
     logger.info("\nTesting Mahalanobis baseline")
     detector = MahalanobisDetector()
     result = evaluate_detector(
@@ -201,32 +323,35 @@ def main():
     )
     results["detectors"].append(result)
 
-    # Save results
-    output_dir = Path("experiments/15_lof_comparison/tfidf_pca_150")
+    output_dir = (
+        args.output_dir
+        if args.output_dir is not None
+        else Path("experiments/15_lof_comparison") / f"tfidf_pca_{args.n_components}"
+    )
     output_dir.mkdir(parents=True, exist_ok=True)
 
     output_path = output_dir / "results.json"
     with open(output_path, "w") as f:
         json.dump(results, f, indent=2)
 
-    logger.info(f"\nResults saved to {output_path}")
+    logger.info("\nResults saved to {}", output_path)
 
-    # Print summary
     logger.info("\n" + "=" * 80)
     logger.info("SUMMARY")
     logger.info("=" * 80)
-    logger.info(f"PCA Explained Variance: {explained_variance:.2%}")
-    logger.info(f"\nRecall @ 5% FPR:")
+    logger.info("PCA Explained Variance: {:.2f}%", explained_variance * 100)
+    logger.info("\nRecall @ 5% FPR:")
 
     for result in results["detectors"]:
         name = result["detector"]
         recall = result["recall"]
         f1 = result["f1_score"]
-        logger.info(f"  {name:20s} → {recall:6.2%} (F1={f1:.2%})")
+        logger.info("  {:<20s} → {:6.2f}% (F1={:.2f}%)", name, recall * 100, f1 * 100)
 
-    # Find best
     best = max(results["detectors"], key=lambda x: x["recall"])
-    logger.info(f"\nBest: {best['detector']} with {best['recall']:.2%} recall")
+    logger.info(
+        "\nBest: {} with {:.2f}% recall", best["detector"], best["recall"] * 100
+    )
 
 
 if __name__ == "__main__":

@@ -308,3 +308,60 @@ class DangerousCharactersScriptMixing(HttpPreprocessor):
                 return script_name
 
         return ""  # Unknown or unsupported script
+
+
+class DangerousCharactersScriptMixingCsic(DangerousCharactersScriptMixing):
+    """CSIC-focused variant that surfaces explicit script-tag usage as XSS evidence."""
+
+    STEP05_FLAGS = DangerousCharactersScriptMixing.STEP05_FLAGS | {"XSS_TAG"}
+    DANGEROUS_PATTERNS = dict(DangerousCharactersScriptMixing.DANGEROUS_PATTERNS)
+    DANGEROUS_PATTERNS["XSS_TAG"] = [
+        r"(?i)</?script",
+        r"(?i)%3c(?:%2f)?script",
+    ]
+
+    def __init__(self):
+        super().__init__()
+
+
+class DangerousCharactersScriptMixingSrbh(DangerousCharactersScriptMixing):
+    """SR_BH-focused variant that emphasises repeated pipes and encoded braces."""
+
+    STEP05_FLAGS = DangerousCharactersScriptMixing.STEP05_FLAGS | {
+        "PIPE_REPEAT",
+        "BRACE_REPEAT",
+    }
+    DANGEROUS_PATTERNS = dict(DangerousCharactersScriptMixing.DANGEROUS_PATTERNS)
+    DANGEROUS_PATTERNS.update(
+        {
+            "PIPE_REPEAT": [r"\|\|", r"%7[cC]%7[cC]"],
+            "BRACE_REPEAT": [
+                r"\{\{",
+                r"\}\}",
+                r"%7[bB]%7[bB]",
+                r"%7[dD]%7[dD]",
+            ],
+        }
+    )
+
+    def __init__(self):
+        super().__init__()
+
+    def _detect_dangerous_characters(self, content: str, context: str) -> Set[str]:
+        flags = super()._detect_dangerous_characters(content, context)
+
+        lower = content.lower()
+        pipe_hits = content.count("|") + lower.count("%7c")
+        if pipe_hits >= 2:
+            flags.add("PIPE_REPEAT")
+
+        brace_hits = (
+            content.count("{")
+            + content.count("}")
+            + lower.count("%7b")
+            + lower.count("%7d")
+        )
+        if brace_hits >= 2:
+            flags.add("BRACE_REPEAT")
+
+        return flags

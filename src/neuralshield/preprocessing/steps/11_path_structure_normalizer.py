@@ -220,3 +220,70 @@ class PathStructureNormalizer(HttpPreprocessor):
             path = path.rstrip("/")
 
         return path
+
+
+class PathStructureNormalizerSrbh(PathStructureNormalizer):
+    """SR_BH-tuned variant that highlights heavy slash abuse and missing benign anchors."""
+
+    @staticmethod
+    def _count_empty_groups(segments: List[str], is_absolute: bool) -> int:
+        start_idx = 1 if is_absolute and segments else 0
+        count = 0
+        in_group = False
+        for segment in segments[start_idx:]:
+            if segment == "":
+                if not in_group:
+                    count += 1
+                    in_group = True
+            else:
+                in_group = False
+        return count
+
+    def _normalize_path_structure(self, url_path: str) -> Tuple[str, Set[str]]:
+        normalized_path, flags = super()._normalize_path_structure(url_path)
+
+        segments = self._segment_path(url_path)
+        is_absolute = url_path.startswith("/")
+        if self._count_empty_groups(segments, is_absolute) > 1:
+            flags.add("MULTIPLESLASH_HEAVY")
+
+        return normalized_path, flags
+
+    def process(self, request: str) -> str:
+        processed = super().process(request)
+        lines = processed.split("\n")
+
+        observed: Set[str] = set()
+        for line in lines:
+            tokens = line.split()
+            if not tokens:
+                continue
+            start_idx = 1 if tokens[0].startswith("[") else 0
+            for token in tokens[start_idx:]:
+                if token in {"HOPBYHOP", "HOME"}:
+                    observed.add(token)
+
+        missing = [
+            f"STRUCT_GAP:{flag}"
+            for flag in ("HOPBYHOP", "HOME")
+            if flag not in observed
+        ]
+
+        if not missing:
+            return processed
+
+        gap_index = None
+        for idx, line in enumerate(lines):
+            if line.startswith("[STRUCT_GAP] "):
+                gap_index = idx
+                existing = {
+                    part for part in line[len("[STRUCT_GAP] ") :].split() if part
+                }
+                updated = sorted(existing.union(missing))
+                lines[idx] = "[STRUCT_GAP] " + " ".join(updated)
+                break
+
+        if gap_index is None:
+            lines.append("[STRUCT_GAP] " + " ".join(sorted(missing)))
+
+        return "\n".join(lines)

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import time
 from pathlib import Path
+import importlib
 
 import numpy as np
 import typer
@@ -22,12 +23,37 @@ def _resolve_pipeline(
     if not use_pipeline:
         return None
 
-    selected = pipeline_name if pipeline_name else "preprocess"
+    selected = (pipeline_name or "preprocess").strip()
+
     if selected == "preprocess":
         return preprocess
+    if selected == "csic-overfit":
+        from neuralshield.preprocessing.pipeline_csic_overfit import (
+            preprocess_csic_overfit,
+        )
+
+        return preprocess_csic_overfit
+    if selected == "csic-long-flags":
+        from neuralshield.preprocessing.pipeline_csic_long_flags import (
+            preprocess_csic_long_flags,
+        )
+
+        return preprocess_csic_long_flags
+    if selected == "srbh-overfit":
+        from neuralshield.preprocessing.pipeline_srbh_overfit import (
+            preprocess_srbh_overfit,
+        )
+
+        return preprocess_srbh_overfit
+    if selected.startswith("import:"):
+        _, target = selected.split(":", 1)
+        module_name, attr_name = target.split(":")
+        module = importlib.import_module(module_name)
+        return getattr(module, attr_name)
 
     raise ValueError(
-        f"Unsupported pipeline '{selected}'. Only 'preprocess' is available."
+        f"Unsupported pipeline '{selected}'. Use 'preprocess', 'csic-overfit',"
+        " 'csic-long-flags', 'srbh-overfit', or 'import:module:callable'."
     )
 
 

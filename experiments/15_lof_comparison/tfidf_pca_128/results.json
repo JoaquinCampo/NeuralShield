@@ -1,0 +1,36 @@
+{
+  "n_components": 128,
+  "explained_variance": 0.9565372829616893,
+  "preprocess": "csic-long-flags",
+  "train_path": "src/neuralshield/data/CSIC/train.jsonl",
+  "test_path": "src/neuralshield/data/CSIC/test.jsonl",
+  "detectors": [
+    {
+      "detector": "LOF_k50",
+      "recall": 0.6033911829243965,
+      "precision": 0.9300781009777996,
+      "f1_score": 0.7319363112810336,
+      "accuracy": 0.7787276540497353,
+      "fpr": 0.04548,
+      "threshold": 290546.96875,
+      "true_positives": 15124,
+      "false_positives": 1137,
+      "true_negatives": 23863,
+      "false_negatives": 9941,
+      "n_neighbors": 50
+    },
+    {
+      "detector": "Mahalanobis",
+      "recall": 0.08809096349491323,
+      "precision": 0.6385193753614806,
+      "f1_score": 0.15482242400869475,
+      "accuracy": 0.5184859682412863,
+      "fpr": 0.05,
+      "threshold": 722.0597534179688,
+      "true_positives": 2208,
+      "false_positives": 1250,
+      "true_negatives": 23750,
+      "false_negatives": 22857
+    }
+  ]
+}

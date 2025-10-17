@@ -1,0 +1,334 @@
+{
+  "sample_sizes": {
+    "valid": 1000,
+    "attack": 1000
+  },
+  "source_totals": {
+    "valid_train_total": 100000,
+    "attack_pool_total": 382620
+  },
+  "label_stats": {
+    "valid": {
+      "flag_count_summary": {
+        "mean": 5.147,
+        "median": 4.0,
+        "p90": 7.0,
+        "p95": 9.0,
+        "p99": 12.0,
+        "max": 13.0,
+        "min": 3.0
+      },
+      "unique_flag_summary": {
+        "mean": 4.991,
+        "median": 4.0,
+        "p90": 7.0,
+        "p95": 8.0,
+        "p99": 9.0,
+        "max": 10.0,
+        "min": 3.0
+      },
+      "zero_flag_fraction": 0.0,
+      "top_flags": [
+        {
+          "flag": "HDRNORM",
+          "total": 1000,
+          "per_request": 1.0,
+          "presence_rate": 1.0
+        },
+        {
+          "flag": "PAREN",
+          "total": 991,
+          "per_request": 0.991,
+          "presence_rate": 0.991
+        },
+        {
+          "flag": "HOPBYHOP",
+          "total": 688,
+          "per_request": 0.688,
+          "presence_rate": 0.688
+        },
+        {
+          "flag": "HOME",
+          "total": 547,
+          "per_request": 0.547,
+          "presence_rate": 0.547
+        },
+        {
+          "flag": "MULTIPLESLASH",
+          "total": 453,
+          "per_request": 0.453,
+          "presence_rate": 0.453
+        },
+        {
+          "flag": "STRUCT_GAP:HOME",
+          "total": 453,
+          "per_request": 0.453,
+          "presence_rate": 0.453
+        },
+        {
+          "flag": "STRUCT_GAP:HOPBYHOP",
+          "total": 312,
+          "per_request": 0.312,
+          "presence_rate": 0.312
+        },
+        {
+          "flag": "PIPE",
+          "total": 213,
+          "per_request": 0.213,
+          "presence_rate": 0.195
+        },
+        {
+          "flag": "PCTSLASH",
+          "total": 140,
+          "per_request": 0.14,
+          "presence_rate": 0.14
+        },
+        {
+          "flag": "QUOTE",
+          "total": 90,
+          "per_request": 0.09,
+          "presence_rate": 0.046
+        },
+        {
+          "flag": "SEMICOLON",
+          "total": 52,
+          "per_request": 0.052,
+          "presence_rate": 0.026
+        },
+        {
+          "flag": "BACKSLASH",
+          "total": 52,
+          "per_request": 0.052,
+          "presence_rate": 0.026
+        },
+        {
+          "flag": "ANGLE",
+          "total": 29,
+          "per_request": 0.029,
+          "presence_rate": 0.015
+        },
+        {
+          "flag": "PCTBACKSLASH",
+          "total": 26,
+          "per_request": 0.026,
+          "presence_rate": 0.026
+        },
+        {
+          "flag": "FLAG_OVERFLOW",
+          "total": 23,
+          "per_request": 0.023,
+          "presence_rate": 0.023
+        },
+        {
+          "flag": "BRACE",
+          "total": 20,
+          "per_request": 0.02,
+          "presence_rate": 0.01
+        },
+        {
+          "flag": "SPACE",
+          "total": 18,
+          "per_request": 0.018,
+          "presence_rate": 0.009
+        },
+        {
+          "flag": "PCTSPACE",
+          "total": 9,
+          "per_request": 0.009,
+          "presence_rate": 0.009
+        },
+        {
+          "flag": "NUL",
+          "total": 8,
+          "per_request": 0.008,
+          "presence_rate": 0.008
+        },
+        {
+          "flag": "BRACE_REPEAT",
+          "total": 8,
+          "per_request": 0.008,
+          "presence_rate": 0.005
+        },
+        {
+          "flag": "PIPE_REPEAT",
+          "total": 8,
+          "per_request": 0.008,
+          "presence_rate": 0.004
+        },
+        {
+          "flag": "QBARE",
+          "total": 4,
+          "per_request": 0.004,
+          "presence_rate": 0.002
+        },
+        {
+          "flag": "WSPAD",
+          "total": 3,
+          "per_request": 0.003,
+          "presence_rate": 0.003
+        }
+      ]
+    },
+    "attack": {
+      "flag_count_summary": {
+        "mean": 6.852,
+        "median": 7.0,
+        "p90": 8.0,
+        "p95": 10.0,
+        "p99": 13.0,
+        "max": 16.0,
+        "min": 3.0
+      },
+      "unique_flag_summary": {
+        "mean": 6.232,
+        "median": 6.0,
+        "p90": 7.0,
+        "p95": 8.0,
+        "p99": 10.0,
+        "max": 12.0,
+        "min": 3.0
+      },
+      "zero_flag_fraction": 0.0,
+      "top_flags": [
+        {
+          "flag": "HDRNORM",
+          "total": 1000,
+          "per_request": 1.0,
+          "presence_rate": 1.0
+        },
+        {
+          "flag": "STRUCT_GAP:HOME",
+          "total": 1000,
+          "per_request": 1.0,
+          "presence_rate": 1.0
+        },
+        {
+          "flag": "MULTIPLESLASH",
+          "total": 998,
+          "per_request": 0.998,
+          "presence_rate": 0.998
+        },
+        {
+          "flag": "PAREN",
+          "total": 990,
+          "per_request": 0.99,
+          "presence_rate": 0.99
+        },
+        {
+          "flag": "QUOTE",
+          "total": 830,
+          "per_request": 0.83,
+          "presence_rate": 0.42
+        },
+        {
+          "flag": "STRUCT_GAP:HOPBYHOP",
+          "total": 703,
+          "per_request": 0.703,
+          "presence_rate": 0.703
+        },
+        {
+          "flag": "PIPE",
+          "total": 386,
+          "per_request": 0.386,
+          "presence_rate": 0.376
+        },
+        {
+          "flag": "HOPBYHOP",
+          "total": 297,
+          "per_request": 0.297,
+          "presence_rate": 0.297
+        },
+        {
+          "flag": "PCTSLASH",
+          "total": 126,
+          "per_request": 0.126,
+          "presence_rate": 0.126
+        },
+        {
+          "flag": "SEMICOLON",
+          "total": 108,
+          "per_request": 0.108,
+          "presence_rate": 0.054
+        },
+        {
+          "flag": "BRACE",
+          "total": 105,
+          "per_request": 0.105,
+          "presence_rate": 0.057
+        },
+        {
+          "flag": "PCTSPACE",
+          "total": 59,
+          "per_request": 0.059,
+          "presence_rate": 0.057
+        },
+        {
+          "flag": "BRACE_REPEAT",
+          "total": 55,
+          "per_request": 0.055,
+          "presence_rate": 0.032
+        },
+        {
+          "flag": "SPACE",
+          "total": 54,
+          "per_request": 0.054,
+          "presence_rate": 0.03
+        },
+        {
+          "flag": "BACKSLASH",
+          "total": 50,
+          "per_request": 0.05,
+          "presence_rate": 0.026
+        },
+        {
+          "flag": "ANGLE",
+          "total": 37,
+          "per_request": 0.037,
+          "presence_rate": 0.019
+        },
+        {
+          "flag": "PCTBACKSLASH",
+          "total": 25,
+          "per_request": 0.025,
+          "presence_rate": 0.025
+        },
+        {
+          "flag": "UNUSUAL_METHOD",
+          "total": 8,
+          "per_request": 0.008,
+          "presence_rate": 0.008
+        },
+        {
+          "flag": "QARRAY:load[]",
+          "total": 6,
+          "per_request": 0.006,
+          "presence_rate": 0.003
+        },
+        {
+          "flag": "PCTSPACE_PAIR",
+          "total": 6,
+          "per_request": 0.006,
+          "presence_rate": 0.006
+        },
+        {
+          "flag": "QBARE",
+          "total": 4,
+          "per_request": 0.004,
+          "presence_rate": 0.002
+        },
+        {
+          "flag": "PIPE_REPEAT",
+          "total": 4,
+          "per_request": 0.004,
+          "presence_rate": 0.002
+        },
+        {
+          "flag": "QRAWSEMI",
+          "total": 1,
+          "per_request": 0.001,
+          "presence_rate": 0.001
+        }
+      ]
+    }
+  }
+}

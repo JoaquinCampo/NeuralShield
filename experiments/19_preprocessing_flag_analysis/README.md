@@ -27,10 +27,32 @@ Quantify how NeuralShield’s preprocessing pipeline behaves on normal versus at
 Re-run with:
 
 ```bash
+# Balanced baseline (current default)
 uv run python experiments/19_preprocessing_flag_analysis/compute_flag_stats.py --sample-size -1
+
+# CSIC overfit heuristics
+uv run python experiments/19_preprocessing_flag_analysis/compute_flag_stats.py \
+  --pipeline csic-overfit \
+  --valid-path src/neuralshield/data/CSIC/csic_dataset.jsonl \
+  --attack-path src/neuralshield/data/CSIC/csic_dataset.jsonl \
+  --sample-size -1 \
+  --output experiments/19_preprocessing_flag_analysis/flag_stats_csic_overfit.json
+
+# SR_BH overfit heuristics
+uv run python experiments/19_preprocessing_flag_analysis/compute_flag_stats.py \
+  --pipeline srbh-overfit \
+  --valid-path src/neuralshield/data/SR_BH_2020/train.jsonl \
+  --attack-path src/neuralshield/data/SR_BH_2020/test.jsonl \
+  --sample-size -1 \
+  --output experiments/19_preprocessing_flag_analysis/flag_stats_srbh_overfit.json
 ```
 
-The command rewrites `flag_stats_summary.json`. Use `--sample-size`, `--seed`, or custom dataset paths as needed (positive `--sample-size` retains sampling).
+The command rewrites `flag_stats_summary.json` unless you pass `--output`. Use `--sample-size`, `--seed`, or custom dataset paths as needed (positive `--sample-size` retains sampling).
+
+### Pipeline Variants
+
+- `neuralshield.preprocessing.pipeline_csic_overfit.preprocess_csic_overfit` – enables the CSIC-specific heuristics (`QSQLI_QUOTE_SEMI`, `XSS_TAG`, `FLAG_RISK_HIGH`).
+- `neuralshield.preprocessing.pipeline_srbh_overfit.preprocess_srbh_overfit` – enables the SR_BH-specific heuristics (`PIPE_REPEAT`, `BRACE_REPEAT`, `PCTSPACE_PAIR`, `STRUCT_GAP:*`).
 
 ## Key Metrics
 

@@ -1,0 +1,10 @@
+{
+  "tfidf_train_embeddings": "experiments/18_lof_secbert_ensemble/srbh_train_tfidf.npz",
+  "tfidf_test_embeddings": "experiments/18_lof_secbert_ensemble/srbh_test_tfidf.npz",
+  "tfidf_model_bundle": null,
+  "tfidf_pca_components": 150,
+  "lof_neighbors": 100,
+  "secbert_train_embeddings": "experiments/08_secbert_srbh/with_preprocessing/train_embeddings.npz",
+  "secbert_test_embeddings": "experiments/08_secbert_srbh/with_preprocessing/test_embeddings.npz",
+  "output_dir": "experiments/18_lof_secbert_ensemble/artifacts_srbh"
+}

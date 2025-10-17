@@ -37,6 +37,9 @@ class FlagSummaryEmitter(HttpPreprocessor):
             "SPACE",
             "NUL",
             "MIXEDSCRIPT",
+            "XSS_TAG",
+            "PIPE_REPEAT",
+            "BRACE_REPEAT",
         },
         "encoding": {
             "DOUBLEPCT",
@@ -47,6 +50,7 @@ class FlagSummaryEmitter(HttpPreprocessor):
             "PCTNULL",
             "PCTSUSPICIOUS",
             "HTMLENT",
+            "PCTSPACE_PAIR",
         },
         "unicode": {
             "FULLWIDTH",
@@ -67,6 +71,7 @@ class FlagSummaryEmitter(HttpPreprocessor):
             "QREPEAT",
             "QKEY_SYMBOL",
             "QKEY_EMPTY",
+            "QSQLI_QUOTE_SEMI",
         },
         "header": {
             "BADHDRCONT",
@@ -93,11 +98,14 @@ class FlagSummaryEmitter(HttpPreprocessor):
             "PAREN",
             "MULTIPLESLASH",
             "HOME",
+            "MULTIPLESLASH_HEAVY",
+            "STRUCT_GAP",
         },
     }
 
-    FLAG_EXCLUSIONS = {"FLAG_OVERFLOW"}
-    KNOWN_FLAGS = set().union(*FAMILY_MAP.values()).union({"FLAG_OVERFLOW"})
+    FLAG_EXCLUSIONS = {"FLAG_OVERFLOW", "FLAG_RISK_HIGH"}
+    KNOWN_FLAGS = set().union(*FAMILY_MAP.values()).union({"FLAG_OVERFLOW", "FLAG_RISK_HIGH"})
+    RISK_HIGH_THRESHOLD: int | None = None
 
     def __init__(self) -> None:
         self.overflow_threshold = self._load_overflow_threshold()
@@ -137,6 +145,17 @@ class FlagSummaryEmitter(HttpPreprocessor):
                 flags_line_index,
                 qmeta_index,
                 "FLAG_OVERFLOW",
+            )
+
+        if (
+            self.RISK_HIGH_THRESHOLD is not None
+            and risk_total >= self.RISK_HIGH_THRESHOLD
+        ):
+            lines, flags_line_index, qmeta_index = self._ensure_flag(
+                lines,
+                flags_line_index,
+                qmeta_index,
+                "FLAG_RISK_HIGH",
             )
 
         summary_parts: List[str] = []
@@ -199,6 +218,7 @@ class FlagSummaryEmitter(HttpPreprocessor):
                 return family
         return None
 
+
     def _ensure_flag(
         self,
         lines: list[str],
@@ -220,3 +240,54 @@ class FlagSummaryEmitter(HttpPreprocessor):
             qmeta_index += 1
 
         return lines, insert_at, qmeta_index
+
+
+class FlagSummaryEmitterCsic(FlagSummaryEmitter):
+    """CSIC-specific summary that escalates high-risk totals."""
+
+    RISK_HIGH_THRESHOLD = 4
+
+
+class FlagSummaryEmitterSrbh(FlagSummaryEmitter):
+    """SR_BH-specific summary that surfaces whitespace encoding combos."""
+
+    def process(self, request: str) -> str:
+        rendered = super().process(request)
+        lines = rendered.split("\n")
+
+        combo_count = 0
+        for line in lines:
+            if not line.startswith("[QUERY] "):
+                continue
+            tokens = line.split()
+            if len(tokens) <= 2:
+                continue
+            if "PCTSPACE_PAIR" in tokens[2:]:
+                combo_count += 1
+
+        summary_index: int | None = None
+        for idx, line in enumerate(lines):
+            if line.startswith("[FLAG_SUMMARY] "):
+                summary_index = idx
+                break
+
+        if summary_index is None:
+            return rendered
+
+        summary_tokens = lines[summary_index][len("[FLAG_SUMMARY] ") :].split()
+        updated_tokens: list[str] = []
+        inserted = False
+
+        for token in summary_tokens:
+            if token.startswith("combo_pctspace="):
+                continue
+            if not inserted and combo_count > 0 and token.startswith("other="):
+                updated_tokens.append(f"combo_pctspace={combo_count}")
+                inserted = True
+            updated_tokens.append(token)
+
+        if combo_count > 0 and not inserted:
+            updated_tokens.append(f"combo_pctspace={combo_count}")
+
+        lines[summary_index] = "[FLAG_SUMMARY] " + " ".join(updated_tokens)
+        return "\n".join(lines)
