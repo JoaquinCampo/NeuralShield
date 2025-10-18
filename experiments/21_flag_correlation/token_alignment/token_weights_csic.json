@@ -1,0 +1,142 @@
+{
+  "QUOTE": {
+    "total_occurrences": 4309,
+    "tokens": [
+      {
+        "token": "quote",
+        "count": 4309,
+        "support": 1.0
+      }
+    ]
+  },
+  "DOUBLEPCT": {
+    "total_occurrences": 2578,
+    "tokens": [
+      {
+        "token": "double",
+        "count": 2195,
+        "support": 0.8514352211016292
+      },
+      {
+        "token": "##5",
+        "count": 89,
+        "support": 0.03452288595810706
+      },
+      {
+        "token": "##27",
+        "count": 81,
+        "support": 0.031419705197827774
+      },
+      {
+        "token": "1",
+        "count": 70,
+        "support": 0.027152831652443754
+      },
+      {
+        "token": "=",
+        "count": 63,
+        "support": 0.024437548487199378
+      },
+      {
+        "token": "5",
+        "count": 39,
+        "support": 0.015128006206361521
+      },
+      {
+        "token": "3",
+        "count": 23,
+        "support": 0.008921644685802949
+      },
+      {
+        "token": "13",
+        "count": 18,
+        "support": 0.0069821567106283944
+      }
+    ]
+  },
+  "PCTSUSPICIOUS": {
+    "total_occurrences": 1106,
+    "tokens": [
+      {
+        "token": "pct",
+        "count": 1106,
+        "support": 1.0
+      }
+    ]
+  },
+  "QRAWSEMI": {
+    "total_occurrences": 846,
+    "tokens": [
+      {
+        "token": "qr",
+        "count": 846,
+        "support": 1.0
+      }
+    ]
+  },
+  "PCTCONTROL": {
+    "total_occurrences": 932,
+    "tokens": [
+      {
+        "token": "pct",
+        "count": 770,
+        "support": 0.8261802575107297
+      },
+      {
+        "token": "##pct",
+        "count": 161,
+        "support": 0.17274678111587982
+      },
+      {
+        "token": "##n",
+        "count": 1,
+        "support": 0.001072961373390558
+      }
+    ]
+  },
+  "QNUL": {
+    "total_occurrences": 180,
+    "tokens": [
+      {
+        "token": "q",
+        "count": 180,
+        "support": 1.0
+      }
+    ]
+  },
+  "PCTSPACE": {
+    "total_occurrences": 350,
+    "tokens": [
+      {
+        "token": "pct",
+        "count": 283,
+        "support": 0.8085714285714286
+      },
+      {
+        "token": "1",
+        "count": 34,
+        "support": 0.09714285714285714
+      },
+      {
+        "token": "5",
+        "count": 23,
+        "support": 0.06571428571428571
+      },
+      {
+        "token": "3",
+        "count": 10,
+        "support": 0.02857142857142857
+      }
+    ]
+  },
+  "PIPE": {
+    "total_occurrences": 216,
+    "tokens": [
+      {
+        "token": "pipe",
+        "count": 216,
+        "support": 1.0
+      }
+    ]
+  }
+}

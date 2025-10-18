@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Sequence
+from typing import Iterable
 
 import numpy as np
 import torch
@@ -21,20 +22,36 @@ class SecBERTFlagWeightedEncoder(SecBERTEncoder):
         *,
         model_name: str = "jackaduma/SecBERT",
         device: str = "cpu",
-        token_weight_path: str | Path = Path(
-            "src/neuralshield/encoding/data/secbert_flag_token_weights.json"
-        ),
+        token_weight_path: str | Path | None = None,
+        token_weight_paths: Sequence[str | Path] | None = None,
     ) -> None:
         super().__init__(model_name=model_name, device=device)
 
-        weight_path = Path(token_weight_path)
-        if not weight_path.exists():
-            raise FileNotFoundError(f"Token weight file not found: {weight_path}")
+        default_path = Path(
+            "src/neuralshield/encoding/data/secbert_flag_token_weights.json"
+        )
 
-        raw = json.loads(weight_path.read_text(encoding="utf-8"))
-        self._token_weights: dict[str, float] = {
-            token: float(weight) for token, weight in raw.items()
-        }
+        candidate_paths: Iterable[str | Path]
+        if token_weight_paths is not None:
+            candidate_paths = list(token_weight_paths)
+        elif token_weight_path is not None:
+            candidate_paths = [token_weight_path]
+        else:
+            candidate_paths = [default_path]
+
+        merged_weights: dict[str, float] = {}
+        loaded_paths: list[Path] = []
+        for raw_path in candidate_paths:
+            weight_path = Path(raw_path)
+            if not weight_path.exists():
+                raise FileNotFoundError(f"Token weight file not found: {weight_path}")
+            loaded_paths.append(weight_path)
+            raw = json.loads(weight_path.read_text(encoding="utf-8"))
+            for token, weight in raw.items():
+                float_weight = float(weight)
+                base = merged_weights.get(token, 1.0)
+                merged_weights[token] = base * float_weight
+        self._token_weights = merged_weights
 
         vocab_size = len(self._tokenizer)
         weight_tensor = torch.ones(vocab_size, dtype=torch.float32, device=self._device)
@@ -69,9 +86,10 @@ class SecBERTFlagWeightedEncoder(SecBERTEncoder):
 
         logger.info(
             "Loaded {count} token weights for flag-weighted pooling "
-            "(mapped to {mapped} vocabulary entries)",
+            "(mapped to {mapped} vocabulary entries) from {paths}",
             count=len(self._token_weights),
             mapped=mapped_count,
+            paths=", ".join(str(path) for path in loaded_paths),
         )
 
     def encode(self, batch: Sequence[str]) -> np.ndarray:

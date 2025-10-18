@@ -1,0 +1,137 @@
+{
+  "PIPE": {
+    "total_occurrences": 12234,
+    "tokens": [
+      {
+        "token": "pipe",
+        "count": 12234,
+        "support": 1.0
+      }
+    ]
+  },
+  "QUOTE": {
+    "total_occurrences": 248733,
+    "tokens": [
+      {
+        "token": "quote",
+        "count": 248646,
+        "support": 0.9996502273522211
+      },
+      {
+        "token": "\"",
+        "count": 81,
+        "support": 0.00032565039620798203
+      },
+      {
+        "token": "'",
+        "count": 6,
+        "support": 2.4122251570961634e-05
+      }
+    ]
+  },
+  "DOUBLEPCT": {
+    "total_occurrences": 754,
+    "tokens": [
+      {
+        "token": "double",
+        "count": 754,
+        "support": 1.0
+      }
+    ]
+  },
+  "QRAWSEMI": {
+    "total_occurrences": 4458,
+    "tokens": [
+      {
+        "token": "qr",
+        "count": 4457,
+        "support": 0.999775684163302
+      },
+      {
+        "token": "]",
+        "count": 1,
+        "support": 0.00022431583669807088
+      }
+    ]
+  },
+  "QNUL": {
+    "total_occurrences": 346,
+    "tokens": [
+      {
+        "token": "q",
+        "count": 346,
+        "support": 1.0
+      }
+    ]
+  },
+  "PCTCONTROL": {
+    "total_occurrences": 206,
+    "tokens": [
+      {
+        "token": "pct",
+        "count": 195,
+        "support": 0.9466019417475728
+      },
+      {
+        "token": "##n",
+        "count": 2,
+        "support": 0.009708737864077669
+      },
+      {
+        "token": "1",
+        "count": 2,
+        "support": 0.009708737864077669
+      },
+      {
+        "token": "2",
+        "count": 2,
+        "support": 0.009708737864077669
+      },
+      {
+        "token": "3",
+        "count": 2,
+        "support": 0.009708737864077669
+      },
+      {
+        "token": "6",
+        "count": 2,
+        "support": 0.009708737864077669
+      },
+      {
+        "token": "8",
+        "count": 1,
+        "support": 0.0048543689320388345
+      }
+    ]
+  },
+  "PCTSPACE": {
+    "total_occurrences": 202,
+    "tokens": [
+      {
+        "token": "pct",
+        "count": 202,
+        "support": 1.0
+      }
+    ]
+  },
+  "PCTSUSPICIOUS": {
+    "total_occurrences": 18,
+    "tokens": [
+      {
+        "token": "pct",
+        "count": 18,
+        "support": 1.0
+      }
+    ]
+  },
+  "QREPEAT:": {
+    "total_occurrences": 15,
+    "tokens": [
+      {
+        "token": "qr",
+        "count": 15,
+        "support": 1.0
+      }
+    ]
+  }
+}
