@@ -12,8 +12,4 @@ order = [
     "neuralshield.preprocessing.steps.09_html_entity_decode_once:HtmlEntityDecodeOnce",
     "neuralshield.preprocessing.steps.10_query_parser_and_flags:QueryParserAndFlags",
     "neuralshield.preprocessing.steps.11_path_structure_normalizer:PathStructureNormalizer",
-    "neuralshield.preprocessing.steps.12_flag_summary:FlagSummaryEmitter",
 ]
-
-[tool.neuralshield.flag_summary]
-overflow_threshold = 12

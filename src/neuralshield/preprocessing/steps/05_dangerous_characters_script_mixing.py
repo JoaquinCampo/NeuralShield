@@ -2,9 +2,6 @@ import re
 from typing import Set
 
 from neuralshield.preprocessing.http_preprocessor import HttpPreprocessor
-from neuralshield.preprocessing.steps.structure_metadata import (
-    merge_structure_flags,
-)
 
 
 class DangerousCharactersScriptMixing(HttpPreprocessor):
@@ -72,27 +69,22 @@ class DangerousCharactersScriptMixing(HttpPreprocessor):
         """
         lines = request.split("\n")
         processed_lines = []
-        structure_flags: set[str] = set()
 
         for line in lines:
             if line.startswith("[URL] "):
-                processed_line, removed = self._process_url_line(line)
+                processed_line = self._process_url_line(line)
             elif line.startswith("[QUERY] "):
-                processed_line, removed = self._process_query_line(line)
+                processed_line = self._process_query_line(line)
             elif line.startswith("[HEADER] "):
-                processed_line, removed = self._process_header_line(line)
+                processed_line = self._process_header_line(line)
             else:
                 processed_line = line
-                removed = set()
 
-            structure_flags.update(removed)
             processed_lines.append(processed_line)
-
-        merge_structure_flags(processed_lines, structure_flags)
 
         return "\n".join(processed_lines)
 
-    def _process_url_line(self, line: str) -> tuple[str, set[str]]:
+    def _process_url_line(self, line: str) -> str:
         """Process a URL line for dangerous characters and script mixing."""
         # Split line into content and existing flags
         parts = line.split()
@@ -116,20 +108,15 @@ class DangerousCharactersScriptMixing(HttpPreprocessor):
 
         # Combine with existing flags
         all_flags = existing_flags.union(flags)
-        structure_flags: set[str] = set()
-
-        if "PAREN" in all_flags:
-            all_flags.discard("PAREN")
-            structure_flags.add("PAREN")
 
         # Emit flags if any detected
         if all_flags:
             sorted_flags = sorted(all_flags)
-            return f"[URL] {content} {' '.join(sorted_flags)}", structure_flags
+            return f"[URL] {content} {' '.join(sorted_flags)}"
         else:
-            return f"[URL] {content}", structure_flags
+            return f"[URL] {content}"
 
-    def _process_query_line(self, line: str) -> tuple[str, set[str]]:
+    def _process_query_line(self, line: str) -> str:
         """Process a query line for dangerous characters."""
         # Split line into content and existing flags
         parts = line.split()
@@ -153,20 +140,15 @@ class DangerousCharactersScriptMixing(HttpPreprocessor):
 
         # Combine with existing flags
         all_flags = existing_flags.union(flags)
-        structure_flags: set[str] = set()
-
-        if "PAREN" in all_flags:
-            all_flags.discard("PAREN")
-            structure_flags.add("PAREN")
 
         # Emit flags if any detected
         if all_flags:
             sorted_flags = sorted(all_flags)
-            return f"[QUERY] {content} {' '.join(sorted_flags)}", structure_flags
+            return f"[QUERY] {content} {' '.join(sorted_flags)}"
         else:
-            return f"[QUERY] {content}", structure_flags
+            return f"[QUERY] {content}"
 
-    def _process_header_line(self, line: str) -> tuple[str, set[str]]:
+    def _process_header_line(self, line: str) -> str:
         """Process a header line for dangerous characters and script mixing."""
         # Split line into parts: "[HEADER]" "name:" "value" [flags...]
         parts = line.split()
@@ -198,18 +180,13 @@ class DangerousCharactersScriptMixing(HttpPreprocessor):
 
         # Combine with existing flags
         all_flags = existing_flags.union(flags)
-        structure_flags: set[str] = set()
-
-        if "PAREN" in all_flags:
-            all_flags.discard("PAREN")
-            structure_flags.add("PAREN")
 
         # Emit flags if any detected
         if all_flags:
             sorted_flags = sorted(all_flags)
-            return f"[HEADER] {content} {' '.join(sorted_flags)}", structure_flags
+            return f"[HEADER] {content} {' '.join(sorted_flags)}"
         else:
-            return f"[HEADER] {content}", structure_flags
+            return f"[HEADER] {content}"
 
     def _detect_dangerous_characters(self, content: str, context: str) -> Set[str]:
         """

@@ -28,6 +28,7 @@ dependencies = [
     "transformers>=4.57.0",
     "datasets>=4.2.0",
     "accelerate>=1.10.1",
+    "optuna>=4.5.0",
 ]
 
 

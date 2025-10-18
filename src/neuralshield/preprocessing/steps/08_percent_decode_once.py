@@ -15,13 +15,6 @@ class PercentDecodeOnce(HttpPreprocessor):
     - Flags: DOUBLEPCT, PCTSLASH, PCTBACKSLASH, PCTSPACE, PCTCONTROL, PCTNULL, PCTSUSPICIOUS
     """
 
-    FLAG_SEVERITY = {
-        "DOUBLEPCT": "M",
-        "PCTSUSPICIOUS": "H",
-        "PCTCONTROL": "H",
-        "PCTNULL": "H",
-    }
-
     def process(self, request: str) -> str:
         """
         Process structured HTTP request lines, applying percent-decoding exactly once
@@ -124,23 +117,10 @@ class PercentDecodeOnce(HttpPreprocessor):
         else:  # QUERY
             flags.extend(self._check_query_preservation(decoded))
 
-        # Sort and annotate severity before emitting
-        flags = sorted(set(flags))
-        annotated = self._annotate_flags(flags)
+        # Sort flags alphabetically as per spec
+        flags = sorted(set(flags))  # Remove duplicates and sort
 
-        return decoded, annotated
-
-    def _annotate_flags(self, flags: list[str]) -> list[str]:
-        """Annotate percent-decoding flags with severity markers."""
-
-        annotated = []
-        for flag in flags:
-            severity = self.FLAG_SEVERITY.get(flag)
-            if severity:
-                annotated.append(f"{flag}:{severity}")
-            else:
-                annotated.append(flag)
-        return annotated
+        return decoded, flags
 
     def _selective_percent_decode(self, text: str, context: str) -> str:
         """
