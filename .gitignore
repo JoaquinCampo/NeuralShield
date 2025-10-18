@@ -43,4 +43,4 @@ wandb/
 *.joblib
 *.npz
 
-*models/
+src/neuralshield/finetuning/models

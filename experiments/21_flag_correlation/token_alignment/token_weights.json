@@ -1,0 +1,177 @@
+{
+  "QUOTE": {
+    "total_occurrences": 356419,
+    "tokens": [
+      {
+        "token": "quote",
+        "count": 356419,
+        "support": 1.0
+      }
+    ]
+  },
+  "PIPE": {
+    "total_occurrences": 258104,
+    "tokens": [
+      {
+        "token": "pipe",
+        "count": 257906,
+        "support": 0.9992328673712922
+      },
+      {
+        "token": "##ab6",
+        "count": 96,
+        "support": 0.00037194309270681587
+      },
+      {
+        "token": "##7",
+        "count": 28,
+        "support": 0.00010848340203948796
+      },
+      {
+        "token": "##1",
+        "count": 28,
+        "support": 0.00010848340203948796
+      },
+      {
+        "token": "##03",
+        "count": 28,
+        "support": 0.00010848340203948796
+      },
+      {
+        "token": "check",
+        "count": 18,
+        "support": 6.973932988252797e-05
+      }
+    ]
+  },
+  "PCTSPACE": {
+    "total_occurrences": 40159,
+    "tokens": [
+      {
+        "token": "pct",
+        "count": 40159,
+        "support": 1.0
+      }
+    ]
+  },
+  "DOUBLEPCT": {
+    "total_occurrences": 9956,
+    "tokens": [
+      {
+        "token": "double",
+        "count": 9956,
+        "support": 1.0
+      }
+    ]
+  },
+  "PCTCONTROL": {
+    "total_occurrences": 20478,
+    "tokens": [
+      {
+        "token": "pct",
+        "count": 19740,
+        "support": 0.9639613243480809
+      },
+      {
+        "token": "1",
+        "count": 272,
+        "support": 0.013282547123742553
+      },
+      {
+        "token": "=",
+        "count": 164,
+        "support": 0.008008594589315363
+      },
+      {
+        "token": "##0",
+        "count": 24,
+        "support": 0.0011719894520949312
+      },
+      {
+        "token": "2",
+        "count": 24,
+        "support": 0.0011719894520949312
+      },
+      {
+        "token": "##e",
+        "count": 20,
+        "support": 0.000976657876745776
+      },
+      {
+        "token": "##d",
+        "count": 16,
+        "support": 0.0007813263013966208
+      },
+      {
+        "token": "4",
+        "count": 16,
+        "support": 0.0007813263013966208
+      },
+      {
+        "token": "##4",
+        "count": 12,
+        "support": 0.0005859947260474656
+      },
+      {
+        "token": "##3",
+        "count": 12,
+        "support": 0.0005859947260474656
+      }
+    ]
+  },
+  "PCTSUSPICIOUS": {
+    "total_occurrences": 5779,
+    "tokens": [
+      {
+        "token": "pct",
+        "count": 5779,
+        "support": 1.0
+      }
+    ]
+  },
+  "QRAWSEMI": {
+    "total_occurrences": 1042,
+    "tokens": [
+      {
+        "token": "qr",
+        "count": 1042,
+        "support": 1.0
+      }
+    ]
+  },
+  "QARRAY:": {
+    "total_occurrences": 2889,
+    "tokens": [
+      {
+        "token": "qa",
+        "count": 2885,
+        "support": 0.9986154378677743
+      },
+      {
+        "token": "login",
+        "count": 4,
+        "support": 0.0013845621322256837
+      }
+    ]
+  },
+  "QNUL": {
+    "total_occurrences": 174,
+    "tokens": [
+      {
+        "token": "q",
+        "count": 174,
+        "support": 1.0
+      }
+    ]
+  },
+  "QREPEAT:": {
+    "total_occurrences": 33,
+    "tokens": [
+      {
+        "token": "qr",
+        "count": 33,
+        "support": 1.0
+      }
+    ]
+  }
+}
