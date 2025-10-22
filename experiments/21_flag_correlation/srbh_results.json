@@ -1,0 +1,288 @@
+{
+  "label_totals": {
+    "valid": 525195,
+    "attack": 382620
+  },
+  "total_requests": 907815,
+  "flags": {
+    "HOPBYHOP": {
+      "present_in_attack": 111550,
+      "present_in_valid": 371310,
+      "p_flag_given_attack": 0.2915425226072866,
+      "p_flag_given_valid": 0.706994544883329,
+      "odds_ratio": 0.1705484442287473,
+      "total_occurrences_attack": 111550,
+      "total_occurrences_valid": 371310
+    },
+    "HDRNORM": {
+      "present_in_attack": 382588,
+      "present_in_valid": 525193,
+      "p_flag_given_attack": 0.999916366107365,
+      "p_flag_given_valid": 0.999996191890631,
+      "odds_ratio": 0.04552945298265828,
+      "total_occurrences_attack": 382588,
+      "total_occurrences_valid": 525193
+    },
+    "HOME": {
+      "present_in_attack": 340,
+      "present_in_valid": 298695,
+      "p_flag_given_attack": 0.0008886101092467723,
+      "p_flag_given_valid": 0.5687316139719533,
+      "odds_ratio": 0.0006744311071146303,
+      "total_occurrences_attack": 340,
+      "total_occurrences_valid": 298695
+    },
+    "PAREN": {
+      "present_in_attack": 379013,
+      "present_in_valid": 519410,
+      "p_flag_given_attack": 0.9905728921645497,
+      "p_flag_given_valid": 0.9889850436504536,
+      "odds_ratio": 1.1703102820480191,
+      "total_occurrences_attack": 379013,
+      "total_occurrences_valid": 519410
+    },
+    "PCTSLASH": {
+      "present_in_attack": 61780,
+      "present_in_valid": 69139,
+      "p_flag_given_attack": 0.1614656839684282,
+      "p_flag_given_valid": 0.1316444368282257,
+      "odds_ratio": 1.2701484317085547,
+      "total_occurrences_attack": 61780,
+      "total_occurrences_valid": 69139
+    },
+    "MULTIPLESLASH": {
+      "present_in_attack": 381827,
+      "present_in_valid": 226487,
+      "p_flag_given_attack": 0.9979274475981391,
+      "p_flag_given_valid": 0.4312436333171489,
+      "odds_ratio": 635.0340650792408,
+      "total_occurrences_attack": 381827,
+      "total_occurrences_valid": 226487
+    },
+    "QUOTE": {
+      "present_in_attack": 153757,
+      "present_in_valid": 27038,
+      "p_flag_given_attack": 0.401853013433694,
+      "p_flag_given_valid": 0.05148183055817363,
+      "odds_ratio": 12.37801440770843,
+      "total_occurrences_attack": 153757,
+      "total_occurrences_valid": 27038
+    },
+    "PIPE": {
+      "present_in_attack": 145401,
+      "present_in_valid": 99088,
+      "p_flag_given_attack": 0.38001411321938217,
+      "p_flag_given_valid": 0.18866897057283485,
+      "odds_ratio": 2.635818663045338,
+      "total_occurrences_attack": 145401,
+      "total_occurrences_valid": 99088
+    },
+    "BRACE": {
+      "present_in_attack": 25205,
+      "present_in_valid": 4826,
+      "p_flag_given_attack": 0.0658747582457791,
+      "p_flag_given_valid": 0.009188967907158294,
+      "odds_ratio": 7.603928518031629,
+      "total_occurrences_attack": 25205,
+      "total_occurrences_valid": 4826
+    },
+    "SEMICOLON": {
+      "present_in_attack": 23104,
+      "present_in_valid": 14084,
+      "p_flag_given_attack": 0.06038367048246302,
+      "p_flag_given_valid": 0.02681670617580137,
+      "odds_ratio": 2.332159043741218,
+      "total_occurrences_attack": 23104,
+      "total_occurrences_valid": 14084
+    },
+    "BACKSLASH": {
+      "present_in_attack": 7838,
+      "present_in_valid": 12119,
+      "p_flag_given_attack": 0.020485076577282945,
+      "p_flag_given_valid": 0.023075238720856064,
+      "odds_ratio": 0.8854039384662099,
+      "total_occurrences_attack": 7838,
+      "total_occurrences_valid": 12119
+    },
+    "PCTBACKSLASH": {
+      "present_in_attack": 7905,
+      "present_in_valid": 11263,
+      "p_flag_given_attack": 0.020660185039987455,
+      "p_flag_given_valid": 0.021445367910966403,
+      "odds_ratio": 0.9626144387891594,
+      "total_occurrences_attack": 7905,
+      "total_occurrences_valid": 11263
+    },
+    "ANGLE": {
+      "present_in_attack": 5566,
+      "present_in_valid": 7352,
+      "p_flag_given_attack": 0.01454707020019863,
+      "p_flag_given_valid": 0.01399861004008035,
+      "odds_ratio": 1.039757977679001,
+      "total_occurrences_attack": 5566,
+      "total_occurrences_valid": 7352
+    },
+    "PCTSPACE": {
+      "present_in_attack": 33508,
+      "present_in_valid": 3511,
+      "p_flag_given_attack": 0.08757513982541425,
+      "p_flag_given_valid": 0.006685135997105837,
+      "odds_ratio": 14.261342743249326,
+      "total_occurrences_attack": 33508,
+      "total_occurrences_valid": 3511
+    },
+    "SPACE": {
+      "present_in_attack": 14404,
+      "present_in_valid": 3511,
+      "p_flag_given_attack": 0.03764570592232502,
+      "p_flag_given_valid": 0.006685135997105837,
+      "odds_ratio": 5.812422088487596,
+      "total_occurrences_attack": 14404,
+      "total_occurrences_valid": 3511
+    },
+    "PCTNULL": {
+      "present_in_attack": 90,
+      "present_in_valid": 1934,
+      "p_flag_given_attack": 0.0002352203230359103,
+      "p_flag_given_valid": 0.0036824417597273395,
+      "odds_ratio": 0.06365593565790448,
+      "total_occurrences_attack": 90,
+      "total_occurrences_valid": 1934
+    },
+    "NUL": {
+      "present_in_attack": 90,
+      "present_in_valid": 1934,
+      "p_flag_given_attack": 0.0002352203230359103,
+      "p_flag_given_valid": 0.0036824417597273395,
+      "odds_ratio": 0.06365593565790448,
+      "total_occurrences_attack": 90,
+      "total_occurrences_valid": 1934
+    },
+    "CONTROL": {
+      "present_in_attack": 90,
+      "present_in_valid": 1934,
+      "p_flag_given_attack": 0.0002352203230359103,
+      "p_flag_given_valid": 0.0036824417597273395,
+      "odds_ratio": 0.06365593565790448,
+      "total_occurrences_attack": 90,
+      "total_occurrences_valid": 1934
+    },
+    "QARRAY:": {
+      "present_in_attack": 1253,
+      "present_in_valid": 187,
+      "p_flag_given_attack": 0.00327478960848884,
+      "p_flag_given_valid": 0.0003560582259922505,
+      "odds_ratio": 9.224275705399723,
+      "total_occurrences_attack": 1253,
+      "total_occurrences_valid": 187
+    },
+    "QBARE": {
+      "present_in_attack": 1836,
+      "present_in_valid": 1041,
+      "p_flag_given_attack": 0.00479849458993257,
+      "p_flag_given_valid": 0.0019821209265130095,
+      "odds_ratio": 2.4277399227173104,
+      "total_occurrences_attack": 1836,
+      "total_occurrences_valid": 1041
+    },
+    "QEMPTYVAL": {
+      "present_in_attack": 11,
+      "present_in_valid": 137,
+      "p_flag_given_attack": 2.8749150593277925e-05,
+      "p_flag_given_valid": 0.0002608554917697236,
+      "odds_ratio": 0.11018544154956998,
+      "total_occurrences_attack": 11,
+      "total_occurrences_valid": 137
+    },
+    "WSPAD": {
+      "present_in_attack": 480,
+      "present_in_valid": 364,
+      "p_flag_given_attack": 0.001254508389524855,
+      "p_flag_given_valid": 0.0006930759051399956,
+      "odds_ratio": 1.8110766608175934,
+      "total_occurrences_attack": 480,
+      "total_occurrences_valid": 364
+    },
+    "QRAWSEMI": {
+      "present_in_attack": 1030,
+      "present_in_valid": 12,
+      "p_flag_given_attack": 0.0026919659191887513,
+      "p_flag_given_valid": 2.2848656213406448e-05,
+      "odds_ratio": 118.1325702979638,
+      "total_occurrences_attack": 1030,
+      "total_occurrences_valid": 12
+    },
+    "QSEMISEP": {
+      "present_in_attack": 172,
+      "present_in_valid": 79,
+      "p_flag_given_attack": 0.000449532172913073,
+      "p_flag_given_valid": 0.00015042032007159245,
+      "odds_ratio": 2.9894012562376315,
+      "total_occurrences_attack": 172,
+      "total_occurrences_valid": 79
+    },
+    "DOUBLEPCT": {
+      "present_in_attack": 9873,
+      "present_in_valid": 4,
+      "p_flag_given_attack": 0.02580366943703936,
+      "p_flag_given_valid": 7.61621873780215e-06,
+      "odds_ratio": 3477.7011907540505,
+      "total_occurrences_attack": 9873,
+      "total_occurrences_valid": 4
+    },
+    "UNUSUAL_METHOD": {
+      "present_in_attack": 4078,
+      "present_in_valid": 0,
+      "p_flag_given_attack": 0.01065809419267158,
+      "p_flag_given_valid": 0.0,
+      "odds_ratio": 10772.912913230235,
+      "total_occurrences_attack": 4078,
+      "total_occurrences_valid": 0
+    },
+    "PCTCONTROL": {
+      "present_in_attack": 19798,
+      "present_in_valid": 0,
+      "p_flag_given_attack": 0.05174324394961058,
+      "p_flag_given_valid": 0.0,
+      "odds_ratio": 54566.70212941883,
+      "total_occurrences_attack": 19798,
+      "total_occurrences_valid": 0
+    },
+    "PCTSUSPICIOUS": {
+      "present_in_attack": 5773,
+      "present_in_valid": 0,
+      "p_flag_given_attack": 0.015088076943181225,
+      "p_flag_given_valid": 0.0,
+      "odds_ratio": 15319.214429198058,
+      "total_occurrences_attack": 5773,
+      "total_occurrences_valid": 0
+    },
+    "QNUL": {
+      "present_in_attack": 87,
+      "present_in_valid": 0,
+      "p_flag_given_attack": 0.00022737964560137997,
+      "p_flag_given_valid": 0.0,
+      "odds_ratio": 227.43135886315693,
+      "total_occurrences_attack": 87,
+      "total_occurrences_valid": 0
+    },
+    "QREPEAT:": {
+      "present_in_attack": 8,
+      "present_in_valid": 0,
+      "p_flag_given_attack": 2.0908473158747582e-05,
+      "p_flag_given_valid": 0.0,
+      "odds_ratio": 20.908910332138042,
+      "total_occurrences_attack": 8,
+      "total_occurrences_valid": 0
+    },
+    "DOTDOT": {
+      "present_in_attack": 1,
+      "present_in_valid": 5,
+      "p_flag_given_attack": 2.6135591448434478e-06,
+      "p_flag_given_valid": 9.520273422252687e-06,
+      "odds_ratio": 0.27452374294010495,
+      "total_occurrences_attack": 1,
+      "total_occurrences_valid": 5
+    }
+  }
+}

@@ -81,12 +81,21 @@ def dump_embeddings(config: EmbeddingDumpConfig) -> None:
 
     reader_factory = data_factory.get_reader(config.reader_name)
     encoder_factory = models_factory.get_encoder(config.encoder_name)
+
+    encoder_kwargs: dict[str, object] = {}
+    if config.encoder_name.lower() == "secbert-flag-weighted":
+        if config.token_weight_paths:
+            encoder_kwargs["token_weight_paths"] = config.token_weight_paths
+
     encoder = encoder_factory(
-        model_name=config.encoder_model_name, device=config.device
+        model_name=config.encoder_model_name,
+        device=config.device,
+        **encoder_kwargs,
     )
 
     logger.info(
-        "Dumping embeddings dataset={dataset} encoder={encoder} model={model} device={device}",
+        "Dumping embeddings dataset={dataset} encoder={encoder} model={model} "
+        "device={device}",
         dataset=str(config.dataset_path),
         encoder=config.encoder_name,
         model=config.encoder_model_name,
@@ -226,6 +235,13 @@ def cli(
     sample_interval: int = typer.Option(
         10, help="Sample every N requests into the observability table"
     ),
+    token_weight: list[Path] = typer.Option(
+        [],
+        "--token-weight",
+        "-tw",
+        help="Path to a token-weight JSON (repeatable). "
+        "Combine attack boosts and normal downweights as needed.",
+    ),
 ) -> None:
     cfg = EmbeddingDumpConfig(
         dataset_path=dataset,
@@ -245,6 +261,7 @@ def cli(
         include_ids=include_ids,
         request_id_field=request_id_field,
         sample_interval=sample_interval,
+        token_weight_paths=tuple(token_weight) if token_weight else None,
     )
 
     dump_embeddings(cfg)

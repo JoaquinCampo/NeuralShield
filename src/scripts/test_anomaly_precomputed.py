@@ -3,7 +3,9 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
+from typing import Any, Tuple
 
 import joblib
 import matplotlib.pyplot as plt
@@ -12,6 +14,7 @@ import pandas as pd
 import seaborn as sns
 import typer
 from loguru import logger
+from sklearn.metrics import roc_auc_score, roc_curve
 
 from neuralshield.evaluation.metrics import (
     calculate_classification_metrics,
@@ -19,6 +22,154 @@ from neuralshield.evaluation.metrics import (
 )
 
 app = typer.Typer()
+
+
+class SklearnDetectorAdapter:
+    """Adapter exposing uniform interface for plain sklearn anomaly models."""
+
+    def __init__(
+        self,
+        model: Any,
+        *,
+        transformer: Any | None = None,
+        default_threshold: float | None = None,
+    ) -> None:
+        self.model = model
+        self.transformer = transformer
+        class_name = type(model).__name__.lower()
+        self._is_isolation_forest = "isolationforest" in class_name
+        self._is_gaussian_mixture = "gaussianmixture" in class_name
+        offset = getattr(model, "offset_", None)
+        inferred_threshold = None
+        if offset is not None:
+            inferred_threshold = (
+                -float(offset) if self._is_isolation_forest else float(offset)
+            )
+        self.threshold_ = (
+            float(default_threshold)
+            if default_threshold is not None
+            else inferred_threshold
+        )
+
+        if hasattr(model, "score_samples"):
+            self._score_method = "score_samples"
+        elif hasattr(model, "decision_function"):
+            self._score_method = "decision_function"
+        elif hasattr(model, "mahalanobis"):
+            self._score_method = "mahalanobis"
+        else:
+            raise AttributeError(
+                f"Model {type(model).__name__} lacks score_samples/decision_function/mahalanobis"
+            )
+
+    def _transform(self, embeddings: np.ndarray) -> np.ndarray:
+        if self.transformer is None:
+            return embeddings
+        if hasattr(self.transformer, "transform"):
+            return self.transformer.transform(embeddings)
+        raise AttributeError(
+            f"Transformer {type(self.transformer).__name__} lacks transform()"
+        )
+
+    def scores(self, embeddings: np.ndarray) -> np.ndarray:
+        transformed = self._transform(embeddings)
+        score_fn = getattr(self.model, self._score_method)
+        scores = score_fn(transformed)
+
+        if self._score_method == "mahalanobis":
+            return np.asarray(scores, dtype=np.float32)
+
+        if self._is_isolation_forest:
+            scores = -scores
+        elif self._is_gaussian_mixture:
+            scores = -scores
+
+        return np.asarray(scores, dtype=np.float32)
+
+    def predict(
+        self, embeddings: np.ndarray, *, threshold: float | None = None
+    ) -> np.ndarray:
+        transformed = self._transform(embeddings)
+        if hasattr(self.model, "predict"):
+            preds = self.model.predict(transformed)
+            preds_arr = np.asarray(preds)
+            if preds_arr.dtype.kind in {"i", "f"}:
+                unique_vals = np.unique(preds_arr)
+                allowed_values = {-1, 0, 1}
+                if set(unique_vals.tolist()).issubset(allowed_values):
+                    if -1 in unique_vals:
+                        return (preds_arr < 0).astype(bool)
+                    return preds_arr.astype(bool)
+                # Otherwise fall back to threshold-based decision
+            elif preds_arr.dtype.kind == "b":
+                return preds_arr.astype(bool)
+
+        use_threshold = threshold if threshold is not None else self.threshold_
+        if use_threshold is None:
+            raise ValueError("Threshold required for prediction with this model")
+
+        scores = self.scores(embeddings)
+        tolerance = max(1e-9, abs(use_threshold) * 1e-6)
+        return (scores > (use_threshold + tolerance)).astype(bool)
+
+
+def resolve_detector(payload: Any) -> Tuple[Any, dict]:
+    """Extract detector object and metadata from saved payloads."""
+    if hasattr(payload, "scores") and hasattr(payload, "predict"):
+        return payload, getattr(payload, "metadata", {})
+
+    if isinstance(payload, dict):
+        if "detector" in payload:
+            detector = payload["detector"]
+            metadata = payload.get("metadata", {}) or {}
+            threshold = payload.get("threshold")
+            if threshold is None:
+                threshold = metadata.get("threshold")
+            if threshold is not None:
+                try:
+                    setattr(detector, "threshold_", float(threshold))
+                except Exception:
+                    pass
+                if hasattr(detector, "_threshold"):
+                    try:
+                        setattr(detector, "_threshold", float(threshold))
+                    except Exception:
+                        pass
+            if not hasattr(detector, "_model") and hasattr(detector, "model"):
+                try:
+                    setattr(detector, "_model", getattr(detector, "model"))
+                except Exception:
+                    pass
+            # Some legacy pickles miss the fitted flag; assume true
+            if not hasattr(detector, "_fitted"):
+                try:
+                    setattr(detector, "_fitted", True)
+                except Exception:
+                    pass
+            else:
+                try:
+                    setattr(detector, "_fitted", True)
+                except Exception:
+                    pass
+            metadata = metadata
+            return detector, metadata
+
+        if "model" in payload:
+            metadata = {
+                key: value
+                for key, value in payload.items()
+                if key not in {"model", "pca", "threshold"}
+            }
+            transformer = payload.get("pca")
+            threshold = payload.get("threshold")
+            adapter = SklearnDetectorAdapter(
+                payload["model"],
+                transformer=transformer,
+                default_threshold=threshold,
+            )
+            return adapter, metadata
+
+    raise KeyError("Could not resolve detector from payload")
 
 
 @app.command()
@@ -30,7 +181,18 @@ def main(
     ),
     wandb_project: str = typer.Option("neuralshield", help="W&B project name"),
     wandb_run_name: str | None = typer.Option(None, help="W&B run name"),
-) -> None:
+    metrics_out: Path | None = typer.Option(
+        None, "--metrics-out", help="Optional JSON output path for metrics"
+    ),
+    curve_out: Path | None = typer.Option(
+        None, "--curve-out", help="Optional CSV output path for ROC curve points"
+    ),
+    scores_out: Path | None = typer.Option(
+        None,
+        "--scores-out",
+        help="Optional CSV output path for per-sample scores, labels, and predictions",
+    ),
+    ) -> None:
     """Test anomaly detection model on precomputed embeddings."""
 
     # Initialize wandb if enabled
@@ -50,8 +212,7 @@ def main(
     # Load model
     logger.info(f"Loading model from: {model_path}")
     model_data = joblib.load(model_path)
-    detector = model_data["detector"]
-    metadata = model_data.get("metadata", {})
+    detector, metadata = resolve_detector(model_data)
 
     logger.info(f"Model metadata: {metadata}")
 
@@ -138,6 +299,16 @@ def main(
         false_positive_rate=fpr,
     )
 
+    # Prepare labels for ROC analysis (1 = attack, 0 = valid)
+    label_array = np.array([1 if label == "attack" else 0 for label in normalized_labels])
+    roc_auc = roc_auc_score(label_array, scores)
+    fpr_curve, tpr_curve, threshold_curve = roc_curve(label_array, scores)
+
+    # Interpolate TPR and threshold at 5% FPR
+    target_fpr = 0.05
+    tpr_at_target = float(np.interp(target_fpr, fpr_curve, tpr_curve))
+    threshold_at_target = float(np.interp(target_fpr, fpr_curve, threshold_curve))
+
     # Print results
     print("\n" + "=" * 60)
     print("CONFUSION MATRIX")
@@ -156,7 +327,70 @@ def main(
     print(f"Accuracy:     {metrics.accuracy:.4f}")
     print(f"Specificity:  {metrics.specificity:.4f}")
     print(f"FPR:          {metrics.false_positive_rate:.4f}")
+    print(f"ROC AUC:      {roc_auc:.4f}")
+    print(f"TPR@5% FPR:   {tpr_at_target:.4f}")
     print("=" * 60 + "\n")
+
+    if wandb_module is not None:
+        wandb_module.log(
+            {
+                "precision": metrics.precision,
+                "recall": metrics.recall,
+                "f1_score": metrics.f1_score,
+                "accuracy": metrics.accuracy,
+                "specificity": metrics.specificity,
+                "false_positive_rate": metrics.false_positive_rate,
+                "roc_auc": roc_auc,
+                "tpr_at_5_fpr": tpr_at_target,
+            }
+        )
+
+    # Persist metrics if requested
+    if metrics_out is not None:
+        metrics_payload = {
+            "precision": metrics.precision,
+            "recall": metrics.recall,
+            "f1_score": metrics.f1_score,
+            "accuracy": metrics.accuracy,
+            "specificity": metrics.specificity,
+            "false_positive_rate": metrics.false_positive_rate,
+            "roc_auc": roc_auc,
+            "tpr_at_5_fpr": tpr_at_target,
+            "threshold_at_5_fpr": threshold_at_target,
+            "confusion_matrix": {
+                "true_positives": confusion.true_positives,
+                "false_positives": confusion.false_positives,
+                "true_negatives": confusion.true_negatives,
+                "false_negatives": confusion.false_negatives,
+            },
+        }
+        metrics_out.parent.mkdir(parents=True, exist_ok=True)
+        metrics_out.write_text(json.dumps(metrics_payload, indent=2))
+        logger.info("Saved metrics JSON to {}", metrics_out)
+
+    if curve_out is not None:
+        curve_frame = pd.DataFrame(
+            {
+                "fpr": fpr_curve,
+                "tpr": tpr_curve,
+                "threshold": threshold_curve,
+            }
+        )
+        curve_out.parent.mkdir(parents=True, exist_ok=True)
+        curve_frame.to_csv(curve_out, index=False)
+        logger.info("Saved ROC curve CSV to {}", curve_out)
+
+    if scores_out is not None:
+        scores_frame = pd.DataFrame(
+            {
+                "score": scores,
+                "predicted_label": ["attack" if p else "valid" for p in predictions],
+                "true_label": normalized_labels,
+            }
+        )
+        scores_out.parent.mkdir(parents=True, exist_ok=True)
+        scores_frame.to_csv(scores_out, index=False)
+        logger.info("Saved per-sample scores CSV to {}", scores_out)
 
     # Create comprehensive visualization
     logger.info("Creating score distribution visualization")

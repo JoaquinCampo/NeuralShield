@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Tuple
 
 from pydantic_settings import BaseSettings
 
@@ -17,6 +18,7 @@ class EmbeddingRunConfig(BaseSettings):
     encoder_name: str = "fastembed"
     encoder_model_name: str = "BAAI/bge-small-en-v1.5"
     device: str = "cpu"
+    token_weight_paths: Tuple[Path, ...] | None = None
 
     wandb_enabled: bool = False
     wandb_project: str = "neuralshield"

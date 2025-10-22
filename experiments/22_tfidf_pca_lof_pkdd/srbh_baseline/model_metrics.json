@@ -1,0 +1,18 @@
+{
+  "model": "LOF_TFIDF_PCA352_k100",
+  "threshold": 2861693.0,
+  "max_fpr": 0.05,
+  "actual_fpr": 0.04999611940930354,
+  "recall": 2.6135591448434478e-06,
+  "precision": 4.7038901171268636e-05,
+  "f1_score": 4.951978191488045e-06,
+  "accuracy": 0.5000365183526385,
+  "tp": 1,
+  "fp": 21258,
+  "tn": 403935,
+  "fn": 382619,
+  "explained_variance": 0.9005028162510731,
+  "n_neighbors": 100,
+  "n_components": 352,
+  "target_variance": 0.9
+}

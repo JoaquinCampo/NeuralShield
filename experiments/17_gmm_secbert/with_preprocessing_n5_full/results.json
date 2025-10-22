@@ -1,0 +1,17 @@
+{
+  "detector": "gmm",
+  "n_components": 5,
+  "covariance_type": "full",
+  "threshold": -2061.593017578125,
+  "accuracy": 0.7393188854489164,
+  "precision": 0.9138762574066419,
+  "recall": 0.5291841212846599,
+  "f1_score": 0.6702544278531545,
+  "fpr": 0.05,
+  "fnr": 0.47081587871534014,
+  "true_positives": 13264,
+  "false_positives": 1250,
+  "true_negatives": 23750,
+  "false_negatives": 11801,
+  "max_fpr_constraint": 0.05
+}

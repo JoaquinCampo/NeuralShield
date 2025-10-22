@@ -1,0 +1,380 @@
+{
+  "##0": {
+    "attack_count": 24,
+    "log_odds": 2.7201997500399306,
+    "support": 24,
+    "valid_count": 0
+  },
+  "##02": {
+    "attack_count": 2,
+    "log_odds": 0.43781736436340435,
+    "support": 2,
+    "valid_count": 0
+  },
+  "##03": {
+    "attack_count": 28,
+    "log_odds": 2.871430719763854,
+    "support": 28,
+    "valid_count": 0
+  },
+  "##1": {
+    "attack_count": 32,
+    "log_odds": 3.002766721824941,
+    "support": 32,
+    "valid_count": 0
+  },
+  "##10a": {
+    "attack_count": 2,
+    "log_odds": 0.43781736436340435,
+    "support": 2,
+    "valid_count": 0
+  },
+  "##16": {
+    "attack_count": 2,
+    "log_odds": 0.43781736436340435,
+    "support": 2,
+    "valid_count": 0
+  },
+  "##1a": {
+    "attack_count": 2,
+    "log_odds": 0.43781736436340435,
+    "support": 2,
+    "valid_count": 0
+  },
+  "##1f": {
+    "attack_count": 2,
+    "log_odds": 0.43781736436340435,
+    "support": 2,
+    "valid_count": 0
+  },
+  "##2": {
+    "attack_count": 4,
+    "log_odds": 1.0256040292655235,
+    "support": 4,
+    "valid_count": 0
+  },
+  "##209": {
+    "attack_count": 2,
+    "log_odds": 0.43781736436340435,
+    "support": 2,
+    "valid_count": 0
+  },
+  "##2f": {
+    "attack_count": 2,
+    "log_odds": 0.43781736436340435,
+    "support": 2,
+    "valid_count": 0
+  },
+  "##3": {
+    "attack_count": 12,
+    "log_odds": 2.0472552767975047,
+    "support": 12,
+    "valid_count": 0
+  },
+  "##3d": {
+    "attack_count": 4,
+    "log_odds": 1.0256040292655235,
+    "support": 4,
+    "valid_count": 0
+  },
+  "##3f": {
+    "attack_count": 6,
+    "log_odds": 1.3933288093908407,
+    "support": 6,
+    "valid_count": 0
+  },
+  "##4": {
+    "attack_count": 12,
+    "log_odds": 2.0472552767975047,
+    "support": 12,
+    "valid_count": 0
+  },
+  "##41": {
+    "attack_count": 6,
+    "log_odds": 1.3933288093908407,
+    "support": 6,
+    "valid_count": 0
+  },
+  "##43": {
+    "attack_count": 6,
+    "log_odds": 1.3933288093908407,
+    "support": 6,
+    "valid_count": 0
+  },
+  "##48": {
+    "attack_count": 2,
+    "log_odds": 0.43781736436340435,
+    "support": 2,
+    "valid_count": 0
+  },
+  "##4f": {
+    "attack_count": 2,
+    "log_odds": 0.43781736436340435,
+    "support": 2,
+    "valid_count": 0
+  },
+  "##4fb": {
+    "attack_count": 2,
+    "log_odds": 0.43781736436340435,
+    "support": 2,
+    "valid_count": 0
+  },
+  "##5": {
+    "attack_count": 8,
+    "log_odds": 1.6615927959855201,
+    "support": 8,
+    "valid_count": 0
+  },
+  "##6": {
+    "attack_count": 4,
+    "log_odds": 1.0256040292655235,
+    "support": 4,
+    "valid_count": 0
+  },
+  "##64": {
+    "attack_count": 2,
+    "log_odds": 0.43781736436340435,
+    "support": 2,
+    "valid_count": 0
+  },
+  "##646": {
+    "attack_count": 8,
+    "log_odds": 1.6615927959855201,
+    "support": 8,
+    "valid_count": 0
+  },
+  "##658": {
+    "attack_count": 2,
+    "log_odds": 0.43781736436340435,
+    "support": 2,
+    "valid_count": 0
+  },
+  "##7": {
+    "attack_count": 36,
+    "log_odds": 3.118838893077695,
+    "support": 36,
+    "valid_count": 0
+  },
+  "##72": {
+    "attack_count": 2,
+    "log_odds": 0.43781736436340435,
+    "support": 2,
+    "valid_count": 0
+  },
+  "##8": {
+    "attack_count": 8,
+    "log_odds": 1.6615927959855201,
+    "support": 8,
+    "valid_count": 0
+  },
+  "##9": {
+    "attack_count": 12,
+    "log_odds": 2.0472552767975047,
+    "support": 12,
+    "valid_count": 0
+  },
+  "##91": {
+    "attack_count": 2,
+    "log_odds": 0.43781736436340435,
+    "support": 2,
+    "valid_count": 0
+  },
+  "##92": {
+    "attack_count": 2,
+    "log_odds": 0.43781736436340435,
+    "support": 2,
+    "valid_count": 0
+  },
+  "##ab6": {
+    "attack_count": 96,
+    "log_odds": 4.091069640834189,
+    "support": 96,
+    "valid_count": 0
+  },
+  "##ace": {
+    "attack_count": 4,
+    "log_odds": 1.0256040292655235,
+    "support": 4,
+    "valid_count": 0
+  },
+  "##af": {
+    "attack_count": 4,
+    "log_odds": 1.0256040292655235,
+    "support": 4,
+    "valid_count": 0
+  },
+  "##b": {
+    "attack_count": 12,
+    "log_odds": 2.0472552767975047,
+    "support": 12,
+    "valid_count": 0
+  },
+  "##b6": {
+    "attack_count": 2,
+    "log_odds": 0.43781736436340435,
+    "support": 2,
+    "valid_count": 0
+  },
+  "##ba4": {
+    "attack_count": 2,
+    "log_odds": 0.43781736436340435,
+    "support": 2,
+    "valid_count": 0
+  },
+  "##c": {
+    "attack_count": 8,
+    "log_odds": 1.6615927959855201,
+    "support": 8,
+    "valid_count": 0
+  },
+  "##c5": {
+    "attack_count": 2,
+    "log_odds": 0.43781736436340435,
+    "support": 2,
+    "valid_count": 0
+  },
+  "##d": {
+    "attack_count": 16,
+    "log_odds": 2.3248870133957844,
+    "support": 16,
+    "valid_count": 0
+  },
+  "##dc": {
+    "attack_count": 2,
+    "log_odds": 0.43781736436340435,
+    "support": 2,
+    "valid_count": 0
+  },
+  "##dd7": {
+    "attack_count": 2,
+    "log_odds": 0.43781736436340435,
+    "support": 2,
+    "valid_count": 0
+  },
+  "##e": {
+    "attack_count": 20,
+    "log_odds": 2.5419515186336117,
+    "support": 20,
+    "valid_count": 0
+  },
+  "##e6": {
+    "attack_count": 2,
+    "log_odds": 0.43781736436340435,
+    "support": 2,
+    "valid_count": 0
+  },
+  "##e86": {
+    "attack_count": 2,
+    "log_odds": 0.43781736436340435,
+    "support": 2,
+    "valid_count": 0
+  },
+  "##ec7": {
+    "attack_count": 2,
+    "log_odds": 0.43781736436340435,
+    "support": 2,
+    "valid_count": 0
+  },
+  "##f": {
+    "attack_count": 8,
+    "log_odds": 1.6615927959855201,
+    "support": 8,
+    "valid_count": 0
+  },
+  "##f11": {
+    "attack_count": 2,
+    "log_odds": 0.43781736436340435,
+    "support": 2,
+    "valid_count": 0
+  },
+  "##f3": {
+    "attack_count": 4,
+    "log_odds": 1.0256040292655235,
+    "support": 4,
+    "valid_count": 0
+  },
+  "1": {
+    "attack_count": 272,
+    "log_odds": 5.129165246592548,
+    "support": 272,
+    "valid_count": 0
+  },
+  "2": {
+    "attack_count": 24,
+    "log_odds": 2.7201997500399306,
+    "support": 24,
+    "valid_count": 0
+  },
+  "3": {
+    "attack_count": 12,
+    "log_odds": 2.0472552767975047,
+    "support": 12,
+    "valid_count": 0
+  },
+  "4": {
+    "attack_count": 16,
+    "log_odds": 2.3248870133957844,
+    "support": 16,
+    "valid_count": 0
+  },
+  "=": {
+    "attack_count": 164,
+    "log_odds": 4.624437202694676,
+    "support": 164,
+    "valid_count": 0
+  },
+  "check": {
+    "attack_count": 18,
+    "log_odds": 2.4392973645735285,
+    "support": 18,
+    "valid_count": 0
+  },
+  "double": {
+    "attack_count": 9934,
+    "log_odds": 4.918632969312073,
+    "support": 9956,
+    "valid_count": 22
+  },
+  "login": {
+    "attack_count": 4,
+    "log_odds": 1.0256040292655235,
+    "support": 4,
+    "valid_count": 0
+  },
+  "pct": {
+    "attack_count": 61855,
+    "log_odds": 1.6120142381301892,
+    "support": 65678,
+    "valid_count": 3823
+  },
+  "pipe": {
+    "attack_count": 150675,
+    "log_odds": -0.8314820790633645,
+    "support": 257906,
+    "valid_count": 107231
+  },
+  "q": {
+    "attack_count": 174,
+    "log_odds": 4.683451374131731,
+    "support": 174,
+    "valid_count": 0
+  },
+  "qa": {
+    "attack_count": 2511,
+    "log_odds": 0.7314231121621292,
+    "support": 2885,
+    "valid_count": 374
+  },
+  "qr": {
+    "attack_count": 1063,
+    "log_odds": 3.27197144226134,
+    "support": 1075,
+    "valid_count": 12
+  },
+  "quote": {
+    "attack_count": 303463,
+    "log_odds": 0.5741699697736008,
+    "support": 356419,
+    "valid_count": 52956
+  }
+}
