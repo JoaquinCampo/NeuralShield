@@ -25,7 +25,7 @@ But can we prove this with just two public datasets?
 
 ---
 
-## Our Solution: Two-Run Cross-Dataset Test
+## Our Solution: Four-Run Cross-Dataset Test
 
 ### Run 1: CSIC → SR-BH (Primary Validation)
 
@@ -72,6 +72,49 @@ But can we prove this with just two public datasets?
 
 ---
 
+### Run 3: PKDD → SR-BH (Paper Replication)
+
+**Feature Selection**:
+
+- Use all PKDD (ECML/PKDD 2007) requests (normal + attack)
+- Compute MI on 5000 TF-IDF tokens
+- Select top-K features
+
+**Training**:
+
+- Use **only normal traffic from SR-BH 2020**
+- Train One-Class SVM with PKDD-selected tokens
+
+**Testing**:
+
+- Use **attack traffic from SR-BH 2020**
+- Measure TPR @ ~5% FPR
+
+**Why This Matters**: Recreates the paper’s “generic (PKDD) → real (SR-BH)” experiment using fully public data.
+
+---
+
+### Run 4: SR-BH → PKDD (Reverse Replication)
+
+**Feature Selection**:
+
+- Use all SR-BH 2020 traffic (normal + attack)
+- Compute MI, select top-K features
+
+**Training**:
+
+- Use **only normal traffic from PKDD**
+- Train One-Class SVM
+
+**Testing**:
+
+- Use **PKDD attack traffic**
+- Measure TPR @ ~5% FPR
+
+**Why This Matters**: Tests whether noisy SR-BH-derived features transfer back to the PKDD challenge dataset.
+
+---
+
 ## Why This Is Better Than The Paper
 
 **Paper's limitation**:
@@ -82,10 +125,10 @@ But can we prove this with just two public datasets?
 
 **Our approach**:
 
-- Uses only 2 public datasets
+- Uses only public datasets (CSIC 2010, SR-BH 2020, PKDD 2007)
 - Fully reproducible
-- Tests **both directions** (old→new and noisy→clean)
-- Proves genuine cross-domain generalization
+- Tests **four directions** (old→new, noisy→clean, PKDD→SR-BH, SR-BH→PKDD)
+- Proves genuine cross-domain generalization without proprietary data
 
 ---
 

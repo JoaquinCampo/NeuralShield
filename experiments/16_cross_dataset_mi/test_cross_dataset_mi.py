@@ -111,6 +111,55 @@ def load_srbh_data() -> tuple[list[str], list[str], list[str], list[str], list[s
     return all_normal, all_attacks, train_normal, test_requests, test_labels
 
 
+def load_pkdd_data() -> tuple[list[str], list[str], list[str], list[str], list[str]]:
+    """
+    Load PKDD dataset (converted to jsonl format).
+
+    Returns:
+        all_normal: All normal requests (for MI computation)
+        all_attacks: All attack requests (for MI computation)
+        train_normal: Normal training requests (for OCSVM)
+        test_requests: Test requests
+        test_labels: Labels for test requests ("valid" or "attack")
+    """
+    logger.info("Loading PKDD dataset...")
+
+    train_normal: list[str] = []
+    all_normal: list[str] = []
+    all_attacks: list[str] = []
+    test_requests: list[str] = []
+    test_labels: list[str] = []
+
+    # Train data (only normal)
+    with open("src/neuralshield/data/PKDD/train.jsonl", encoding="utf-8") as f:
+        for line in f:
+            obj = json.loads(line.strip())
+            if obj["label"] == "valid":
+                request = obj["request"]
+                train_normal.append(request)
+                all_normal.append(request)
+
+    # Test data (normal + attacks)
+    with open("src/neuralshield/data/PKDD/test.jsonl", encoding="utf-8") as f:
+        for line in f:
+            obj = json.loads(line.strip())
+            request = obj["request"]
+            label = obj["label"]
+            test_requests.append(request)
+            test_labels.append(label)
+
+            if label == "valid":
+                all_normal.append(request)
+            else:
+                all_attacks.append(request)
+
+    logger.info(
+        f"PKDD: {len(all_normal)} total normal, {len(all_attacks)} total attacks, "
+        f"{len(train_normal)} train normal, {len(test_requests)} test"
+    )
+    return all_normal, all_attacks, train_normal, test_requests, test_labels
+
+
 def build_dictionary(
     normal_requests: list[str],
     attack_requests: list[str],
@@ -362,6 +411,14 @@ def main():
         srbh_test_labels,
     ) = load_srbh_data()
 
+    (
+        pkdd_all_normal,
+        pkdd_all_attacks,
+        pkdd_train_normal,
+        pkdd_test_requests,
+        pkdd_test_labels,
+    ) = load_pkdd_data()
+
     # ========== RUN 1: CSIC → SR-BH ==========
     logger.info("\n\n")
     logger.info("▓" * 80)
@@ -396,6 +453,40 @@ def main():
         test_labels=csic_test_labels,
         output_dir=results_dir / "run2_srbh_to_csic",
         strip_headers_for_mi=False,  # SR-BH has real-world headers
+    )
+
+    # ========== RUN 3: PKDD → SR-BH ==========
+    logger.info("\n\n")
+    logger.info("▓" * 80)
+    logger.info("RUN 3: PKDD (feature selection) → SR-BH (train/test)")
+    logger.info("▓" * 80)
+
+    run3_results = run_experiment(
+        name="PKDD → SR-BH",
+        mi_normal=pkdd_all_normal,
+        mi_attacks=pkdd_all_attacks,
+        train_normal=srbh_train_normal,
+        test_requests=srbh_test_requests,
+        test_labels=srbh_test_labels,
+        output_dir=results_dir / "run3_pkdd_to_srbh",
+        strip_headers_for_mi=False,
+    )
+
+    # ========== RUN 4: SR-BH → PKDD ==========
+    logger.info("\n\n")
+    logger.info("▓" * 80)
+    logger.info("RUN 4: SR-BH (feature selection) → PKDD (train/test)")
+    logger.info("▓" * 80)
+
+    run4_results = run_experiment(
+        name="SR-BH → PKDD",
+        mi_normal=srbh_all_normal,
+        mi_attacks=srbh_all_attacks,
+        train_normal=pkdd_train_normal,
+        test_requests=pkdd_test_requests,
+        test_labels=pkdd_test_labels,
+        output_dir=results_dir / "run4_srbh_to_pkdd",
+        strip_headers_for_mi=False,
     )
 
     # ========== SUMMARY ==========
@@ -434,6 +525,36 @@ def main():
         f"\nBest: k={best2['k']}, Recall={best2['recall']:.4f}, FPR={best2['fpr']:.4f}"
     )
 
+    logger.info("\n" + "─" * 80)
+    logger.info("RUN 3: PKDD → SR-BH")
+    logger.info("─" * 80)
+    for r in run3_results:
+        logger.info(
+            f"  k={r['k']:3d}: Recall={r['recall']:.4f}, "
+            f"Precision={r['precision']:.4f}, FPR={r['fpr']:.4f}, "
+            f"F1={r['f1_score']:.4f}"
+        )
+
+    best3 = max(run3_results, key=lambda r: r["recall"])
+    logger.info(
+        f"\nBest: k={best3['k']}, Recall={best3['recall']:.4f}, FPR={best3['fpr']:.4f}"
+    )
+
+    logger.info("\n" + "─" * 80)
+    logger.info("RUN 4: SR-BH → PKDD")
+    logger.info("─" * 80)
+    for r in run4_results:
+        logger.info(
+            f"  k={r['k']:3d}: Recall={r['recall']:.4f}, "
+            f"Precision={r['precision']:.4f}, FPR={r['fpr']:.4f}, "
+            f"F1={r['f1_score']:.4f}"
+        )
+
+    best4 = max(run4_results, key=lambda r: r["recall"])
+    logger.info(
+        f"\nBest: k={best4['k']}, Recall={best4['recall']:.4f}, FPR={best4['fpr']:.4f}"
+    )
+
     # Compare to paper and Experiment 13
     logger.info("\n" + "=" * 80)
     logger.info("COMPARISON TO BASELINES")
@@ -454,6 +575,14 @@ def main():
     logger.info(
         f"  Run 2:  {best2['recall']:.2%} recall @ "
         f"{best2['fpr']:.2%} FPR (k={best2['k']})"
+    )
+    logger.info(
+        f"  Run 3:  {best3['recall']:.2%} recall @ "
+        f"{best3['fpr']:.2%} FPR (k={best3['k']})"
+    )
+    logger.info(
+        f"  Run 4:  {best4['recall']:.2%} recall @ "
+        f"{best4['fpr']:.2%} FPR (k={best4['k']})"
     )
 
     # Success evaluation
@@ -476,6 +605,22 @@ def main():
         logger.success(f"✅ Run 2: GOOD ({best2['recall']:.1%} ≥ 80%)")
     else:
         logger.warning(f"⚠️  Run 2: ACCEPTABLE ({best2['recall']:.1%} < 80%)")
+
+    if best3["recall"] >= 0.75:
+        logger.success(f"✅ Run 3: EXCELLENT ({best3['recall']:.1%} ≥ 75%)")
+    elif best3["recall"] >= 0.60:
+        logger.success(f"✅ Run 3: GOOD ({best3['recall']:.1%} ≥ 60%)")
+    elif best3["recall"] >= 0.50:
+        logger.warning(f"⚠️  Run 3: ACCEPTABLE ({best3['recall']:.1%} ≥ 50%)")
+    else:
+        logger.error(f"❌ Run 3: POOR ({best3['recall']:.1%} < 50%)")
+
+    if best4["recall"] >= 0.85:
+        logger.success(f"✅ Run 4: EXCELLENT ({best4['recall']:.1%} ≥ 85%)")
+    elif best4["recall"] >= 0.80:
+        logger.success(f"✅ Run 4: GOOD ({best4['recall']:.1%} ≥ 80%)")
+    else:
+        logger.warning(f"⚠️  Run 4: ACCEPTABLE ({best4['recall']:.1%} < 80%)")
 
     # Cross-dataset improvement
     exp13_recall = 0.0780

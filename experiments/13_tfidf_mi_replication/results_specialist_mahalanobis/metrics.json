@@ -1,0 +1,12 @@
+{
+  "recall": 0.0,
+  "precision": 0.0,
+  "f1_score": 0.0,
+  "fpr": 0.0,
+  "accuracy": 0.4993508439029262,
+  "tp": 0,
+  "fp": 0,
+  "tn": 25000,
+  "fn": 25065,
+  "threshold": 0.0
+}

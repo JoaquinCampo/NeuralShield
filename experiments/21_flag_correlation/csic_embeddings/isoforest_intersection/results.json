@@ -1,0 +1,23 @@
+{
+  "model": "adapted-secbert-isolation-forest",
+  "pooling": "mean+max (1536 dims)",
+  "detector": "isolation-forest",
+  "contamination": 0.01,
+  "n_estimators": 100,
+  "threshold": 0.5461623461705054,
+  "accuracy": 0.5400579246978927,
+  "precision": 0.7245482591449978,
+  "recall": 0.13117893476959905,
+  "f1_score": 0.22213964800864777,
+  "fpr": 0.05,
+  "fnr": 0.8688210652304009,
+  "true_positives": 3288,
+  "false_positives": 1250,
+  "true_negatives": 23750,
+  "false_negatives": 21777,
+  "max_fpr_constraint": 0.05,
+  "baseline_mahalanobis": 0.5192,
+  "baseline_secbert": 0.4926,
+  "improvement_vs_mahalanobis": -0.3880210652304009,
+  "improvement_vs_secbert": -0.36142106523040096
+}
