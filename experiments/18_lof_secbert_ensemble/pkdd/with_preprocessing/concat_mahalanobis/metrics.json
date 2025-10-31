@@ -1,0 +1,24 @@
+{
+  "model": "Mahalanobis_concat_secbert_tfidf",
+  "max_fpr": 0.05,
+  "threshold": 1387.8875732421875,
+  "precision": 0.9109116022099447,
+  "recall": 0.3604071316346745,
+  "f1_score": 0.5164700699916793,
+  "accuracy": 0.6041591537444404,
+  "specificity": 0.9499903081992634,
+  "false_positive_rate": 0.050009691800736576,
+  "roc_auc": 0.7701813163188064,
+  "true_positives": 5276,
+  "false_positives": 516,
+  "true_negatives": 9802,
+  "false_negatives": 9363,
+  "train_shape": [
+    24070,
+    943
+  ],
+  "test_shape": [
+    24957,
+    943
+  ]
+}

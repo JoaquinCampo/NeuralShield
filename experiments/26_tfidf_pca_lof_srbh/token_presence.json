@@ -1,0 +1,24 @@
+{
+  "totals": {
+    "valid": 425195,
+    "attack": 382620
+  },
+  "patterns": {
+    "union": {
+      "valid": 250,
+      "attack": 86416
+    },
+    "sleep": {
+      "valid": 7777,
+      "attack": 56434
+    },
+    "select": {
+      "valid": 1283,
+      "attack": 129445
+    },
+    "../": {
+      "valid": 96,
+      "attack": 459
+    }
+  }
+}

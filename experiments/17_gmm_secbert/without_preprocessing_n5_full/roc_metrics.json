@@ -5,7 +5,7 @@
   "accuracy": 0.7307899730350544,
   "specificity": 0.95,
   "false_positive_rate": 0.05,
-  "roc_auc": 0.7626876704568123,
+  "roc_auc": 0.74252321005386,
   "tpr_at_5_fpr": 0.5121484141232795,
   "threshold_at_5_fpr": -1658.3612060546875,
   "confusion_matrix": {

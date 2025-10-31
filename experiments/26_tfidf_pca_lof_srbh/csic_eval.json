@@ -1,0 +1,15 @@
+{
+  "model": "LOF_TFIDF_PCA175_k100",
+  "dataset": "src/neuralshield/data/CSIC/test.jsonl",
+  "threshold": -0.9909834265708923,
+  "recall": 0.0,
+  "precision": 0.0,
+  "f1_score": 0.0,
+  "accuracy": 0.4993508439029262,
+  "actual_fpr": 0.0,
+  "tp": 0,
+  "fp": 0,
+  "tn": 25000,
+  "fn": 25065,
+  "preprocess": true
+}

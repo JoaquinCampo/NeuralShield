@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -13,7 +14,6 @@ from sklearn.decomposition import PCA
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.neighbors import LocalOutlierFactor
 
-import sys
 sys.path.insert(0, "experiments/13_tfidf_mi_replication")
 from preprocessing import paper_preprocess
 
@@ -60,7 +60,9 @@ def load_dataset(name: str) -> tuple[list[str], list[str], list[str]]:
     return train_normals, test_requests, test_labels
 
 
-def build_features(source: str, target: str, max_features: int = 5000, n_components: int = 150):
+def build_features(
+    source: str, target: str, max_features: int = 5000, n_components: int = 150
+):
     train_normals_src, test_src, _ = load_dataset(source)
     _, test_tgt, labels_tgt = load_dataset(target)
 
@@ -95,7 +97,12 @@ def build_features(source: str, target: str, max_features: int = 5000, n_compone
     return train_pca, test_src_pca, test_tgt_pca, labels_tgt
 
 
-def evaluate_mahalanobis(train_vectors: np.ndarray, test_vectors: np.ndarray, labels: list[str], max_fpr: float = 0.05):
+def evaluate_mahalanobis(
+    train_vectors: np.ndarray,
+    test_vectors: np.ndarray,
+    labels: list[str],
+    max_fpr: float = 0.05,
+):
     model = EmpiricalCovariance()
     model.fit(train_vectors)
     train_scores = model.mahalanobis(train_vectors)
@@ -132,7 +139,13 @@ def evaluate_mahalanobis(train_vectors: np.ndarray, test_vectors: np.ndarray, la
     }
 
 
-def evaluate_lof(train_vectors: np.ndarray, test_vectors: np.ndarray, labels: list[str], n_neighbors: int = 100, max_fpr: float = 0.05):
+def evaluate_lof(
+    train_vectors: np.ndarray,
+    test_vectors: np.ndarray,
+    labels: list[str],
+    n_neighbors: int = 100,
+    max_fpr: float = 0.05,
+):
     lof = LocalOutlierFactor(n_neighbors=n_neighbors, novelty=True)
     lof.fit(train_vectors)
 
@@ -171,7 +184,9 @@ def evaluate_lof(train_vectors: np.ndarray, test_vectors: np.ndarray, labels: li
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description="Cross-dataset TF-IDF + PCA evaluation")
+    parser = argparse.ArgumentParser(
+        description="Cross-dataset TF-IDF + PCA evaluation"
+    )
     parser.add_argument("source", choices=DATASETS.keys())
     parser.add_argument("target", choices=DATASETS.keys())
     parser.add_argument("--max-features", type=int, default=5000)

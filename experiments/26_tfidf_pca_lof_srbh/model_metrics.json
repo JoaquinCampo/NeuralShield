@@ -1,0 +1,19 @@
+{
+  "model": "LOF_TFIDF_PCA175_k100",
+  "threshold": -0.9909834265708923,
+  "max_fpr": 0.05,
+  "actual_fpr": 0.05003139750654409,
+  "recall": 0.23802205843918248,
+  "precision": 0.8106457786283323,
+  "f1_score": 0.3679936965239966,
+  "accuracy": 0.6127556748901045,
+  "tp": 91072,
+  "fp": 21273,
+  "tn": 403920,
+  "fn": 291548,
+  "explained_variance": 0.7526535812888416,
+  "n_neighbors": 100,
+  "n_components": 175,
+  "preprocess": true,
+  "target_variance": null
+}

@@ -1,0 +1,11 @@
+{
+  "samples": 807815,
+  "agreement": 0.7405928337552534,
+  "jaccard": 0.21144785959419593,
+  "correlation": 0.21778590415159255,
+  "attack_overlap": {
+    "lof_only": 40182,
+    "sec_only": 132767,
+    "both": 52954
+  }
+}

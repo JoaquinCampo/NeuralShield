@@ -23,6 +23,65 @@ uv run python test_lof_quick.py
 
 ---
 
+## Train TF-IDF + PCA LOF (Configurable)
+
+```bash
+cd experiments/15_lof_comparison
+uv run python experiments/15_lof_comparison/train_and_save_lof_tfidf.py \
+  --model-name LOF_TFIDF_PCA200 \
+  --output-dir tfidf_pca_custom \
+  --max-features 8000 \
+  --min-df 3 \
+  --ngram-min 1 \
+  --ngram-max 2 \
+  --pca-components 200 \
+  --n-neighbors 150 \
+  --target-fpr 0.03 \
+  --use-preprocessing
+```
+
+Key knobs:
+
+- `--max-features`, `--min-df`, `--ngram-min`, `--ngram-max` control the TF-IDF vectorizer
+- `--pca-components` changes the dimensionality of the projection
+- `--n-neighbors` and `--target-fpr` adjust the LOF detector
+- Append `--no-use-preprocessing` to skip the preprocessing pipeline
+
+Artifacts land under the chosen `--output-dir` (model, embeddings, metrics JSON).
+
+---
+
+## Train TF-IDF + UMAP LOF (Experimental)
+
+```bash
+cd experiments/15_lof_comparison
+uv run python train_and_save_lof_tfidf_umap.py \
+  --model-name LOF_TFIDF_UMAP128 \
+  --output-dir tfidf_umap_custom \
+  --max-features 6000 \
+  --min-df 3 \
+  --ngram-min 1 \
+  --ngram-max 3 \
+  --umap-components 128 \
+  --umap-neighbors 30 \
+  --umap-min-dist 0.05 \
+  --umap-random-state none \
+  --umap-jobs -1 \
+  --n-neighbors 120 \
+  --target-fpr 0.05 \
+  --use-preprocessing
+```
+
+- Requires `umap-learn` (install once: `uv pip install umap-learn`)
+- `--umap-components`, `--umap-neighbors`, `--umap-min-dist`, `--umap-metric` govern the manifold reducer
+- Disable the random seed (`--umap-random-state none`) to unlock parallel processing; pair with `--umap-jobs` (use `-1` for all cores)
+- Remaining knobs match the PCA variant
+- Append `--no-use-preprocessing` for a raw-text baseline
+
+Outputs mirror the PCA script (model bundle, transformed test embeddings, metrics JSON).
+
+---
+
 ## Hyperparameter Search (Optional but Recommended)
 
 Find optimal `n_neighbors` for each dataset:

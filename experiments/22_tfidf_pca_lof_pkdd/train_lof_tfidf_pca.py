@@ -21,6 +21,7 @@ app = typer.Typer(help="Train LOF on PKDD using TF-IDF + PCA embeddings.")
 def load_dataset(
     path: Path,
     batch_size: int,
+    apply_preprocess: bool,
 ) -> tuple[list[str], list[str]]:
     reader = JSONLRequestReader(path, use_pipeline=False)
     texts: list[str] = []
@@ -29,11 +30,13 @@ def load_dataset(
 
     for batch, batch_labels in reader.iter_batches(batch_size=batch_size):
         for idx, text in enumerate(batch):
-            try:
-                processed = preprocess(text)
-            except MalformedHttpRequestError:
-                skipped += 1
-                continue
+            processed = text
+            if apply_preprocess:
+                try:
+                    processed = preprocess(text)
+                except MalformedHttpRequestError:
+                    skipped += 1
+                    continue
             texts.append(processed)
             if batch_labels:
                 labels.append(str(batch_labels[idx]))
@@ -71,8 +74,16 @@ def main(
     pca_components: int = typer.Option(175, help="Number of PCA components."),
     n_neighbors: int = typer.Option(100, help="Number of neighbors for LOF."),
     max_fpr: float = typer.Option(0.05, help="Target false positive rate."),
-    contamination: float = typer.Option(
-        0.05, help="LOF contamination parameter."
+    contamination: float = typer.Option(0.05, help="LOF contamination parameter."),
+    preprocess_data: bool = typer.Option(
+        True,
+        "--preprocess/--no-preprocess",
+        help="Apply HTTP preprocessing pipeline before TF-IDF.",
+    ),
+    save_train_embeddings: bool = typer.Option(
+        True,
+        "--save-train-embeddings/--no-save-train-embeddings",
+        help="Persist PCA embeddings from the training split.",
     ),
     target_variance: float | None = typer.Option(
         None,
@@ -91,32 +102,44 @@ def main(
     else:
         pca_descriptor = str(pca_components)
 
+    prep_state = "ENABLED" if preprocess_data else "DISABLED"
     logger.info("=" * 80)
     logger.info(
-        "TF-IDF + PCA({components}) + LOF (k={neighbors}) on PKDD",
+        "TF-IDF + PCA({components}) + LOF (k={neighbors}) on PKDD (preprocess={preprocess})",
         components=pca_descriptor,
         neighbors=n_neighbors,
+        preprocess=prep_state.lower(),
     )
     logger.info("=" * 80)
 
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    logger.info("Loading training data from {path}", path=str(train_path))
-    train_texts, train_labels = load_dataset(train_path, batch_size)
+    logger.info(
+        "Loading training data from {path} (preprocess={preprocess})",
+        path=str(train_path),
+        preprocess=prep_state.lower(),
+    )
+    train_texts, train_labels = load_dataset(
+        train_path, batch_size, apply_preprocess=preprocess_data
+    )
     logger.info(
         "Loaded {count} training samples (labels={labels})",
         count=len(train_texts),
         labels=set(train_labels),
     )
 
-    logger.info("Loading test data from {path}", path=str(test_path))
-    test_texts, test_labels = load_dataset(test_path, batch_size)
+    logger.info(
+        "Loading test data from {path} (preprocess={preprocess})",
+        path=str(test_path),
+        preprocess=prep_state.lower(),
+    )
+    test_texts, test_labels = load_dataset(
+        test_path, batch_size, apply_preprocess=preprocess_data
+    )
     logger.info(
         "Loaded {count} test samples label_dist={dist}",
         count=len(test_texts),
-        dist={
-            label: test_labels.count(label) for label in sorted(set(test_labels))
-        },
+        dist={label: test_labels.count(label) for label in sorted(set(test_labels))},
     )
 
     logger.info(
@@ -151,8 +174,8 @@ def main(
         pca_kwargs["n_components"] = pca_components
 
     pca = PCA(**pca_kwargs)
-    train_embeddings = pca.fit_transform(train_tfidf.toarray())
-    test_embeddings = pca.transform(test_tfidf.toarray())
+    train_embeddings = pca.fit_transform(train_tfidf.toarray()).astype(np.float32)
+    test_embeddings = pca.transform(test_tfidf.toarray()).astype(np.float32)
     explained = float(pca.explained_variance_ratio_.sum())
     logger.info(
         "PCA explained variance {variance:.2%} (components={components})",
@@ -168,10 +191,12 @@ def main(
         n_neighbors=n_neighbors,
         contamination=contamination,
     )
-    detector.fit(train_embeddings.astype(np.float32))
+    detector.fit(train_embeddings)
 
     logger.info("Scoring test embeddings and calibrating threshold")
-    test_scores = detector.scores(test_embeddings.astype(np.float32))
+    if detector._model is None:
+        raise RuntimeError("LOF detector was not fitted correctly.")
+    test_scores = detector._model.score_samples(test_embeddings)
 
     labels_binary = np.array(
         [1 if label == "attack" else 0 for label in test_labels], dtype=np.int32
@@ -179,9 +204,9 @@ def main(
     normal_mask = labels_binary == 0
     normal_scores = test_scores[normal_mask]
 
-    threshold = float(np.percentile(normal_scores, 100 * (1 - max_fpr)))
+    threshold = float(np.percentile(normal_scores, 100 * max_fpr))
     detector._threshold = threshold
-    actual_fpr = float(np.mean(normal_scores > threshold))
+    actual_fpr = float(np.mean(normal_scores <= threshold))
     logger.info(
         "Threshold={threshold:.4f} target_fpr={target:.2%} actual_fpr={actual:.2%}",
         threshold=threshold,
@@ -189,9 +214,9 @@ def main(
         actual=actual_fpr,
     )
 
-    predictions = detector.predict(test_embeddings.astype(np.float32))
+    predictions = (test_scores <= threshold).astype(int)
     anomalous_scores = test_scores[~normal_mask]
-    recall = float(np.mean(anomalous_scores > threshold))
+    recall = float(np.mean(anomalous_scores <= threshold))
 
     tp = int(np.sum((predictions == 1) & (labels_binary == 1)))
     fp = int(np.sum((predictions == 1) & (labels_binary == 0)))
@@ -217,19 +242,28 @@ def main(
         "n_components": effective_components,
         "explained_variance": explained,
         "contamination": contamination,
+        "preprocess": preprocess_data,
         "target_variance": target_variance,
+        "score_higher_is_normal": True,
     }
     model_path = (
-        output_dir
-        / f"lof_tfidf_pca{effective_components}_k{n_neighbors}.joblib"
+        output_dir / f"lof_tfidf_pca{effective_components}_k{n_neighbors}.joblib"
     )
     joblib.dump(model_payload, model_path)
     logger.info("Saved model to {path}", path=str(model_path))
 
+    if save_train_embeddings:
+        train_embeddings_path = output_dir / "pkdd_train_embeddings.npz"
+        np.savez_compressed(
+            train_embeddings_path,
+            embeddings=train_embeddings,
+        )
+        logger.info("Saved train embeddings to {path}", path=str(train_embeddings_path))
+
     embeddings_path = output_dir / "pkdd_test_embeddings.npz"
     np.savez_compressed(
         embeddings_path,
-        embeddings=test_embeddings.astype(np.float32),
+        embeddings=test_embeddings,
         labels=np.array(test_labels),
     )
     logger.info("Saved test embeddings to {path}", path=str(embeddings_path))
@@ -250,6 +284,7 @@ def main(
         "explained_variance": explained,
         "n_neighbors": n_neighbors,
         "n_components": effective_components,
+        "preprocess": preprocess_data,
         "target_variance": target_variance,
     }
     metrics_path = output_dir / "model_metrics.json"
@@ -257,9 +292,14 @@ def main(
     logger.info("Saved metrics to {path}", path=str(metrics_path))
 
     logger.info("=" * 80)
-    logger.info("Results: recall={recall:.2%} precision={precision:.2%} "
-                "f1={f1:.2%} accuracy={accuracy:.2%}",
-                recall=recall, precision=precision, f1=f1, accuracy=accuracy)
+    logger.info(
+        "Results: recall={recall:.2%} precision={precision:.2%} "
+        "f1={f1:.2%} accuracy={accuracy:.2%}",
+        recall=recall,
+        precision=precision,
+        f1=f1,
+        accuracy=accuracy,
+    )
     logger.info("=" * 80)
 
 

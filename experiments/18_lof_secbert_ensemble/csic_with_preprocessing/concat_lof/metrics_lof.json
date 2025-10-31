@@ -1,0 +1,26 @@
+{
+  "model": "LOF_concat_secbert_tfidf",
+  "max_fpr": 0.05,
+  "threshold": -0.025320880115032196,
+  "precision": 0.8963429803466291,
+  "recall": 0.4312387791741472,
+  "f1_score": 0.5823187156556405,
+  "accuracy": 0.6902826325776491,
+  "specificity": 0.95,
+  "false_positive_rate": 0.05,
+  "roc_auc": 0.7986636281667664,
+  "true_positives": 10809,
+  "false_positives": 1250,
+  "true_negatives": 23750,
+  "false_negatives": 14256,
+  "train_shape": [
+    47000,
+    943
+  ],
+  "test_shape": [
+    50065,
+    943
+  ],
+  "n_neighbors": 100,
+  "contamination": 0.05
+}

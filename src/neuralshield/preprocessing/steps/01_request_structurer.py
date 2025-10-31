@@ -1,3 +1,5 @@
+import re
+
 from neuralshield.preprocessing.http_preprocessor import HttpPreprocessor
 from neuralshield.preprocessing.steps.exceptions import MalformedHttpRequestError
 
@@ -65,7 +67,8 @@ class RequestStructurer(HttpPreprocessor):
 
     def _parse_request_line(self, request_line: str) -> tuple[str, str, str, list[str]]:
         """Parse the HTTP request line into method, URL, HTTP version, and flags."""
-        parts = request_line.split(" ")
+        request_line = request_line.strip()
+        parts = re.split(r"[ ]+", request_line, maxsplit=2)
         flags = []
 
         if len(parts) != 3:

@@ -1,0 +1,52 @@
+{
+  "lof_metrics": {
+    "recall": 0.6420107719928186,
+    "precision": 0.9294749610119564,
+    "f1_score": 0.7594506583604701,
+    "fpr": 0.04884,
+    "threshold": 1073827.625,
+    "explained_variance": 0.9300813206393654,
+    "true_positives": 16092,
+    "false_positives": 1221,
+    "true_negatives": 23779,
+    "false_negatives": 8973
+  },
+  "secbert_metrics": {
+    "recall": 0.49259924197087573,
+    "precision": 0.9080679561668015,
+    "f1_score": 0.6387150173296776,
+    "fpr": 0.05,
+    "threshold": 2083.459716796875,
+    "true_positives": 12347,
+    "false_positives": 1250,
+    "true_negatives": 23750,
+    "false_negatives": 12718
+  },
+  "agreement_analysis": {
+    "overall_agreement": 0.7110156796164986,
+    "overall_disagreement": 0.2889843203835014,
+    "jaccard_index": 0.36233417074353214,
+    "correlation": 0.33225596299672017,
+    "detection_breakdown": {
+      "total_attacks": 25065,
+      "both_caught": 8169,
+      "lof_only": 7923,
+      "secbert_only": 4178,
+      "both_missed": 4795
+    },
+    "false_positive_breakdown": {
+      "shared_fps": 52,
+      "lof_unique_fps": 1169,
+      "secbert_unique_fps": 1198
+    },
+    "agreement_by_label": {
+      "on_attacks": 0.517215240375025,
+      "on_normal": 0.90532
+    },
+    "ensemble_potential": {
+      "combined_recall": 0.8086973867943348,
+      "individual_lof_recall": 0.6420107719928186,
+      "individual_secbert_recall": 0.49259924197087573
+    }
+  }
+}

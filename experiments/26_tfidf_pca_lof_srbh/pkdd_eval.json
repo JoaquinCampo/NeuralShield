@@ -1,0 +1,15 @@
+{
+  "model": "LOF_TFIDF_PCA175_k100",
+  "dataset": "src/neuralshield/data/PKDD/test.jsonl",
+  "threshold": -0.9909834265708923,
+  "recall": 0.01625794111619646,
+  "precision": 0.6432432432432432,
+  "f1_score": 0.03171430475048304,
+  "accuracy": 0.41767840685979885,
+  "actual_fpr": 0.01279317697228145,
+  "tp": 238,
+  "fp": 132,
+  "tn": 10186,
+  "fn": 14401,
+  "preprocess": true
+}
