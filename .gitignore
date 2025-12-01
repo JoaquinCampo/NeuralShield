@@ -44,3 +44,8 @@ wandb/
 *.npz
 
 src/neuralshield/finetuning/models
+
+docs/
+misc/
+visualizations/
+models/
