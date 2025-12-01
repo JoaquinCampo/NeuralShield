@@ -9,25 +9,34 @@ beautiful time-series metrics to WandB.
 import json
 import sys
 import time
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
 import typer
-import wandb
 from loguru import logger
+
+import wandb
 
 # Add current directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent))
 
 from flag_analysis import FlagAnalyzer
+
 from visualizations import (
     create_cooccurrence_heatmap,
+    create_correlation_heatmap,
+    create_family_analysis,
     create_flag_count_distribution,
     create_flag_presence_comparison,
-    create_performance_breakdown_pie,
+    create_frequency_distribution_boxplot,
+    create_interaction_effects_heatmap,
+    create_mutual_information_ranking,
     create_performance_time_series,
+    create_rarity_analysis,
+    create_sequence_analysis,
     create_signal_strength_ranking,
 )
 
@@ -53,9 +62,7 @@ def load_requests(jsonl_path: Path, max_requests: int | None = None):
                     break
 
 
-def process_batch(
-    requests: list[tuple[str, str]], batch_num: int
-) -> dict[str, Any]:
+def process_batch(requests: list[tuple[str, str]], batch_num: int) -> dict[str, Any]:
     """Process a batch of requests and return metrics."""
     from neuralshield.preprocessing.pipeline import preprocess
 
@@ -73,9 +80,15 @@ def process_batch(
         flag_analyzer.add_request(request, label)
 
     batch_time_ms = (time.time() - batch_start) * 1000
-    avg_preprocessing_time = np.mean(preprocessing_times) if preprocessing_times else 0.0
-    p95_preprocessing_time = np.percentile(preprocessing_times, 95) if preprocessing_times else 0.0
-    p99_preprocessing_time = np.percentile(preprocessing_times, 99) if preprocessing_times else 0.0
+    avg_preprocessing_time = (
+        np.mean(preprocessing_times) if preprocessing_times else 0.0
+    )
+    p95_preprocessing_time = (
+        np.percentile(preprocessing_times, 95) if preprocessing_times else 0.0
+    )
+    p99_preprocessing_time = (
+        np.percentile(preprocessing_times, 99) if preprocessing_times else 0.0
+    )
 
     throughput = (len(requests) / batch_time_ms * 1000) if batch_time_ms > 0 else 0.0
 
@@ -94,9 +107,7 @@ def process_batch(
 
 @app.command()
 def main(
-    dataset_path: Path = typer.Argument(
-        ..., help="Dataset JSONL file (train or test)"
-    ),
+    dataset_path: Path = typer.Argument(..., help="Dataset JSONL file (train or test)"),
     max_batches: int = typer.Option(
         None, "--max-batches", help="Maximum number of batches to process"
     ),
@@ -104,9 +115,7 @@ def main(
         Path("experiments/29_flag_performance_analysis/results"),
         help="Output directory for results",
     ),
-    wandb_project: str = typer.Option(
-        "neuralshield-v2", help="WandB project name"
-    ),
+    wandb_project: str = typer.Option("neuralshield-v2", help="WandB project name"),
     wandb_run_name: str | None = typer.Option(
         None, help="WandB run name (auto-generated if None)"
     ),
@@ -119,15 +128,20 @@ def main(
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # Initialize WandB
-    run_name = wandb_run_name or f"flag-analysis-{dataset_path.stem}"
+    if wandb_run_name:
+        run_name = wandb_run_name
+    else:
+        timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+        run_name = f"exp29-flag-analysis-{dataset_path.stem}-{timestamp}"
     wandb.init(
         project=wandb_project,
         name=run_name,
-        tags=["flag-analysis", "performance", "time-series"],
+        tags=["flag-analysis", "performance", "time-series", "exp29"],
         config={
             "dataset": str(dataset_path),
             "batch_size": BATCH_SIZE,
             "max_batches": max_batches,
+            "experiment": "29_flag_performance_analysis",
         },
     )
 
@@ -153,7 +167,9 @@ def main(
 
         if len(current_batch) >= BATCH_SIZE:
             batch_num += 1
-            logger.info(f"Processing batch {batch_num} ({len(current_batch)} requests)...")
+            logger.info(
+                f"Processing batch {batch_num} ({len(current_batch)} requests)..."
+            )
 
             batch_result = process_batch(current_batch, batch_num)
             batch_metrics.append(batch_result)
@@ -196,7 +212,7 @@ def main(
             for pair, count in batch_analyzer.flag_cooccurrence.items():
                 global_flag_analyzer.flag_cooccurrence[pair] = (
                     global_flag_analyzer.flag_cooccurrence.get(pair, 0) + count
-            )
+                )
 
             # Log time-series metrics to WandB
             wandb.log(
@@ -218,9 +234,7 @@ def main(
                     "performance/throughput_req_per_sec": batch_result[
                         "throughput_req_per_sec"
                     ],
-                    "performance/avg_time_per_1k_ms": batch_result[
-                        "batch_time_ms"
-                    ],
+                    "performance/avg_time_per_1k_ms": batch_result["batch_time_ms"],
                 },
                 step=batch_num,
             )
@@ -233,7 +247,9 @@ def main(
     # Process remaining requests
     if current_batch:
         batch_num += 1
-        logger.info(f"Processing final batch {batch_num} ({len(current_batch)} requests)...")
+        logger.info(
+            f"Processing final batch {batch_num} ({len(current_batch)} requests)..."
+        )
         batch_result = process_batch(current_batch, batch_num)
         batch_metrics.append(batch_result)
         batch_numbers.append(batch_num)
@@ -248,6 +264,28 @@ def main(
     logger.info("Computing flag statistics...")
     flag_stats_result = global_flag_analyzer.compute_statistics()
     flag_stats = flag_stats_result["flag_statistics"]
+
+    # Compute new advanced analyses
+    logger.info("Computing mutual information...")
+    mi_scores = global_flag_analyzer.compute_mutual_information()
+
+    logger.info("Computing correlation matrix...")
+    flag_list, corr_matrix = global_flag_analyzer.compute_correlation_matrix()
+
+    logger.info("Computing interaction effects...")
+    interaction_effects = global_flag_analyzer.compute_interaction_effects()
+
+    logger.info("Computing rarity statistics...")
+    rarity_stats = global_flag_analyzer.compute_rarity_stats()
+
+    logger.info("Computing family statistics...")
+    family_stats = global_flag_analyzer.compute_family_stats()
+
+    logger.info("Computing frequency distributions...")
+    frequency_distributions = global_flag_analyzer.compute_frequency_distributions()
+
+    logger.info("Computing sequence statistics...")
+    sequence_stats = global_flag_analyzer.compute_sequence_stats(top_n=20)
 
     # Create visualizations
     logger.info("=" * 80)
@@ -277,9 +315,7 @@ def main(
 
     # 4. Co-occurrence heatmap
     logger.info("Creating co-occurrence heatmap...")
-    fig4 = create_cooccurrence_heatmap(
-        global_flag_analyzer.flag_cooccurrence, top_n=20
-    )
+    fig4 = create_cooccurrence_heatmap(global_flag_analyzer.flag_cooccurrence, top_n=20)
     wandb.log({"visualizations/flag_cooccurrence": wandb.Image(fig4)})
     plt.close(fig4)
 
@@ -292,27 +328,67 @@ def main(
         wandb.log({"visualizations/performance_time_series": wandb.Image(fig5)})
         plt.close(fig5)
 
-    # 6. Performance breakdown (average)
-    if batch_metrics:
-        logger.info("Creating performance breakdown...")
-        avg_preprocessing = np.mean([b["avg_preprocessing_time_ms"] for b in batch_metrics])
-        # Estimate encoding and detection (placeholder - would need actual timing)
-        avg_encoding = avg_preprocessing * 0.3  # Rough estimate
-        avg_detection = avg_preprocessing * 0.1  # Rough estimate
-        fig6 = create_performance_breakdown_pie(
-            avg_preprocessing, avg_encoding, avg_detection
-        )
-        wandb.log({"visualizations/performance_breakdown": wandb.Image(fig6)})
+    # 6. Mutual Information ranking
+    if mi_scores:
+        logger.info("Creating mutual information ranking...")
+        fig6 = create_mutual_information_ranking(mi_scores, top_n=30)
+        wandb.log({"visualizations/mutual_information_ranking": wandb.Image(fig6)})
         plt.close(fig6)
+
+    # 7. Correlation heatmap
+    if len(flag_list) > 0 and corr_matrix.size > 0:
+        logger.info("Creating correlation heatmap...")
+        fig7 = create_correlation_heatmap(flag_list, corr_matrix, top_n=20)
+        wandb.log({"visualizations/correlation_heatmap": wandb.Image(fig7)})
+        plt.close(fig7)
+
+    # 8. Interaction effects heatmap
+    if interaction_effects:
+        logger.info("Creating interaction effects heatmap...")
+        fig8 = create_interaction_effects_heatmap(interaction_effects, top_n=15)
+        wandb.log({"visualizations/interaction_effects": wandb.Image(fig8)})
+        plt.close(fig8)
+
+    # 9. Rarity analysis
+    if rarity_stats and flag_stats:
+        logger.info("Creating rarity analysis...")
+        fig9 = create_rarity_analysis(rarity_stats, flag_stats, top_n=25)
+        wandb.log({"visualizations/rarity_analysis": wandb.Image(fig9)})
+        plt.close(fig9)
+
+    # 10. Family analysis
+    if family_stats:
+        logger.info("Creating family analysis...")
+        fig10 = create_family_analysis(family_stats)
+        wandb.log({"visualizations/family_analysis": wandb.Image(fig10)})
+        plt.close(fig10)
+
+    # 11. Frequency distributions
+    if frequency_distributions:
+        logger.info("Creating frequency distributions...")
+        fig11 = create_frequency_distribution_boxplot(frequency_distributions, top_n=15)
+        wandb.log({"visualizations/frequency_distributions": wandb.Image(fig11)})
+        plt.close(fig11)
+
+    # 12. Sequence analysis
+    if sequence_stats:
+        logger.info("Creating sequence analysis...")
+        fig12 = create_sequence_analysis(sequence_stats, top_n=15)
+        wandb.log({"visualizations/sequence_analysis": wandb.Image(fig12)})
+        plt.close(fig12)
 
     # Log summary statistics
     logger.info("Logging summary statistics...")
     summary_stats = flag_stats_result["summary"]
-    
+
     # Calculate overall performance metrics
     if batch_metrics:
-        overall_avg_time = np.mean([b["avg_time_per_request_ms"] for b in batch_metrics])
-        overall_throughput = np.mean([b["throughput_req_per_sec"] for b in batch_metrics])
+        overall_avg_time = np.mean(
+            [b["avg_time_per_request_ms"] for b in batch_metrics]
+        )
+        overall_throughput = np.mean(
+            [b["throughput_req_per_sec"] for b in batch_metrics]
+        )
         overall_p95 = np.mean([b["p95_preprocessing_time_ms"] for b in batch_metrics])
         overall_p99 = np.mean([b["p99_preprocessing_time_ms"] for b in batch_metrics])
     else:
@@ -346,13 +422,13 @@ def main(
     )[:10]
 
     for i, (flag, stats) in enumerate(sorted_flags):
-        wandb.summary[f"flags/top_{i+1}_{flag}_signal_strength"] = stats[
+        wandb.summary[f"flags/top_{i + 1}_{flag}_signal_strength"] = stats[
             "signal_strength"
         ]
-        wandb.summary[f"flags/top_{i+1}_{flag}_attack_rate"] = stats[
+        wandb.summary[f"flags/top_{i + 1}_{flag}_attack_rate"] = stats[
             "attack_presence_rate"
         ]
-        wandb.summary[f"flags/top_{i+1}_{flag}_benign_rate"] = stats[
+        wandb.summary[f"flags/top_{i + 1}_{flag}_benign_rate"] = stats[
             "benign_presence_rate"
         ]
 
@@ -386,7 +462,9 @@ def main(
     logger.info("EXPERIMENT COMPLETE!")
     logger.info("=" * 80)
     logger.info(f"Processed {batch_num} batches")
-    logger.info(f"Total requests: {summary_stats['attack_requests'] + summary_stats['benign_requests']}")
+    logger.info(
+        f"Total requests: {summary_stats['attack_requests'] + summary_stats['benign_requests']}"
+    )
     logger.info(f"Overall avg time per request: {overall_avg_time:.3f} ms")
     logger.info(f"Overall throughput: {overall_throughput:.1f} req/sec")
     logger.info(f"Total unique flags: {summary_stats['total_flags']}")
@@ -394,4 +472,3 @@ def main(
 
 if __name__ == "__main__":
     app()
-

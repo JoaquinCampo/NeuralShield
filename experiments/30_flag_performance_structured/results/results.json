@@ -1,85 +1,13 @@
 {
   "flag_statistics": {
-    "ANGLE": {
-      "attack_count": 1292,
-      "benign_count": 0,
-      "attack_presence_rate": 0.025805936164263174,
-      "benign_presence_rate": 0.0,
-      "signal_strength": 0.025805936164263174,
-      "attack_per_request": 0.05161187232852635,
-      "benign_per_request": 0.0
-    },
-    "QNONASCII": {
-      "attack_count": 8036,
-      "benign_count": 4104,
-      "attack_presence_rate": 0.13566092757560022,
-      "benign_presence_rate": 0.06901109464493131,
-      "signal_strength": 0.06664983293066891,
-      "attack_per_request": 0.3210162585387289,
-      "benign_per_request": 0.16437697761044578
-    },
-    "HOPBYHOP": {
-      "attack_count": 25033,
-      "benign_count": 24967,
+    "PAREN": {
+      "attack_count": 26553,
+      "benign_count": 24993,
       "attack_presence_rate": 1.0,
       "benign_presence_rate": 1.0,
       "signal_strength": 0.0,
-      "attack_per_request": 1.0,
-      "benign_per_request": 1.0
-    },
-    "PIPE": {
-      "attack_count": 216,
-      "benign_count": 0,
-      "attack_presence_rate": 0.004314305117245236,
-      "benign_presence_rate": 0.0,
-      "signal_strength": 0.004314305117245236,
-      "attack_per_request": 0.008628610234490472,
-      "benign_per_request": 0.0
-    },
-    "QNUL": {
-      "attack_count": 180,
-      "benign_count": 0,
-      "attack_presence_rate": 0.0035952542643710303,
-      "benign_presence_rate": 0.0,
-      "signal_strength": 0.0035952542643710303,
-      "attack_per_request": 0.0071905085287420605,
-      "benign_per_request": 0.0
-    },
-    "QRAWSEMI": {
-      "attack_count": 844,
-      "benign_count": 0,
-      "attack_presence_rate": 0.03371549554587944,
-      "benign_presence_rate": 0.0,
-      "signal_strength": 0.03371549554587944,
-      "attack_per_request": 0.03371549554587944,
-      "benign_per_request": 0.0
-    },
-    "DOUBLEPCT": {
-      "attack_count": 2574,
-      "benign_count": 0,
-      "attack_presence_rate": 0.05141213598050573,
-      "benign_presence_rate": 0.0,
-      "signal_strength": 0.05141213598050573,
-      "attack_per_request": 0.10282427196101146,
-      "benign_per_request": 0.0
-    },
-    "MULTIPLESLASH": {
-      "attack_count": 25033,
-      "benign_count": 24967,
-      "attack_presence_rate": 1.0,
-      "benign_presence_rate": 1.0,
-      "signal_strength": 0.0,
-      "attack_per_request": 1.0,
-      "benign_per_request": 1.0
-    },
-    "HDRNORM": {
-      "attack_count": 25033,
-      "benign_count": 24967,
-      "attack_presence_rate": 1.0,
-      "benign_presence_rate": 1.0,
-      "signal_strength": 0.0,
-      "attack_per_request": 1.0,
-      "benign_per_request": 1.0
+      "attack_per_request": 1.0607198497982664,
+      "benign_per_request": 1.001041374614491
     },
     "PCTNULL": {
       "attack_count": 180,
@@ -90,22 +18,40 @@
       "attack_per_request": 0.0071905085287420605,
       "benign_per_request": 0.0
     },
-    "PCTCONTROL": {
-      "attack_count": 930,
+    "PIPE": {
+      "attack_count": 216,
       "benign_count": 0,
-      "attack_presence_rate": 0.01857548036591699,
+      "attack_presence_rate": 0.004314305117245236,
       "benign_presence_rate": 0.0,
-      "signal_strength": 0.01857548036591699,
-      "attack_per_request": 0.03715096073183398,
+      "signal_strength": 0.004314305117245236,
+      "attack_per_request": 0.008628610234490472,
       "benign_per_request": 0.0
     },
-    "PCTSPACE": {
-      "attack_count": 350,
+    "HOPBYHOP": {
+      "attack_count": 25033,
+      "benign_count": 24967,
+      "attack_presence_rate": 1.0,
+      "benign_presence_rate": 1.0,
+      "signal_strength": 0.0,
+      "attack_per_request": 1.0,
+      "benign_per_request": 1.0
+    },
+    "QBARE": {
+      "attack_count": 24,
       "benign_count": 0,
-      "attack_presence_rate": 0.0069907721807214475,
+      "attack_presence_rate": 0.0004793672352494707,
       "benign_presence_rate": 0.0,
-      "signal_strength": 0.0069907721807214475,
-      "attack_per_request": 0.013981544361442895,
+      "signal_strength": 0.0004793672352494707,
+      "attack_per_request": 0.0009587344704989414,
+      "benign_per_request": 0.0
+    },
+    "ANGLE": {
+      "attack_count": 1292,
+      "benign_count": 0,
+      "attack_presence_rate": 0.025805936164263174,
+      "benign_presence_rate": 0.0,
+      "signal_strength": 0.025805936164263174,
+      "attack_per_request": 0.05161187232852635,
       "benign_per_request": 0.0
     },
     "PCTSUSPICIOUS": {
@@ -117,13 +63,13 @@
       "attack_per_request": 0.04418168018215955,
       "benign_per_request": 0.0
     },
-    "QBARE": {
-      "attack_count": 24,
+    "QRAWSEMI": {
+      "attack_count": 844,
       "benign_count": 0,
-      "attack_presence_rate": 0.0004793672352494707,
+      "attack_presence_rate": 0.03371549554587944,
       "benign_presence_rate": 0.0,
-      "signal_strength": 0.0004793672352494707,
-      "attack_per_request": 0.0009587344704989414,
+      "signal_strength": 0.03371549554587944,
+      "attack_per_request": 0.03371549554587944,
       "benign_per_request": 0.0
     },
     "QUOTE": {
@@ -135,14 +81,23 @@
       "attack_per_request": 0.16354412175927777,
       "benign_per_request": 0.002803700885168422
     },
-    "PAREN": {
-      "attack_count": 26553,
-      "benign_count": 24993,
-      "attack_presence_rate": 1.0,
-      "benign_presence_rate": 1.0,
-      "signal_strength": 0.0,
-      "attack_per_request": 1.0607198497982664,
-      "benign_per_request": 1.001041374614491
+    "QNUL": {
+      "attack_count": 180,
+      "benign_count": 0,
+      "attack_presence_rate": 0.0035952542643710303,
+      "benign_presence_rate": 0.0,
+      "signal_strength": 0.0035952542643710303,
+      "attack_per_request": 0.0071905085287420605,
+      "benign_per_request": 0.0
+    },
+    "DOUBLEPCT": {
+      "attack_count": 2574,
+      "benign_count": 0,
+      "attack_presence_rate": 0.05141213598050573,
+      "benign_presence_rate": 0.0,
+      "signal_strength": 0.05141213598050573,
+      "attack_per_request": 0.10282427196101146,
+      "benign_per_request": 0.0
     },
     "SEMICOLON": {
       "attack_count": 1688,
@@ -152,6 +107,51 @@
       "signal_strength": 0.03371549554587944,
       "attack_per_request": 0.06743099109175887,
       "benign_per_request": 0.0
+    },
+    "PCTCONTROL": {
+      "attack_count": 930,
+      "benign_count": 0,
+      "attack_presence_rate": 0.01857548036591699,
+      "benign_presence_rate": 0.0,
+      "signal_strength": 0.01857548036591699,
+      "attack_per_request": 0.03715096073183398,
+      "benign_per_request": 0.0
+    },
+    "QNONASCII": {
+      "attack_count": 8036,
+      "benign_count": 4104,
+      "attack_presence_rate": 0.13566092757560022,
+      "benign_presence_rate": 0.06901109464493131,
+      "signal_strength": 0.06664983293066891,
+      "attack_per_request": 0.3210162585387289,
+      "benign_per_request": 0.16437697761044578
+    },
+    "PCTSPACE": {
+      "attack_count": 350,
+      "benign_count": 0,
+      "attack_presence_rate": 0.0069907721807214475,
+      "benign_presence_rate": 0.0,
+      "signal_strength": 0.0069907721807214475,
+      "attack_per_request": 0.013981544361442895,
+      "benign_per_request": 0.0
+    },
+    "HDRNORM": {
+      "attack_count": 25033,
+      "benign_count": 24967,
+      "attack_presence_rate": 1.0,
+      "benign_presence_rate": 1.0,
+      "signal_strength": 0.0,
+      "attack_per_request": 1.0,
+      "benign_per_request": 1.0
+    },
+    "MULTIPLESLASH": {
+      "attack_count": 25033,
+      "benign_count": 24967,
+      "attack_presence_rate": 1.0,
+      "benign_presence_rate": 1.0,
+      "signal_strength": 0.0,
+      "attack_per_request": 1.0,
+      "benign_per_request": 1.0
     }
   },
   "summary": {
@@ -162,266 +162,266 @@
     "benign_avg_flags_per_request": 4.168222053110106
   },
   "performance": {
-    "overall_avg_time_per_request_ms": 0.35862706006022776,
-    "overall_avg_time_per_1k_ms": 358.6270600602278,
-    "overall_throughput_req_per_sec": 2794.092459625829,
-    "overall_p95_time_ms": 0.33278699014701096,
-    "overall_p99_time_ms": 0.38746071796791226,
+    "overall_avg_time_per_request_ms": 0.35363262631055276,
+    "overall_avg_time_per_1k_ms": 353.6326263105528,
+    "overall_throughput_req_per_sec": 2830.0857674012645,
+    "overall_p95_time_ms": 0.32887762668086035,
+    "overall_p99_time_ms": 0.36536235435336245,
     "batch_metrics": [
       {
         "batch_num": 1,
-        "avg_time_per_request_ms": 0.3745701313018799,
-        "throughput_req_per_sec": 2669.727018874506
+        "avg_time_per_request_ms": 0.3727450370788574,
+        "throughput_req_per_sec": 2682.7989658476426
       },
       {
         "batch_num": 2,
-        "avg_time_per_request_ms": 0.34508204460144043,
-        "throughput_req_per_sec": 2897.861582902612
+        "avg_time_per_request_ms": 0.34720516204833984,
+        "throughput_req_per_sec": 2880.141510859146
       },
       {
         "batch_num": 3,
-        "avg_time_per_request_ms": 0.34160900115966797,
-        "throughput_req_per_sec": 2927.3233334170845
+        "avg_time_per_request_ms": 0.3442049026489258,
+        "throughput_req_per_sec": 2905.2462422941053
       },
       {
         "batch_num": 4,
-        "avg_time_per_request_ms": 0.3538203239440918,
-        "throughput_req_per_sec": 2826.2932690039956
+        "avg_time_per_request_ms": 0.3529062271118164,
+        "throughput_req_per_sec": 2833.613926804288
       },
       {
         "batch_num": 5,
-        "avg_time_per_request_ms": 0.33846282958984375,
-        "throughput_req_per_sec": 2954.5341838919817
+        "avg_time_per_request_ms": 0.341217041015625,
+        "throughput_req_per_sec": 2930.685985153385
       },
       {
         "batch_num": 6,
-        "avg_time_per_request_ms": 0.3537421226501465,
-        "throughput_req_per_sec": 2826.9180738450173
+        "avg_time_per_request_ms": 0.3748788833618164,
+        "throughput_req_per_sec": 2667.5282188003225
       },
       {
         "batch_num": 7,
-        "avg_time_per_request_ms": 0.3525407314300537,
-        "throughput_req_per_sec": 2836.551668635788
+        "avg_time_per_request_ms": 0.3716287612915039,
+        "throughput_req_per_sec": 2690.8573936116977
       },
       {
         "batch_num": 8,
-        "avg_time_per_request_ms": 0.34482407569885254,
-        "throughput_req_per_sec": 2900.029523673215
+        "avg_time_per_request_ms": 0.3454446792602539,
+        "throughput_req_per_sec": 2894.819518255228
       },
       {
         "batch_num": 9,
-        "avg_time_per_request_ms": 0.34690117835998535,
-        "throughput_req_per_sec": 2882.665330592457
+        "avg_time_per_request_ms": 0.3493971824645996,
+        "throughput_req_per_sec": 2862.072306783179
       },
       {
         "batch_num": 10,
-        "avg_time_per_request_ms": 0.3485732078552246,
-        "throughput_req_per_sec": 2868.837815026039
+        "avg_time_per_request_ms": 0.3504607677459717,
+        "throughput_req_per_sec": 2853.3864330424594
       },
       {
         "batch_num": 11,
-        "avg_time_per_request_ms": 0.3473360538482666,
-        "throughput_req_per_sec": 2879.05614438992
+        "avg_time_per_request_ms": 0.3480660915374756,
+        "throughput_req_per_sec": 2873.0175800314405
       },
       {
         "batch_num": 12,
-        "avg_time_per_request_ms": 0.3423130512237549,
-        "throughput_req_per_sec": 2921.3025808541092
+        "avg_time_per_request_ms": 0.34406328201293945,
+        "throughput_req_per_sec": 2906.4420770199836
       },
       {
         "batch_num": 13,
-        "avg_time_per_request_ms": 0.3463411331176758,
-        "throughput_req_per_sec": 2887.326697231286
+        "avg_time_per_request_ms": 0.34749484062194824,
+        "throughput_req_per_sec": 2877.740567918057
       },
       {
         "batch_num": 14,
-        "avg_time_per_request_ms": 0.3533639907836914,
-        "throughput_req_per_sec": 2829.943135355127
+        "avg_time_per_request_ms": 0.35040783882141113,
+        "throughput_req_per_sec": 2853.817435601548
       },
       {
         "batch_num": 15,
-        "avg_time_per_request_ms": 0.3516218662261963,
-        "throughput_req_per_sec": 2843.964201466088
+        "avg_time_per_request_ms": 0.34975409507751465,
+        "throughput_req_per_sec": 2859.151655617853
       },
       {
         "batch_num": 16,
-        "avg_time_per_request_ms": 0.3839743137359619,
-        "throughput_req_per_sec": 2604.340874446214
+        "avg_time_per_request_ms": 0.3477292060852051,
+        "throughput_req_per_sec": 2875.8010040576437
       },
       {
         "batch_num": 17,
-        "avg_time_per_request_ms": 0.34853100776672363,
-        "throughput_req_per_sec": 2869.1851735307096
+        "avg_time_per_request_ms": 0.3739778995513916,
+        "throughput_req_per_sec": 2673.9548010712897
       },
       {
         "batch_num": 18,
-        "avg_time_per_request_ms": 0.34667205810546875,
-        "throughput_req_per_sec": 2884.5705231189063
+        "avg_time_per_request_ms": 0.3518679141998291,
+        "throughput_req_per_sec": 2841.975524463679
       },
       {
         "batch_num": 19,
-        "avg_time_per_request_ms": 0.3510150909423828,
-        "throughput_req_per_sec": 2848.880363847788
+        "avg_time_per_request_ms": 0.3509981632232666,
+        "throughput_req_per_sec": 2849.017757861911
       },
       {
         "batch_num": 20,
-        "avg_time_per_request_ms": 0.3489401340484619,
-        "throughput_req_per_sec": 2865.8211034593023
+        "avg_time_per_request_ms": 0.349729061126709,
+        "throughput_req_per_sec": 2859.3563165106657
       },
       {
         "batch_num": 21,
-        "avg_time_per_request_ms": 0.38376903533935547,
-        "throughput_req_per_sec": 2605.733938684579
+        "avg_time_per_request_ms": 0.3443319797515869,
+        "throughput_req_per_sec": 2904.1740494781657
       },
       {
         "batch_num": 22,
-        "avg_time_per_request_ms": 0.34929513931274414,
-        "throughput_req_per_sec": 2862.9084331592776
+        "avg_time_per_request_ms": 0.34972214698791504,
+        "throughput_req_per_sec": 2859.41284706386
       },
       {
         "batch_num": 23,
-        "avg_time_per_request_ms": 0.35590124130249023,
-        "throughput_req_per_sec": 2809.768227669857
+        "avg_time_per_request_ms": 0.356320858001709,
+        "throughput_req_per_sec": 2806.459340068169
       },
       {
         "batch_num": 24,
-        "avg_time_per_request_ms": 0.4076118469238281,
-        "throughput_req_per_sec": 2453.3143664660793
+        "avg_time_per_request_ms": 0.3479170799255371,
+        "throughput_req_per_sec": 2874.2480829455826
       },
       {
         "batch_num": 25,
-        "avg_time_per_request_ms": 0.35121583938598633,
-        "throughput_req_per_sec": 2847.2519968013166
+        "avg_time_per_request_ms": 0.34722089767456055,
+        "throughput_req_per_sec": 2880.0109863700345
       },
       {
         "batch_num": 26,
-        "avg_time_per_request_ms": 0.3538551330566406,
-        "throughput_req_per_sec": 2826.0152434751676
+        "avg_time_per_request_ms": 0.3489398956298828,
+        "throughput_req_per_sec": 2865.8230615758835
       },
       {
         "batch_num": 27,
-        "avg_time_per_request_ms": 0.35139989852905273,
-        "throughput_req_per_sec": 2845.760639618747
+        "avg_time_per_request_ms": 0.3449380397796631,
+        "throughput_req_per_sec": 2899.071382903354
       },
       {
         "batch_num": 28,
-        "avg_time_per_request_ms": 0.355863094329834,
-        "throughput_req_per_sec": 2810.069422577278
+        "avg_time_per_request_ms": 0.35193419456481934,
+        "throughput_req_per_sec": 2841.4402903830924
       },
       {
         "batch_num": 29,
-        "avg_time_per_request_ms": 0.3562049865722656,
-        "throughput_req_per_sec": 2807.3722651188195
+        "avg_time_per_request_ms": 0.3522510528564453,
+        "throughput_req_per_sec": 2838.88434652184
       },
       {
         "batch_num": 30,
-        "avg_time_per_request_ms": 0.3526909351348877,
-        "throughput_req_per_sec": 2835.343640509351
+        "avg_time_per_request_ms": 0.34676027297973633,
+        "throughput_req_per_sec": 2883.8366961905035
       },
       {
         "batch_num": 31,
-        "avg_time_per_request_ms": 0.3505232334136963,
-        "throughput_req_per_sec": 2852.877939819113
+        "avg_time_per_request_ms": 0.347088098526001,
+        "throughput_req_per_sec": 2881.112905474886
       },
       {
         "batch_num": 32,
-        "avg_time_per_request_ms": 0.35511112213134766,
-        "throughput_req_per_sec": 2816.01993764116
+        "avg_time_per_request_ms": 0.35533881187438965,
+        "throughput_req_per_sec": 2814.215522152122
       },
       {
         "batch_num": 33,
-        "avg_time_per_request_ms": 0.3493208885192871,
-        "throughput_req_per_sec": 2862.6974019184277
+        "avg_time_per_request_ms": 0.3476412296295166,
+        "throughput_req_per_sec": 2876.5287738330294
       },
       {
         "batch_num": 34,
-        "avg_time_per_request_ms": 0.35601258277893066,
-        "throughput_req_per_sec": 2808.8894841701685
+        "avg_time_per_request_ms": 0.35170674324035645,
+        "throughput_req_per_sec": 2843.2778706110844
       },
       {
         "batch_num": 35,
-        "avg_time_per_request_ms": 0.3572211265563965,
-        "throughput_req_per_sec": 2799.3865022485575
+        "avg_time_per_request_ms": 0.3560779094696045,
+        "throughput_req_per_sec": 2808.3741602773084
       },
       {
         "batch_num": 36,
-        "avg_time_per_request_ms": 0.34978485107421875,
-        "throughput_req_per_sec": 2858.9002551966323
+        "avg_time_per_request_ms": 0.35093116760253906,
+        "throughput_req_per_sec": 2849.5616585774146
       },
       {
         "batch_num": 37,
-        "avg_time_per_request_ms": 0.35813403129577637,
-        "throughput_req_per_sec": 2792.2507011742714
+        "avg_time_per_request_ms": 0.3560621738433838,
+        "throughput_req_per_sec": 2808.4982721019287
       },
       {
         "batch_num": 38,
-        "avg_time_per_request_ms": 0.3565089702606201,
-        "throughput_req_per_sec": 2804.9785094298363
+        "avg_time_per_request_ms": 0.3789651393890381,
+        "throughput_req_per_sec": 2638.765142387991
       },
       {
         "batch_num": 39,
-        "avg_time_per_request_ms": 0.40050697326660156,
-        "throughput_req_per_sec": 2496.835427967292
+        "avg_time_per_request_ms": 0.34777092933654785,
+        "throughput_req_per_sec": 2875.45598451178
       },
       {
         "batch_num": 40,
-        "avg_time_per_request_ms": 0.3522682189941406,
-        "throughput_req_per_sec": 2838.7460068222426
+        "avg_time_per_request_ms": 0.3516378402709961,
+        "throughput_req_per_sec": 2843.8350071463633
       },
       {
         "batch_num": 41,
-        "avg_time_per_request_ms": 0.35675811767578125,
-        "throughput_req_per_sec": 2803.01961035906
+        "avg_time_per_request_ms": 0.3518078327178955,
+        "throughput_req_per_sec": 2842.46087494553
       },
       {
         "batch_num": 42,
-        "avg_time_per_request_ms": 0.36115407943725586,
-        "throughput_req_per_sec": 2768.9012998501444
+        "avg_time_per_request_ms": 0.35430383682250977,
+        "throughput_req_per_sec": 2822.4362709934608
       },
       {
         "batch_num": 43,
-        "avg_time_per_request_ms": 0.361818790435791,
-        "throughput_req_per_sec": 2763.814446440315
+        "avg_time_per_request_ms": 0.3535628318786621,
+        "throughput_req_per_sec": 2828.351596479989
       },
       {
         "batch_num": 44,
-        "avg_time_per_request_ms": 0.350902795791626,
-        "throughput_req_per_sec": 2849.792056355751
+        "avg_time_per_request_ms": 0.3477058410644531,
+        "throughput_req_per_sec": 2875.9942511711592
       },
       {
         "batch_num": 45,
-        "avg_time_per_request_ms": 0.35776710510253906,
-        "throughput_req_per_sec": 2795.1144354464664
+        "avg_time_per_request_ms": 0.35012388229370117,
+        "throughput_req_per_sec": 2856.131930929381
       },
       {
         "batch_num": 46,
-        "avg_time_per_request_ms": 0.41590094566345215,
-        "throughput_req_per_sec": 2404.418673308817
+        "avg_time_per_request_ms": 0.38956284523010254,
+        "throughput_req_per_sec": 2566.9799167046626
       },
       {
         "batch_num": 47,
-        "avg_time_per_request_ms": 0.39763689041137695,
-        "throughput_req_per_sec": 2514.857207955343
+        "avg_time_per_request_ms": 0.3533329963684082,
+        "throughput_req_per_sec": 2830.191378326111
       },
       {
         "batch_num": 48,
-        "avg_time_per_request_ms": 0.363206148147583,
-        "throughput_req_per_sec": 2753.2573583904914
+        "avg_time_per_request_ms": 0.35741376876831055,
+        "throughput_req_per_sec": 2797.8776627607726
       },
       {
         "batch_num": 49,
-        "avg_time_per_request_ms": 0.3565042018890381,
-        "throughput_req_per_sec": 2805.0160270235747
+        "avg_time_per_request_ms": 0.3517160415649414,
+        "throughput_req_per_sec": 2843.202702812628
       },
       {
         "batch_num": 50,
-        "avg_time_per_request_ms": 0.35606980323791504,
-        "throughput_req_per_sec": 2808.4380953018654
+        "avg_time_per_request_ms": 0.3471250534057617,
+        "throughput_req_per_sec": 2880.806182638391
       },
       {
         "batch_num": 51,
-        "avg_time_per_request_ms": 0.38882769071138823,
-        "throughput_req_per_sec": 2571.8332924551437
+        "avg_time_per_request_ms": 0.3808755141038161,
+        "throughput_req_per_sec": 2625.529767522487
       }
     ]
   }
