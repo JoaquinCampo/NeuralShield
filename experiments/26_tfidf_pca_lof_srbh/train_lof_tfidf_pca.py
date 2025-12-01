@@ -85,6 +85,11 @@ def main(
         "--save-train-embeddings/--no-save-train-embeddings",
         help="Guardar las embeddings de entrenamiento para análisis posteriores.",
     ),
+    save_raw_tfidf: bool = typer.Option(
+        False,
+        "--save-raw-tfidf/--no-save-raw-tfidf",
+        help="Guardar las matrices TF-IDF densas sin PCA.",
+    ),
     target_variance: float | None = typer.Option(
         None,
         help=(
@@ -158,6 +163,20 @@ def main(
     test_tfidf = vectorizer.transform(test_texts)
     logger.info("TF-IDF shapes train=%s test=%s", train_tfidf.shape, test_tfidf.shape)
 
+    train_dense = train_tfidf.toarray().astype(np.float32)
+    test_dense = test_tfidf.toarray().astype(np.float32)
+
+    if save_raw_tfidf:
+        raw_dir = output_dir / "raw_tfidf"
+        raw_dir.mkdir(parents=True, exist_ok=True)
+        np.savez_compressed(raw_dir / "train_tfidf.npz", embeddings=train_dense)
+        np.savez_compressed(
+            raw_dir / "test_tfidf.npz",
+            embeddings=test_dense,
+            labels=np.array(test_labels),
+        )
+        logger.info("Matrices TF-IDF sin PCA guardadas en {}", raw_dir)
+
     pca_kwargs: dict[str, float | int] = {"random_state": 42}
     if target_variance is not None:
         logger.info(
@@ -173,8 +192,8 @@ def main(
         pca_kwargs["n_components"] = pca_components
 
     pca = PCA(**pca_kwargs)
-    train_embeddings = pca.fit_transform(train_tfidf.toarray()).astype(np.float32)
-    test_embeddings = pca.transform(test_tfidf.toarray()).astype(np.float32)
+    train_embeddings = pca.fit_transform(train_dense).astype(np.float32)
+    test_embeddings = pca.transform(test_dense).astype(np.float32)
     explained = float(pca.explained_variance_ratio_.sum())
     logger.info(
         "PCA explained variance {variance:.2%} (components={components})",

@@ -1,0 +1,26 @@
+{
+  "model": "Mahalanobis_joint_pca",
+  "n_components": 300,
+  "explained_variance": 0.5323652029037476,
+  "max_fpr": 0.05,
+  "threshold": 995.001220703125,
+  "precision": 0.7021682153919466,
+  "recall": 0.11757430680231398,
+  "f1_score": 0.20142163898571527,
+  "accuracy": 0.5332467791870569,
+  "specificity": 0.95,
+  "false_positive_rate": 0.05,
+  "roc_auc": 0.5881795060841812,
+  "true_positives": 2947,
+  "false_positives": 1250,
+  "true_negatives": 23750,
+  "false_negatives": 22118,
+  "train_shape": [
+    47000,
+    300
+  ],
+  "test_shape": [
+    50065,
+    300
+  ]
+}

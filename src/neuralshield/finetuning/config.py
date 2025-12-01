@@ -9,8 +9,8 @@ def _default_fp16() -> bool:
     if torch.cuda.is_available():
         return True
     if torch.backends.mps.is_available():
-        return False  # MPS doesn't support fp16 well
-    return False  # CPU doesn't support fp16
+        return False
+    return False
 
 
 @dataclass

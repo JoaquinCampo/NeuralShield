@@ -1,0 +1,16 @@
+{
+  "baseline": {
+    "roc_auc": 0.7421393728306404,
+    "average_precision": 0.8013675759687171,
+    "mean_attack_score": 0.7171899676322937,
+    "mean_valid_score": -0.3394186198711395,
+    "score_gap": 1.0566085875034332
+  },
+  "compact": {
+    "roc_auc": 0.7213687141432277,
+    "average_precision": 0.7881577770888232,
+    "mean_attack_score": 5.1367621421813965,
+    "mean_valid_score": -0.15063554048538208,
+    "score_gap": 5.287397682666779
+  }
+}
