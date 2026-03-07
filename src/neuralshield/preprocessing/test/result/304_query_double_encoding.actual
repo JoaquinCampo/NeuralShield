@@ -1,8 +1,0 @@
-[METHOD] GET
-[URL] /admin
-[QPARAM] next=/admin?q=1
-[QPARAM] triple=%20encoded DOUBLEPCT
-[QPARAM] double= space
-[QPARAM] single= normal
-[QMETA] count=4 DOUBLEPCT
-[HEADER] Host: example.com

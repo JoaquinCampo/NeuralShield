@@ -1,0 +1,8 @@
+[METHOD] GET
+[URL] /pAth%2Fto%00file%41 CONTROL DOUBLEPCT NUL PCTNULL PCTSLASH
+[URL_ABS] http://example.com/p%41th%2Fto%00file%2541
+[HEADER] host: example.com
+[HAGG] h_count=1 dup_names=0 hopbyhop=0 bad_names=0 total_bytes=11
+[HGF] HDRNORM
+[QMETA] count=0
+[FLAGS] CONTROL DOUBLEPCT HDRNORM NUL PCTNULL PCTSLASH

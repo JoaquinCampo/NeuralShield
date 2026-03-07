@@ -1,0 +1,8 @@
+[METHOD] GET
+[URL] /a/b/c/../d DOTCUR DOTDOT MULTIPLESLASH
+[URL_ABS] http://example.com/a/./b//c/../d
+[HEADER] host: example.com
+[HAGG] h_count=1 dup_names=0 hopbyhop=0 bad_names=0 total_bytes=11
+[HGF] HDRNORM
+[QMETA] count=0
+[FLAGS] DOTCUR DOTDOT HDRNORM MULTIPLESLASH
