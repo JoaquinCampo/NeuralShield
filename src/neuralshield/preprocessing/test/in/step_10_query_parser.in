@@ -1,0 +1,2 @@
+GET /search?q=hello&q=world&bare&empty=&arr[]=1&arr[]=2&mix=a;b=2&amp;c=3 HTTP/1.1
+Host: example.com

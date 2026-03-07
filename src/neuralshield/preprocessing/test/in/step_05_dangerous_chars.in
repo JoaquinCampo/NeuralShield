@@ -1,0 +1,4 @@
+GET /search;cache?cmd=ls|grep&q=<script> HTTP/1.1
+Host: example.com
+X-Label: café а
+X-Html: <b>bold</b>

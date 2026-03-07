@@ -1,0 +1,6 @@
+GET /info HTTP/1.1
+HOST: example.com
+Content-Type: application/json
+X-Tag: alpha
+X-Tag: beta
+Connection: keep-alive

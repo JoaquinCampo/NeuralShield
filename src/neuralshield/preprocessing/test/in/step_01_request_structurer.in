@@ -1,0 +1,3 @@
+PROPFIND /api/data?key=value&amp;foo=bar&name=test HTTP/1.1
+Host: example.com
+Content-Type: application/xml

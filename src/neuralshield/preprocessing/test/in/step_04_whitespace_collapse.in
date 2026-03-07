@@ -1,0 +1,6 @@
+GET /ws HTTP/1.1
+Host: example.com
+X-Padded:   lots   of   spaces
+X-Tabbed: value	with	tabs
+Accept: text/html
+

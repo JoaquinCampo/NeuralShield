@@ -1,0 +1,2 @@
+GET /path/Ａdmin HTTP/1.1
+Host: example.com

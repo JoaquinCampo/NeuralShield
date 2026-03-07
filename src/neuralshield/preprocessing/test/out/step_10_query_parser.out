@@ -1,0 +1,18 @@
+[METHOD] GET
+[URL] /search
+[URL_ABS] http://example.com/search
+[QUERY] q=hello QREPEAT:q
+[QUERY] q=world QREPEAT:q
+[QUERY] bare QBARE
+[QUERY] empty= QEMPTYVAL
+[QUERY] arr[]=1 QARRAY:arr[] QREPEAT:arr[]
+[QUERY] arr[]=2 QARRAY:arr[] QREPEAT:arr[]
+[QUERY] mix=a HTMLENT SEMICOLON
+[QUERY] b=2&amp HTMLENT SEMICOLON
+[QUERY] c=3 HTMLENT SEMICOLON
+[HEADER] host: example.com
+[HAGG] h_count=1 dup_names=0 hopbyhop=0 bad_names=0 total_bytes=12
+[HGF] HDRNORM
+[QSEP] MIXEDSEP QSEMISEP
+[QMETA] count=9 HTMLENT QARRAY:arr[] QBARE QEMPTYVAL QREPEAT:arr[] QREPEAT:q SEMICOLON
+[FLAGS] HDRNORM HTMLENT QARRAY:arr[] QBARE QEMPTYVAL QREPEAT:arr[] QREPEAT:q SEMICOLON

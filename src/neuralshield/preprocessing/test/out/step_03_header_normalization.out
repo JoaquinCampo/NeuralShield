@@ -1,0 +1,12 @@
+[METHOD] GET
+[URL] /info
+[URL_ABS] http://example.com/info
+[HEADER] connection: keep-alive HOPBYHOP
+[HEADER] content-type: application/json
+[HEADER] host: example.com
+[HEADER] x-tag: alpha DUPHDR
+[HEADER] x-tag: beta DUPHDR
+[HAGG] h_count=5 dup_names=1 hopbyhop=1 bad_names=0 total_bytes=52
+[HGF] HDRNORM
+[QMETA] count=0
+[FLAGS] DUPHDR HDRNORM HOPBYHOP

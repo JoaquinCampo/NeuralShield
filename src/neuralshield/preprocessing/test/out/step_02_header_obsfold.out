@@ -1,0 +1,10 @@
+[METHOD] GET
+[URL] /page
+[URL_ABS] http://example.com/page
+[HEADER] accept: text/html
+[HEADER] host: example.com
+[HEADER] x-custom: first part continued via tab OBSFOLD
+[HAGG] h_count=3 dup_names=0 hopbyhop=0 bad_names=0 total_bytes=59
+[HGF] HDRNORM
+[QMETA] count=0
+[FLAGS] HDRNORM OBSFOLD

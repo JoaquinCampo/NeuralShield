@@ -1,0 +1,6 @@
+GET /page HTTP/1.1
+Host: example.com
+X-Custom: first part
+	continued via tab
+Accept: text/html
+

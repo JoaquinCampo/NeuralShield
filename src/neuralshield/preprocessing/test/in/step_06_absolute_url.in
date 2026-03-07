@@ -1,0 +1,3 @@
+GET http://evil.com/steal HTTP/1.1
+Host: trusted.com
+Accept: text/html
