@@ -24,7 +24,7 @@ import ipaddress
 import re
 from typing import List, Optional, Tuple
 
-from neuralshield.preprocessing.http_preprocessor import HttpPreprocessor
+from neuralshield.preprocessing.http_preprocessor import HttpPreprocessor, split_line_content
 
 
 class AbsoluteUrlBuilder(HttpPreprocessor):
@@ -98,7 +98,7 @@ class AbsoluteUrlBuilder(HttpPreprocessor):
                 method = line[9:].strip()
                 processed_lines.append(line)
             elif line.startswith("[URL] "):
-                url = line[6:].strip()
+                url, _ = split_line_content(line, "[URL] ")
                 processed_lines.append(line)
             elif line.startswith("[HEADER] "):
                 header_content = line[9:].strip()
@@ -633,4 +633,4 @@ class AbsoluteUrlBuilder(HttpPreprocessor):
 
         # Sort flags alphabetically for determinism
         sorted_flags = sorted(global_flags)
-        return " ".join(sorted_flags)
+        return f"[FLAGS] {' '.join(sorted_flags)}"

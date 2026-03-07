@@ -4,7 +4,17 @@ from importlib import import_module
 from pathlib import Path
 from typing import Iterable, Sequence
 
-from neuralshield.preprocessing.http_preprocessor import HttpPreprocessor
+from neuralshield.preprocessing.http_preprocessor import (
+    HttpPreprocessor,
+    _KNOWN_FLAGS,
+    _PARAMETRIC_FLAG_RE,
+)
+
+
+# TODO(audit): Verify Figure 4.2 in PDF — Phase 2 flag list is incomplete
+#   (missing BADHDRCONT, BADCRLF, HDRMERGE, HOPBYHOP, HDRNORM). See audit 1.10.
+# TODO(audit): Regenerate Listing 4.2 end-to-end example from actual pipeline
+#   output after all bug fixes are applied. See audit 1.12.
 
 
 class PreprocessorPipeline:
@@ -24,7 +34,49 @@ class PreprocessorPipeline:
 
         for step in self._steps:
             request = step.process(request)
-        return request
+        return self._aggregate_flags(request)
+
+    @staticmethod
+    def _aggregate_flags(request: str) -> str:
+        """Collect all inline flags into a summary [FLAGS] line at the end."""
+        lines = request.split("\n")
+        all_flags: set[str] = set()
+        existing_flags_line_idx: int | None = None
+
+        for idx, line in enumerate(lines):
+            # Collect flags already on a [FLAGS] line
+            if line.startswith("[FLAGS] "):
+                existing_flags_line_idx = idx
+                for token in line[8:].split():
+                    all_flags.add(token)
+                continue
+
+            # Collect inline flags from tagged lines
+            for prefix in ("[URL] ", "[QUERY] ", "[HEADER] "):
+                if line.startswith(prefix):
+                    for token in line[len(prefix):].split():
+                        if token in _KNOWN_FLAGS or _PARAMETRIC_FLAG_RE.match(token):
+                            all_flags.add(token)
+                    break
+
+            # Collect flags from block-level tags
+            if line.startswith("[HGF] "):
+                for token in line[6:].split(","):
+                    token = token.strip()
+                    if token:
+                        all_flags.add(token)
+
+        if not all_flags:
+            return request
+
+        flags_line = f"[FLAGS] {' '.join(sorted(all_flags))}"
+
+        if existing_flags_line_idx is not None:
+            lines[existing_flags_line_idx] = flags_line
+        else:
+            lines.append(flags_line)
+
+        return "\n".join(lines)
 
     def batch(self, batch: Sequence[str]) -> list[str]:
         """Process a batch of requests, preserving order."""

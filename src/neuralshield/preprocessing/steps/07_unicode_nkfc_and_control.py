@@ -1,24 +1,20 @@
 import unicodedata
 
-from neuralshield.preprocessing.http_preprocessor import HttpPreprocessor
+from neuralshield.preprocessing.http_preprocessor import HttpPreprocessor, split_line_content
 
 
 class UnicodeNFKCAndControl(HttpPreprocessor):
     """
-    Apply Unicode NFKC normalization to URL and QUERY content and detect anomalies.
+    Detect Unicode anomalies in URL and QUERY content using NFKC as a diagnostic reference.
+
+    NFKC normalization is used only for comparison (flag detection); the original
+    content is preserved in the output so that downstream steps and encoders see
+    the actual bytes the client sent.
     """
 
+    _PREFIXES = {"[URL] ": "[URL]", "[QUERY] ": "[QUERY]"}
+
     def process(self, request: str) -> str:
-        """
-        Process structured HTTP request lines, applying NFKC normalization to URL and QUERY content
-        and detecting fullwidth/control character anomalies.
-
-        Args:
-            request: Structured HTTP request from RequestStructurer
-
-        Returns:
-            Processed request with normalization and flags
-        """
         lines = request.split("\n")
         processed_lines = []
 
@@ -27,74 +23,43 @@ class UnicodeNFKCAndControl(HttpPreprocessor):
                 processed_lines.append(line)
                 continue
 
-            # Only process URL and QUERY lines
-            if line.startswith("[URL] ") or line.startswith("[QUERY] "):
-                processed_line, flags = self._process_content_line(line)
-                processed_lines.append(processed_line)
-                # Flags are already attached to the processed_line
-            else:
-                # Pass through METHOD and HEADER lines unchanged
+            matched = False
+            for tag_prefix, tag in self._PREFIXES.items():
+                if line.startswith(tag_prefix):
+                    content, existing_flags = split_line_content(line, tag_prefix)
+                    new_flags = self._detect_unicode_issues(content)
+                    all_flags = sorted(existing_flags | new_flags)
+                    rebuilt = f"{tag} {content}"
+                    if all_flags:
+                        rebuilt += f" {' '.join(all_flags)}"
+                    processed_lines.append(rebuilt)
+                    matched = True
+                    break
+
+            if not matched:
                 processed_lines.append(line)
 
         return "\n".join(processed_lines)
 
-    def _process_content_line(self, line: str) -> tuple[str, list[str]]:
-        """
-        Process a single URL or QUERY line: normalize content and detect anomalies.
+    def _detect_unicode_issues(self, content: str) -> set[str]:
+        """Detect Unicode anomalies using NFKC as a diagnostic reference."""
+        flags: set[str] = set()
 
-        Args:
-            line: Line in format "[TYPE] content"
-
-        Returns:
-            tuple: (processed_line, list_of_flags)
-        """
-        # Split prefix from content
-        if line.startswith("[URL] "):
-            prefix = "[URL]"
-            content = line[6:]  # Remove '[URL] '
-        elif line.startswith("[QUERY] "):
-            prefix = "[QUERY]"
-            content = line[8:]  # Remove '[QUERY] '
-        else:
-            return line, []
-
-        # Detect all Unicode security issues before normalization
         has_fullwidth = self._has_fullwidth_characters(content)
-        has_unicode_format = self._has_unicode_formatting_chars(content)
-        has_math_unicode = self._has_mathematical_unicode(content)
-        has_invalid_unicode = self._has_invalid_unicode(content)
+        normalized = unicodedata.normalize("NFKC", content)
 
-        # Apply NFKC normalization
-        normalized_content = unicodedata.normalize("NFKC", content)
+        if has_fullwidth or normalized != content:
+            flags.add("FULLWIDTH")
+        if self._has_control_characters(content):
+            flags.add("CONTROL")
+        if self._has_unicode_formatting_chars(content):
+            flags.add("UNICODE_FORMAT")
+        if self._has_mathematical_unicode(content):
+            flags.add("MATH_UNICODE")
+        if self._has_invalid_unicode(content):
+            flags.add("INVALID_UNICODE")
 
-        # Detect control characters in normalized content
-        has_control = self._has_control_characters(normalized_content)
-
-        # Determine flags to emit
-        flags = []
-        if has_fullwidth or normalized_content != content:
-            flags.append("FULLWIDTH")
-        if has_control:
-            flags.append("CONTROL")
-        if has_unicode_format:
-            flags.append("UNICODE_FORMAT")
-        if has_math_unicode:
-            flags.append("MATH_UNICODE")
-        if has_invalid_unicode:
-            flags.append("INVALID_UNICODE")
-
-        # Sort flags alphabetically as per spec
-        flags.sort()
-
-        # Reconstruct the line with normalized content and flags
-        processed_line = f"{prefix} {normalized_content}"
-        if flags:
-            processed_line += f" {' '.join(flags)}"
-
-        return (
-            processed_line,
-            [],
-        )  # Return empty flags since they're attached to the line
+        return flags
 
     def _has_fullwidth_characters(self, text: str) -> bool:
         """

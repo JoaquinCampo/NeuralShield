@@ -285,6 +285,10 @@ class QueryParserAndFlags(HttpPreprocessor):
                 # Raw semicolon present but not dominant
                 flags.add("QRAWSEMI")
 
+            # Mixed separator usage: both & and ; present
+            if ampersand_count > 0 and semicolon_count > 0:
+                flags.add("MIXEDSEP")
+
         return separator_type, flags
 
     def _is_semicolon_dominant(self, query_string: str) -> bool:

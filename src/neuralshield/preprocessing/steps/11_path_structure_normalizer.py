@@ -1,7 +1,7 @@
 import re
 from typing import List, Set, Tuple
 
-from neuralshield.preprocessing.http_preprocessor import HttpPreprocessor
+from neuralshield.preprocessing.http_preprocessor import HttpPreprocessor, split_line_content
 
 
 class PathStructureNormalizer(HttpPreprocessor):
@@ -36,16 +36,19 @@ class PathStructureNormalizer(HttpPreprocessor):
                 continue
 
             if line.startswith("[URL] "):
-                # Extract URL content and normalize path structure
-                url_content = line[6:]  # Remove '[URL] '
+                # Extract URL content, separating existing flags
+                url_content, existing_flags = split_line_content(line, "[URL] ")
 
-                # Normalize path and get flags
-                normalized_path, flags = self._normalize_path_structure(url_content)
+                # Normalize path and get new flags
+                normalized_path, new_flags = self._normalize_path_structure(url_content)
+
+                # Merge existing and new flags
+                all_flags = sorted(existing_flags | new_flags)
 
                 # Reconstruct line with normalized path and flags
                 processed_line = f"[URL] {normalized_path}"
-                if flags:
-                    processed_line += f" {' '.join(sorted(flags))}"
+                if all_flags:
+                    processed_line += f" {' '.join(all_flags)}"
 
                 processed_lines.append(processed_line)
             else:
@@ -132,7 +135,9 @@ class PathStructureNormalizer(HttpPreprocessor):
         Returns:
             True if multiple slashes detected
         """
-        return "" in segments  # Empty segments indicate multiple slashes
+        # Skip index 0 which is always "" for absolute paths (artifact of
+        # _segment_path inserting an empty leading segment).
+        return "" in segments[1:]
 
     def _detect_current_directory(self, segments: List[str]) -> bool:
         """

@@ -1,6 +1,6 @@
 import re
 
-from neuralshield.preprocessing.http_preprocessor import HttpPreprocessor
+from neuralshield.preprocessing.http_preprocessor import HttpPreprocessor, split_line_content
 
 
 class PercentDecodeOnce(HttpPreprocessor):
@@ -50,35 +50,37 @@ class PercentDecodeOnce(HttpPreprocessor):
         Process a single URL or QUERY line with percent decoding.
 
         Args:
-            line: Line in format "[TYPE] content"
+            line: Line in format "[TYPE] content [FLAGS...]"
 
         Returns:
             tuple: (processed_line, list_of_flags)
         """
-        # Split prefix from content
+        # Split prefix from content, separating existing flags
         if line.startswith("[URL] "):
             prefix = "[URL]"
-            content = line[6:]  # Remove '[URL] '
+            tag_prefix = "[URL] "
             context = "URL"
         elif line.startswith("[QUERY] "):
             prefix = "[QUERY]"
-            content = line[8:]  # Remove '[QUERY] '
+            tag_prefix = "[QUERY] "
             context = "QUERY"
         else:
             return line, []
 
+        content, existing_flags = split_line_content(line, tag_prefix)
+
         # Apply percent decoding with context-aware preservation
-        decoded_content, flags = self._percent_decode_once(content, context)
+        decoded_content, new_flags = self._percent_decode_once(content, context)
+
+        # Merge flags
+        all_flags = sorted(existing_flags | set(new_flags))
 
         # Reconstruct the line with decoded content and flags
         processed_line = f"{prefix} {decoded_content}"
-        if flags:
-            processed_line += f" {' '.join(flags)}"
+        if all_flags:
+            processed_line += f" {' '.join(all_flags)}"
 
-        return (
-            processed_line,
-            [],
-        )  # Return empty flags since they're attached to the line
+        return (processed_line, [])
 
     def _percent_decode_once(self, text: str, context: str) -> tuple[str, list[str]]:
         """
