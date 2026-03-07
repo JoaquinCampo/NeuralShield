@@ -4,8 +4,8 @@
 [QUERY] q=1&lt;2 HTMLENT SEMICOLON
 [QUERY] name=O&#39;Brien HTMLENT SEMICOLON
 [HEADER] host: example.com
-[HAGG] h_count=1 dup_names=0 hopbyhop=0 bad_names=0 total_bytes=12
+[HAGG] h_count=1 dup_names=0 hopbyhop=0 bad_names=0 total_bytes=11
 [HGF] HDRNORM
 [QSEP] MIXEDSEP QRAWSEMI
 [QMETA] count=2 HTMLENT SEMICOLON
-[FLAGS] HDRNORM HTMLENT SEMICOLON
+[FLAGS] HDRNORM HTMLENT MIXEDSEP QRAWSEMI SEMICOLON

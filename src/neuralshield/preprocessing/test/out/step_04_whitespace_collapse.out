@@ -5,7 +5,7 @@
 [HEADER] host: example.com
 [HEADER] x-padded: lots of spaces WSPAD
 [HEADER] x-tabbed: value with tabs WSPAD
-[HAGG] h_count=4 dup_names=0 hopbyhop=0 bad_names=0 total_bytes=59
+[HAGG] h_count=4 dup_names=0 hopbyhop=0 bad_names=0 total_bytes=53
 [HGF] HDRNORM
 [QMETA] count=0
 [FLAGS] HDRNORM WSPAD

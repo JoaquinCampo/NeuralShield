@@ -43,28 +43,52 @@ class PreprocessorPipeline:
         all_flags: set[str] = set()
         existing_flags_line_idx: int | None = None
 
+        def add_token(token: str) -> None:
+            if not token:
+                return
+            if token in _KNOWN_FLAGS or _PARAMETRIC_FLAG_RE.match(token):
+                all_flags.add(token)
+
+        def add_token_maybe_csv(token: str) -> None:
+            # Some steps may emit comma-separated tokens (legacy).
+            if "," in token:
+                for sub in token.split(","):
+                    add_token(sub.strip())
+                return
+            add_token(token.strip())
+
         for idx, line in enumerate(lines):
             # Collect flags already on a [FLAGS] line
             if line.startswith("[FLAGS] "):
                 existing_flags_line_idx = idx
                 for token in line[8:].split():
-                    all_flags.add(token)
+                    add_token_maybe_csv(token)
                 continue
 
             # Collect inline flags from tagged lines
             for prefix in ("[URL] ", "[QUERY] ", "[HEADER] "):
                 if line.startswith(prefix):
                     for token in line[len(prefix):].split():
-                        if token in _KNOWN_FLAGS or _PARAMETRIC_FLAG_RE.match(token):
-                            all_flags.add(token)
+                        add_token_maybe_csv(token)
                     break
+
+            # Collect query separator flags
+            if line.startswith("[QSEP] "):
+                for token in line[6:].split():
+                    add_token_maybe_csv(token)
+
+            # Collect query meta flags (skip count=...)
+            if line.startswith("[QMETA] "):
+                parts = line[7:].split()
+                for token in parts[1:]:
+                    add_token_maybe_csv(token)
 
             # Collect flags from block-level tags
             if line.startswith("[HGF] "):
                 for token in line[6:].split(","):
                     token = token.strip()
                     if token:
-                        all_flags.add(token)
+                        add_token_maybe_csv(token)
 
         if not all_flags:
             return request
@@ -128,6 +152,6 @@ def load_order_from_config(config_path: Path) -> list[str]:
 preprocess: PreprocessorPipeline = pipeline(
     resolve(name)
     for name in load_order_from_config(
-        Path("src/neuralshield/preprocessing/config.toml")
+        Path(__file__).with_name("config.toml")
     )
 )

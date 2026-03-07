@@ -6,7 +6,7 @@
 [HEADER] host: example.com
 [HEADER] x-html: <b>bold</b> ANGLE
 [HEADER] x-label: café а MIXEDSCRIPT
-[HAGG] h_count=3 dup_names=0 hopbyhop=0 bad_names=0 total_bytes=31
+[HAGG] h_count=3 dup_names=0 hopbyhop=0 bad_names=0 total_bytes=28
 [HGF] HDRNORM
 [QMETA] count=2 ANGLE PIPE
 [FLAGS] ANGLE HDRNORM MIXEDSCRIPT PIPE SEMICOLON

@@ -1,9 +1,9 @@
 [METHOD] GET
-[URL] http:/evil.com/steal MULTIPLESLASH
+[URL] http://evil.com/steal
 [URL_ABS] http://evil.com/steal
 [HEADER] accept: text/html
 [HEADER] host: trusted.com
-[HAGG] h_count=2 dup_names=0 hopbyhop=0 bad_names=0 total_bytes=22
+[HAGG] h_count=2 dup_names=0 hopbyhop=0 bad_names=0 total_bytes=20
 [HGF] HDRNORM
-[FLAGS] HDRNORM HOSTMISMATCH MULTIPLESLASH
+[FLAGS] HDRNORM HOSTMISMATCH
 [QMETA] count=0

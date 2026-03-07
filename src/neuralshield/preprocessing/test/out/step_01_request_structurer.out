@@ -4,10 +4,10 @@
 [QUERY] key=<SECRET:mixed:9> HTMLENT SEMICOLON
 [QUERY] foo=bar HTMLENT SEMICOLON
 [QUERY] name=test
-[FLAGS] HDRNORM HTMLENT SEMICOLON UNUSUAL_METHOD
+[FLAGS] HDRNORM HTMLENT MIXEDSEP QSEMISEP SEMICOLON UNUSUAL_METHOD
 [HEADER] content-type: application/xml
 [HEADER] host: example.com
-[HAGG] h_count=2 dup_names=0 hopbyhop=0 bad_names=0 total_bytes=28
+[HAGG] h_count=2 dup_names=0 hopbyhop=0 bad_names=0 total_bytes=26
 [HGF] HDRNORM
 [QSEP] MIXEDSEP QSEMISEP
 [QMETA] count=3 HTMLENT SEMICOLON

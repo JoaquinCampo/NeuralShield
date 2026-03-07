@@ -1,4 +1,4 @@
-from neuralshield.preprocessing.http_preprocessor import HttpPreprocessor
+from neuralshield.preprocessing.http_preprocessor import HttpPreprocessor, split_line_content
 
 
 class WhitespaceCollapse(HttpPreprocessor):
@@ -45,47 +45,40 @@ class WhitespaceCollapse(HttpPreprocessor):
         Returns:
             The processed header line with normalized whitespace and flags
         """
-        # Extract the header content after "[HEADER] "
-        header_content = line[9:]
+        # Use split_line_content to separate flags, but keep the raw
+        # header text for whitespace comparison (split_line_content joins
+        # with single spaces, which would mask the very issue we detect).
+        _, existing_flags = split_line_content(line, "[HEADER] ")
+
+        # Reconstruct raw header content by stripping trailing flags from line
+        raw_header = line[9:]  # Remove "[HEADER] "
+        # Strip known trailing flags
+        for flag in sorted(existing_flags, key=lambda f: len(f), reverse=True):
+            if raw_header.endswith(f" {flag}"):
+                raw_header = raw_header[: -(len(flag) + 1)]
 
         # Skip processing for redacted values
-        if self._is_redacted_value(header_content):
+        if self._is_redacted_value(raw_header):
             return line
 
-        # Parse header name and value
-        colon_index = header_content.find(":")
+        colon_index = raw_header.find(":")
         if colon_index == -1:
             return line  # Malformed header, pass through unchanged
 
-        name = header_content[:colon_index].strip()
+        name = raw_header[:colon_index].strip()
+        raw_value = raw_header[colon_index + 1 :]
+        normalized_value = self._normalize_whitespace(raw_value)
+        normalized_header = f"{name}: {normalized_value}"
 
-        # Extract the part after the colon
-        after_colon = header_content[colon_index + 1 :]
+        # Emit WSPAD if we changed the header formatting.
+        all_flags = set(existing_flags)
+        if raw_header != normalized_header:
+            all_flags.add("WSPAD")
 
-        # Check if there's exactly one space after the colon followed by the value
-        if after_colon.startswith(" "):
-            value_part = after_colon[1:]  # Remove the normal space
-        else:
-            value_part = after_colon  # No space after colon
-
-        # Normalize whitespace in the value part
-        normalized_value = self._normalize_whitespace(value_part)
-
-        # Check for whitespace anomalies beyond normal formatting
-        # Normal format: name:  value (two spaces after colon, single spaces in value)
-        had_whitespace_issues = (
-            after_colon.startswith("   ")  # 3+ spaces after colon
-            or "  " in value_part  # Multiple spaces in value
-            or "\t" in after_colon  # Tabs after colon
-            or "\t" in value_part  # Tabs in value
-        )
-
-        if had_whitespace_issues:
-            # Normalize to standard format: name: value (single space after colon)
-            return f"[HEADER] {name}: {normalized_value} WSPAD"
-        else:
-            # Already in correct format, return as-is
-            return line
+        rebuilt = f"[HEADER] {normalized_header}"
+        if all_flags:
+            rebuilt += f" {' '.join(sorted(all_flags))}"
+        return rebuilt
 
     def _is_redacted_value(self, header_content: str) -> bool:
         """

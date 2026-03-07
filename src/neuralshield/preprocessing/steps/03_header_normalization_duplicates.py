@@ -1,6 +1,6 @@
 from typing import Any
 
-from neuralshield.preprocessing.http_preprocessor import HttpPreprocessor
+from neuralshield.preprocessing.http_preprocessor import HttpPreprocessor, split_line_content
 
 
 class HeaderNormalizationDuplicates(HttpPreprocessor):
@@ -58,7 +58,7 @@ class HeaderNormalizationDuplicates(HttpPreprocessor):
         # Two-pass processing: collect then emit
         headers_map: dict[str, list[str]] = {}
         header_flags: dict[str, set[str]] = {}
-        global_flags: set[str] = {}
+        global_flags: set[str] = set()
         aggregates = {}
 
         headers_map, header_flags, global_flags, aggregates = (
@@ -137,12 +137,28 @@ class HeaderNormalizationDuplicates(HttpPreprocessor):
             if not line.startswith("[HEADER] "):
                 continue
 
-            header_content = line[9:]  # Remove "[HEADER] "
+            _, existing_flags = split_line_content(line, "[HEADER] ")
+
+            # Extract raw header content preserving original whitespace
+            # (split_line_content joins with single spaces, masking anomalies)
+            raw_header = line[len("[HEADER] "):]
+            for flag in sorted(existing_flags, key=lambda f: len(f), reverse=True):
+                if raw_header.endswith(f" {flag}"):
+                    raw_header = raw_header[: -(len(flag) + 1)]
+
+            # If it's malformed (no colon), preserve evidence via global flags.
+            if ":" not in raw_header:
+                for flag in existing_flags:
+                    global_flags.add(flag)
+                continue
 
             # Parse header name and value
-            name, value = self._parse_header_line(header_content)
+            name, value = self._parse_header_line(raw_header)
             if name is None:
-                continue  # Skip malformed headers
+                # Preserve evidence via global flags.
+                for flag in existing_flags:
+                    global_flags.add(flag)
+                continue
 
             # Validate and normalize name
             normalized_name, name_flags = self._normalize_header_name(name)
@@ -154,6 +170,9 @@ class HeaderNormalizationDuplicates(HttpPreprocessor):
             # Initialize header flags for this name if not exists
             if normalized_name not in header_flags:
                 header_flags[normalized_name] = set()
+
+            # Carry through existing inline flags from earlier steps (OBSFOLD, BADCRLF, etc.)
+            header_flags[normalized_name].update(existing_flags)
 
             # Add name validation flags
             for flag in name_flags:
@@ -215,9 +234,10 @@ class HeaderNormalizationDuplicates(HttpPreprocessor):
         else:
             value = ""
 
-        # Trim whitespace from name only (values handled by Step 10)
+        # Trim whitespace from name; strip leading/trailing OWS from value
+        # but preserve interior whitespace for Step 04 to detect
         name = name.strip()
-        # value = value.strip()  # Removed: Step 10 handles value whitespace
+        value = value.strip()
 
         # Validate that we have a non-empty name
         if not name:
@@ -360,7 +380,7 @@ class HeaderNormalizationDuplicates(HttpPreprocessor):
                     "HDRMERGE": 3,
                 }
                 sorted_flags = sorted(flags, key=lambda f: severity_order.get(f, 99))
-                flag_str = ",".join(sorted_flags)
+                flag_str = " ".join(sorted_flags)
                 header_lines.append(f"[HEADER] {name}: {value} {flag_str}")
             else:
                 header_lines.append(f"[HEADER] {name}: {value}")
@@ -376,7 +396,7 @@ class HeaderNormalizationDuplicates(HttpPreprocessor):
                     "HDRMERGE": 3,
                 }
                 sorted_flags = sorted(flags, key=lambda f: severity_order.get(f, 99))
-                flag_str = ",".join(sorted_flags)
+                flag_str = " ".join(sorted_flags)
                 header_lines.append(f"[HEADER] set-cookie: {value} {flag_str}")
             else:
                 header_lines.append(f"[HEADER] set-cookie: {value}")
@@ -416,5 +436,5 @@ class HeaderNormalizationDuplicates(HttpPreprocessor):
 
         # Sort flags alphabetically for determinism
         sorted_flags = sorted(global_flags)
-        flag_str = ",".join(sorted_flags)
+        flag_str = " ".join(sorted_flags)
         return f"[HGF] {flag_str}"
