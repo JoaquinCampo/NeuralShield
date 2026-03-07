@@ -2,7 +2,7 @@ import re
 from typing import Dict, List, Set, Tuple
 from urllib.parse import unquote
 
-from neuralshield.preprocessing.http_preprocessor import HttpPreprocessor
+from neuralshield.preprocessing.http_preprocessor import HttpPreprocessor, split_line_content
 
 
 class QueryParserAndFlags(HttpPreprocessor):
@@ -125,18 +125,8 @@ class QueryParserAndFlags(HttpPreprocessor):
 
         # Process each query line, checking for separators
         for line in query_lines:
-            # Parse [QUERY] line: extract key=value and existing flags
-            line_content = line[8:]  # Remove '[QUERY] '
-
-            # Split by spaces to separate key=value from existing flags
-            parts = line_content.split()
-            if parts:
-                param = parts[0]
-                existing_flags = set(parts[1:]) if len(parts) > 1 else set()
-            else:
-                # Empty or malformed [QUERY] line; preserve as bare parameter
-                param = ""
-                existing_flags = set()
+            # Parse [QUERY] line, separating content from trailing flags.
+            param, existing_flags = split_line_content(line, "[QUERY] ")
 
             # Check if this parameter contains separators that need splitting
             sep_type, sep_flags = self._detect_separator_type(param)
@@ -339,7 +329,9 @@ class QueryParserAndFlags(HttpPreprocessor):
         if not value:
             flags.add("QEMPTYVAL")
 
-        # Apply per-token percent decoding for analysis
+        # Apply per-token percent decoding for analysis only.
+        # Output must remain a stable text representation and must not introduce
+        # literal spaces or NUL bytes (e.g., from %20 or %00).
         try:
             decoded_value = unquote(value)
         except Exception:
@@ -361,8 +353,8 @@ class QueryParserAndFlags(HttpPreprocessor):
         if len(decoded_value.encode("utf-8")) > self.LONG_VALUE_THRESHOLD:
             flags.add("QLONG")
 
-        # Apply redaction if needed (use decoded value for display)
-        display_value = decoded_value
+        # Use original value for display unless we explicitly replace it.
+        display_value = value
         if self._should_redact_value(key, decoded_value):
             shape = self._detect_value_shape(decoded_value)
             length = len(decoded_value.encode("utf-8"))

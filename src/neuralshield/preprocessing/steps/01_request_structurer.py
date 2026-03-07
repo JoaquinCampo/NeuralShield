@@ -28,7 +28,9 @@ class RequestStructurer(HttpPreprocessor):
         if not request or not request.strip():
             raise MalformedHttpRequestError("Empty request")
 
-        lines = request.split("\n")
+        # Split on any common line endings (
+        # This avoids leaving stray '\r' characters in header content.
+        lines = request.splitlines()
 
         # Parse request line
         request_line = lines[0] if lines else ""
@@ -166,7 +168,7 @@ class RequestStructurer(HttpPreprocessor):
         headers = []
 
         for line in header_lines:
-            if line == "":
+            if line.strip() == "":
                 # Empty line marks end of headers
                 break
             headers.append(line)

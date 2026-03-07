@@ -69,6 +69,14 @@ class PathStructureNormalizer(HttpPreprocessor):
         """
         flags = set()
 
+        # Only normalize origin-form paths (RFC 9110).
+        # Do not treat absolute-form (e.g., "http://...") or asterisk-form ("*") as a path.
+        if url_path == "*":
+            return url_path, flags
+        if not url_path.startswith("/"):
+            # absolute-form / authority-form: preserve as-is to avoid corrupting it
+            return url_path, flags
+
         # Handle empty or root paths
         if not url_path or url_path == "/":
             flags.add("HOME")

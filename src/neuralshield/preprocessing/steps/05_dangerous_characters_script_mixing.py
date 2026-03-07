@@ -1,7 +1,7 @@
 import re
 from typing import Set
 
-from neuralshield.preprocessing.http_preprocessor import HttpPreprocessor
+from neuralshield.preprocessing.http_preprocessor import HttpPreprocessor, split_line_content
 
 
 class DangerousCharactersScriptMixing(HttpPreprocessor):
@@ -86,17 +86,8 @@ class DangerousCharactersScriptMixing(HttpPreprocessor):
 
     def _process_url_line(self, line: str) -> str:
         """Process a URL line for dangerous characters and script mixing."""
-        # Split line into content and existing flags
-        parts = line.split()
-        content = parts[1] if len(parts) > 1 else ""  # Content after "[URL]"
-        existing_flags = set()
-
-        # Extract any existing flags (uppercase words)
-        for part in parts[2:]:  # Skip "[URL]" and content
-            if part.isupper() and part in self.STEP05_FLAGS:
-                existing_flags.add(part)
-
-        flags = set()
+        content, existing_flags = split_line_content(line, "[URL] ")
+        flags = set(existing_flags)
 
         # Detect dangerous characters (all flagged in URL context)
         char_flags = self._detect_dangerous_characters(content, context="URL")
@@ -106,29 +97,15 @@ class DangerousCharactersScriptMixing(HttpPreprocessor):
         if self._detect_script_mixing(content):
             flags.add("MIXEDSCRIPT")
 
-        # Combine with existing flags
-        all_flags = existing_flags.union(flags)
-
-        # Emit flags if any detected
-        if all_flags:
-            sorted_flags = sorted(all_flags)
-            return f"[URL] {content} {' '.join(sorted_flags)}"
-        else:
-            return f"[URL] {content}"
+        rebuilt = f"[URL] {content}"
+        if flags:
+            rebuilt += f" {' '.join(sorted(flags))}"
+        return rebuilt
 
     def _process_query_line(self, line: str) -> str:
         """Process a query line for dangerous characters."""
-        # Split line into content and existing flags
-        parts = line.split()
-        content = parts[1] if len(parts) > 1 else ""  # Content after "[QUERY]"
-        existing_flags = set()
-
-        # Extract any existing flags (uppercase words)
-        for part in parts[2:]:  # Skip "[QUERY]" and content
-            if part.isupper() and part in self.STEP05_FLAGS:
-                existing_flags.add(part)
-
-        flags = set()
+        content, existing_flags = split_line_content(line, "[QUERY] ")
+        flags = set(existing_flags)
 
         # Detect dangerous characters
         char_flags = self._detect_dangerous_characters(content, context="QUERY")
@@ -138,37 +115,15 @@ class DangerousCharactersScriptMixing(HttpPreprocessor):
         if "NUL" in flags:
             flags.add("QNUL")
 
-        # Combine with existing flags
-        all_flags = existing_flags.union(flags)
-
-        # Emit flags if any detected
-        if all_flags:
-            sorted_flags = sorted(all_flags)
-            return f"[QUERY] {content} {' '.join(sorted_flags)}"
-        else:
-            return f"[QUERY] {content}"
+        rebuilt = f"[QUERY] {content}"
+        if flags:
+            rebuilt += f" {' '.join(sorted(flags))}"
+        return rebuilt
 
     def _process_header_line(self, line: str) -> str:
         """Process a header line for dangerous characters and script mixing."""
-        # Split line into parts: "[HEADER]" "name:" "value" [flags...]
-        parts = line.split()
-        content = (
-            " ".join(parts[1:]) if len(parts) > 1 else ""
-        )  # Everything after "[HEADER]"
-        existing_flags = set()
-
-        # Extract any existing flags (uppercase words at the end)
-        filtered_parts = []
-        for part in parts[1:]:  # Skip "[HEADER]"
-            if part.isupper() and part in self.STEP05_FLAGS:
-                existing_flags.add(part)
-            else:
-                filtered_parts.append(part)
-
-        # Reconstruct content without existing flags
-        content = " ".join(filtered_parts)
-
-        flags = set()
+        content, existing_flags = split_line_content(line, "[HEADER] ")
+        flags = set(existing_flags)
 
         # Detect dangerous characters (semicolon NOT flagged in headers)
         char_flags = self._detect_dangerous_characters(content, context="HEADER")
@@ -178,15 +133,10 @@ class DangerousCharactersScriptMixing(HttpPreprocessor):
         if self._detect_script_mixing(content):
             flags.add("MIXEDSCRIPT")
 
-        # Combine with existing flags
-        all_flags = existing_flags.union(flags)
-
-        # Emit flags if any detected
-        if all_flags:
-            sorted_flags = sorted(all_flags)
-            return f"[HEADER] {content} {' '.join(sorted_flags)}"
-        else:
-            return f"[HEADER] {content}"
+        rebuilt = f"[HEADER] {content}"
+        if flags:
+            rebuilt += f" {' '.join(sorted(flags))}"
+        return rebuilt
 
     def _detect_dangerous_characters(self, content: str, context: str) -> Set[str]:
         """

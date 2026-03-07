@@ -1,5 +1,7 @@
 from typing import Any
 
+from neuralshield.preprocessing.http_preprocessor import split_line_content
+
 from neuralshield.preprocessing.http_preprocessor import HttpPreprocessor
 
 
@@ -58,7 +60,7 @@ class HeaderNormalizationDuplicates(HttpPreprocessor):
         # Two-pass processing: collect then emit
         headers_map: dict[str, list[str]] = {}
         header_flags: dict[str, set[str]] = {}
-        global_flags: set[str] = {}
+        global_flags: set[str] = set()
         aggregates = {}
 
         headers_map, header_flags, global_flags, aggregates = (
@@ -137,12 +139,21 @@ class HeaderNormalizationDuplicates(HttpPreprocessor):
             if not line.startswith("[HEADER] "):
                 continue
 
-            header_content = line[9:]  # Remove "[HEADER] "
+            header_content, existing_flags = split_line_content(line, "[HEADER] ")
+
+            # If it's malformed (no colon), preserve evidence via global flags.
+            if ":" not in header_content:
+                for flag in existing_flags:
+                    global_flags.add(flag)
+                continue
 
             # Parse header name and value
             name, value = self._parse_header_line(header_content)
             if name is None:
-                continue  # Skip malformed headers
+                # Preserve evidence via global flags.
+                for flag in existing_flags:
+                    global_flags.add(flag)
+                continue
 
             # Validate and normalize name
             normalized_name, name_flags = self._normalize_header_name(name)
@@ -154,6 +165,9 @@ class HeaderNormalizationDuplicates(HttpPreprocessor):
             # Initialize header flags for this name if not exists
             if normalized_name not in header_flags:
                 header_flags[normalized_name] = set()
+
+            # Carry through existing inline flags from earlier steps (OBSFOLD, BADCRLF, etc.)
+            header_flags[normalized_name].update(existing_flags)
 
             # Add name validation flags
             for flag in name_flags:
@@ -360,7 +374,7 @@ class HeaderNormalizationDuplicates(HttpPreprocessor):
                     "HDRMERGE": 3,
                 }
                 sorted_flags = sorted(flags, key=lambda f: severity_order.get(f, 99))
-                flag_str = ",".join(sorted_flags)
+                flag_str = " ".join(sorted_flags)
                 header_lines.append(f"[HEADER] {name}: {value} {flag_str}")
             else:
                 header_lines.append(f"[HEADER] {name}: {value}")
@@ -376,7 +390,7 @@ class HeaderNormalizationDuplicates(HttpPreprocessor):
                     "HDRMERGE": 3,
                 }
                 sorted_flags = sorted(flags, key=lambda f: severity_order.get(f, 99))
-                flag_str = ",".join(sorted_flags)
+                flag_str = " ".join(sorted_flags)
                 header_lines.append(f"[HEADER] set-cookie: {value} {flag_str}")
             else:
                 header_lines.append(f"[HEADER] set-cookie: {value}")

@@ -98,7 +98,11 @@ class PercentDecodeOnce(HttpPreprocessor):
         # Apply selective decoding: decode safe encodings, preserve dangerous ones
         decoded = self._selective_percent_decode(text, context)
 
-        # Check for double encoding: look for remaining patterns that are not dangerous
+        # Check for double encoding.
+        # Evidence paths:
+        # 1) Direct pattern in input: %25HH (encoded '%', followed by a hex byte)
+        # 2) After decoding once, any remaining %HH indicates a second layer remains,
+        #    even if those %HH are "dangerous" encodings that we intentionally preserve.
         remaining_patterns_in_decoded = re.findall(r"%[0-9A-Fa-f]{2}", decoded)
         dangerous_encodings = self._get_dangerous_encodings(context)
 
@@ -109,8 +113,12 @@ class PercentDecodeOnce(HttpPreprocessor):
             if p.upper() not in dangerous_encodings
         ]
 
-        # If there are remaining patterns that could be decoded (not dangerous), it's double encoding
-        if non_dangerous_patterns:
+        has_direct_double_pattern = bool(re.search(r"%25[0-9A-Fa-f]{2}", text))
+        has_remaining_after_percent25 = ("%25" in text.lower()) and bool(
+            remaining_patterns_in_decoded
+        )
+
+        if has_direct_double_pattern or has_remaining_after_percent25 or non_dangerous_patterns:
             flags.append("DOUBLEPCT")
 
         # Apply context-aware flagging for preserved dangerous encodings
