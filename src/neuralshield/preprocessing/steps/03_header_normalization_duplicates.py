@@ -296,7 +296,9 @@ class HeaderNormalizationDuplicates(HttpPreprocessor):
 
                 # Merge values for mergeable headers (except set-cookie)
                 if name in self.MERGEABLE_HEADERS:
-                    merged_value = ", ".join(values)
+                    # Values include OWS after ':'. Strip leading whitespace to
+                    # avoid introducing artificial double-spaces during merging.
+                    merged_value = " " + ", ".join(v.lstrip(" \t") for v in values)
                     headers_map[name] = [merged_value]
                     header_flags[name].add("HDRMERGE")
                 # set-cookie gets flagged but values remain separate (handled in output)
@@ -375,9 +377,9 @@ class HeaderNormalizationDuplicates(HttpPreprocessor):
                 }
                 sorted_flags = sorted(flags, key=lambda f: severity_order.get(f, 99))
                 flag_str = " ".join(sorted_flags)
-                header_lines.append(f"[HEADER] {name}: {value} {flag_str}")
+                header_lines.append(f"[HEADER] {name}:{value} {flag_str}")
             else:
-                header_lines.append(f"[HEADER] {name}: {value}")
+                header_lines.append(f"[HEADER] {name}:{value}")
 
         # Emit set-cookie headers last (in original order) with inline flags
         for value in set_cookie_headers:
@@ -391,9 +393,9 @@ class HeaderNormalizationDuplicates(HttpPreprocessor):
                 }
                 sorted_flags = sorted(flags, key=lambda f: severity_order.get(f, 99))
                 flag_str = " ".join(sorted_flags)
-                header_lines.append(f"[HEADER] set-cookie: {value} {flag_str}")
+                header_lines.append(f"[HEADER] set-cookie:{value} {flag_str}")
             else:
-                header_lines.append(f"[HEADER] set-cookie: {value}")
+                header_lines.append(f"[HEADER] set-cookie:{value}")
 
         return header_lines
 

@@ -8,18 +8,54 @@ _KNOWN_FLAGS: Set[str] = {
     # Phase 1
     "UNUSUAL_METHOD",
     # Phase 2
-    "OBSFOLD", "BADHDRCONT", "BADCRLF", "BADHDRNAME", "DUPHDR",
-    "HDRMERGE", "HOPBYHOP", "HDRNORM", "WSPAD",
+    "OBSFOLD",
+    "BADHDRCONT",
+    "BADCRLF",
+    "BADHDRNAME",
+    "DUPHDR",
+    "HDRMERGE",
+    "HOPBYHOP",
+    "HDRNORM",
+    "WSPAD",
     # Phase 3
-    "ANGLE", "QUOTE", "SEMICOLON", "PAREN", "BRACE", "PIPE",
-    "BACKSLASH", "SPACE", "NUL", "QNUL", "MIXEDSCRIPT", "MIXEDSEP",
-    "HOSTMISMATCH", "IDNA", "BADHOST",
-    "FULLWIDTH", "CONTROL", "UNICODE_FORMAT", "MATH_UNICODE", "INVALID_UNICODE",
-    "DOUBLEPCT", "PCTSLASH", "PCTBACKSLASH", "PCTSPACE", "PCTCONTROL",
-    "PCTNULL", "PCTSUSPICIOUS",
+    "ANGLE",
+    "QUOTE",
+    "SEMICOLON",
+    "PAREN",
+    "BRACE",
+    "PIPE",
+    "BACKSLASH",
+    "SPACE",
+    "NUL",
+    "QNUL",
+    "MIXEDSCRIPT",
+    "MIXEDSEP",
+    "HOSTMISMATCH",
+    "IDNA",
+    "BADHOST",
+    "FULLWIDTH",
+    "CONTROL",
+    "UNICODE_FORMAT",
+    "MATH_UNICODE",
+    "INVALID_UNICODE",
+    "DOUBLEPCT",
+    "PCTSLASH",
+    "PCTBACKSLASH",
+    "PCTSPACE",
+    "PCTCONTROL",
+    "PCTNULL",
+    "PCTSUSPICIOUS",
     "HTMLENT",
-    "QSEMISEP", "QRAWSEMI", "QBARE", "QEMPTYVAL", "QNONASCII", "QLONG",
-    "HOME", "MULTIPLESLASH", "DOTCUR", "DOTDOT",
+    "QSEMISEP",
+    "QRAWSEMI",
+    "QBARE",
+    "QEMPTYVAL",
+    "QNONASCII",
+    "QLONG",
+    "HOME",
+    "MULTIPLESLASH",
+    "DOTCUR",
+    "DOTDOT",
 }
 
 # Regex to match parametric flags like QARRAY:<key> and QREPEAT:<key>
@@ -36,24 +72,38 @@ def split_line_content(line: str, prefix: str) -> Tuple[str, Set[str]]:
     tokens that happen to look like flags but aren't known are kept as
     content.
     """
-    raw = line[len(prefix):]
-    parts = raw.split()
-
-    if not parts:
+    raw = line[len(prefix) :]
+    if not raw:
         return "", set()
 
-    # Walk backwards from the end collecting flags
+    # Walk backwards from the end collecting flags without modifying the content.
+    # This must not collapse whitespace (tabs, multiple spaces), otherwise evidence
+    # such as WSPAD cannot be detected reliably downstream.
     flags: Set[str] = set()
-    split_idx = len(parts)
-    for i in range(len(parts) - 1, -1, -1):
-        token = parts[i]
+    work = raw
+
+    while True:
+        # Remove trailing whitespace only for token detection.
+        stripped = work.rstrip()
+        if not stripped:
+            break
+
+        # Find the last whitespace-separated token.
+        m = re.search(r"\s+(\S+)$", stripped)
+        if not m:
+            break
+
+        token = m.group(1)
         if token in _KNOWN_FLAGS or _PARAMETRIC_FLAG_RE.match(token):
             flags.add(token)
-            split_idx = i
-        else:
-            break  # stop at first non-flag token from the right
+            # Remove the token (and the whitespace before it) from the working string.
+            work = stripped[: m.start()]
+            continue
+        break
 
-    content = " ".join(parts[:split_idx])
+    # If flags were found, trim the remaining content's trailing whitespace.
+    # Once flags are appended, trailing whitespace becomes ambiguous.
+    content = work.rstrip() if flags else work
     return content, flags
 
 

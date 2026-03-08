@@ -1,16 +1,19 @@
 # Preprocessing Snapshot
 
-Snapshot: `docs/preprocessing_snapshots/snapshots/2026-03-07_after-plan-v2.jsonl`
+Date: 2026-03-08
 Packets: 18
+
+Inputs: `docs/preprocessing_snapshots/packets.jsonl`
+Snapshot: `docs/preprocessing_snapshots/snapshots/2026-03-08_after-wspad-order-v2.jsonl`
 
 ## P01 - Normal GET (LF)
 
 Raw packet (visible escapes):
 ```http
-GET / HTTP/1.1
-Host: example.com
-User-Agent: curl/8.0
-
+GET / HTTP/1.1\n
+Host: example.com\n
+User-Agent: curl/8.0\n
+\n
 
 ```
 
@@ -31,10 +34,10 @@ Preprocessed artifact:
 
 Raw packet (visible escapes):
 ```http
-GET / HTTP/1.1\r
-Host: example.com\r
-User-Agent: curl/8.0\r
-\r
+GET / HTTP/1.1\r\n
+Host: example.com\r\n
+User-Agent: curl/8.0\r\n
+\r\n
 
 ```
 
@@ -55,9 +58,9 @@ Preprocessed artifact:
 
 Raw packet (visible escapes):
 ```http
-GOT / HTTP/1.1
-Host: example.com
-
+GOT / HTTP/1.1\n
+Host: example.com\n
+\n
 
 ```
 
@@ -66,22 +69,22 @@ Preprocessed artifact:
 [METHOD] GOT
 [URL] / HOME
 [URL_ABS] http://example.com/
-[FLAGS] HDRNORM HOME UNUSUAL_METHOD
 [HEADER] host: example.com
 [HAGG] h_count=1 dup_names=0 hopbyhop=0 bad_names=0 total_bytes=12
 [HGF] HDRNORM
 [QMETA] count=0
+[FLAGS] HDRNORM HOME UNUSUAL_METHOD
 ```
 
 ## P04 - obs-fold continuation (X-Note + X-Admin)
 
 Raw packet (visible escapes):
 ```http
-GET / HTTP/1.1
-Host: example.com
-X-Note: ok
- X-Admin: true
-
+GET / HTTP/1.1\n
+Host: example.com\n
+X-Note: ok\n
+ X-Admin: true\n
+\n
 
 ```
 
@@ -102,10 +105,10 @@ Preprocessed artifact:
 
 Raw packet (visible escapes):
 ```http
-GET / HTTP/1.1
-Host: example.com
- orphan-continuation
-
+GET / HTTP/1.1\n
+Host: example.com\n
+ orphan-continuation\n
+\n
 
 ```
 
@@ -125,9 +128,9 @@ Preprocessed artifact:
 
 Raw packet (visible escapes):
 ```http
-GET http://a.example/x HTTP/1.1
-Host: b.example
-
+GET http://a.example/x HTTP/1.1\n
+Host: b.example\n
+\n
 
 ```
 
@@ -139,17 +142,17 @@ Preprocessed artifact:
 [HEADER] host: b.example
 [HAGG] h_count=1 dup_names=0 hopbyhop=0 bad_names=0 total_bytes=10
 [HGF] HDRNORM
-[FLAGS] HDRNORM HOSTMISMATCH
 [QMETA] count=0
+[FLAGS] HDRNORM HOSTMISMATCH
 ```
 
 ## P07 - Path normalization (dot + multiple slashes)
 
 Raw packet (visible escapes):
 ```http
-GET /A/./B//C/../D HTTP/1.1
-Host: example.com
-
+GET /A/./B//C/../D HTTP/1.1\n
+Host: example.com\n
+\n
 
 ```
 
@@ -169,9 +172,9 @@ Preprocessed artifact:
 
 Raw packet (visible escapes):
 ```http
-GET /a%2Fb%5Cc HTTP/1.1
-Host: example.com
-
+GET /a%2Fb%5Cc HTTP/1.1\n
+Host: example.com\n
+\n
 
 ```
 
@@ -191,9 +194,9 @@ Preprocessed artifact:
 
 Raw packet (visible escapes):
 ```http
-GET /?enc=a%2520b HTTP/1.1
-Host: example.com
-
+GET /?enc=a%2520b HTTP/1.1\n
+Host: example.com\n
+\n
 
 ```
 
@@ -214,9 +217,9 @@ Preprocessed artifact:
 
 Raw packet (visible escapes):
 ```http
-GET /?nul=%00 HTTP/1.1
-Host: example.com
-
+GET /?nul=%00 HTTP/1.1\n
+Host: example.com\n
+\n
 
 ```
 
@@ -237,9 +240,9 @@ Preprocessed artifact:
 
 Raw packet (visible escapes):
 ```http
-GET /?q=a&#x26;b&x=1 HTTP/1.1
-Host: example.com
-
+GET /?q=a&#x26;b&x=1 HTTP/1.1\n
+Host: example.com\n
+\n
 
 ```
 
@@ -262,9 +265,9 @@ Preprocessed artifact:
 
 Raw packet (visible escapes):
 ```http
-GET /?a=1;b=2&c=3 HTTP/1.1
-Host: example.com
-
+GET /?a=1;b=2&c=3 HTTP/1.1\n
+Host: example.com\n
+\n
 
 ```
 
@@ -288,11 +291,11 @@ Preprocessed artifact:
 
 Raw packet (visible escapes):
 ```http
-GET / HTTP/1.1
-Host: example.com
-Accept: text/html
-Accept: application/xml
-
+GET / HTTP/1.1\n
+Host: example.com\n
+Accept: text/html\n
+Accept: application/xml\n
+\n
 
 ```
 
@@ -303,7 +306,7 @@ Preprocessed artifact:
 [URL_ABS] http://example.com/
 [HEADER] accept: text/html, application/xml DUPHDR HDRMERGE
 [HEADER] host: example.com
-[HAGG] h_count=2 dup_names=1 hopbyhop=0 bad_names=0 total_bytes=40
+[HAGG] h_count=2 dup_names=1 hopbyhop=0 bad_names=0 total_bytes=39
 [HGF] HDRNORM
 [QMETA] count=0
 [FLAGS] DUPHDR HDRMERGE HDRNORM HOME
@@ -313,10 +316,10 @@ Preprocessed artifact:
 
 Raw packet (visible escapes):
 ```http
-GET / HTTP/1.1
-Host: example.com
-Connection: keep-alive
-
+GET / HTTP/1.1\n
+Host: example.com\n
+Connection: keep-alive\n
+\n
 
 ```
 
@@ -337,11 +340,11 @@ Preprocessed artifact:
 
 Raw packet (visible escapes):
 ```http
-GET / HTTP/1.1
-Host: example.com
-X-Mixed-Script: Latin a + Cyrillic Ð° + Greek Î±
-X-Custom: <script>alert('xss')</script>
-
+GET / HTTP/1.1\n
+Host: example.com\n
+X-Mixed-Script: Latin a + Cyrillic Ð° + Greek Î±\n
+X-Custom: <script>alert('xss')</script>\n
+\n
 
 ```
 
@@ -363,9 +366,9 @@ Preprocessed artifact:
 
 Raw packet (visible escapes):
 ```http
-GET /?user=ï¼¡ï¼¢ï¼£ HTTP/1.1
-Host: example.com
-
+GET /?user=ï¼¡ï¼¢ï¼£ HTTP/1.1\n
+Host: example.com\n
+\n
 
 ```
 
@@ -386,9 +389,9 @@ Preprocessed artifact:
 
 Raw packet (visible escapes):
 ```http
-GET / HTTP/1.1
-Host: example..com
-
+GET / HTTP/1.1\n
+Host: example..com\n
+\n
 
 ```
 
@@ -407,10 +410,10 @@ Preprocessed artifact:
 
 Raw packet (visible escapes):
 ```http
-GET / HTTP/1.1
-Host: example.com
-X-Test:   value\twith\t tabs  
-
+GET / HTTP/1.1\n
+Host: example.com\n
+X-Test:   value\twith\t tabs  \n
+\n
 
 ```
 
@@ -420,10 +423,10 @@ Preprocessed artifact:
 [URL] / HOME
 [URL_ABS] http://example.com/
 [HEADER] host: example.com
-[HEADER] x-test: value with tabs
-[HAGG] h_count=2 dup_names=0 hopbyhop=0 bad_names=0 total_bytes=28
+[HEADER] x-test:   value\twith\t tabs WSPAD
+[HAGG] h_count=2 dup_names=0 hopbyhop=0 bad_names=0 total_bytes=33
 [HGF] HDRNORM
 [QMETA] count=0
-[FLAGS] HDRNORM HOME
+[FLAGS] HDRNORM HOME WSPAD
 ```
 

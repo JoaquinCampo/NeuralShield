@@ -34,14 +34,18 @@ class PreprocessorPipeline:
 
         for step in self._steps:
             request = step.process(request)
-        return self._aggregate_flags(request)
+        return self._finalize_artifact(request)
 
     @staticmethod
-    def _aggregate_flags(request: str) -> str:
-        """Collect all inline flags into a summary [FLAGS] line at the end."""
-        lines = request.split("\n")
+    def _finalize_artifact(request: str) -> str:
+        """Finalize the canonical artifact.
+
+        - Enforce a stable line order.
+        - Ensure exactly one aggregated [FLAGS] line (when any flags exist).
+        - Do not modify line contents, only structure/order/deduplication.
+        """
+        lines = [ln for ln in request.split("\n") if ln != ""]
         all_flags: set[str] = set()
-        existing_flags_line_idx: int | None = None
 
         def add_token(token: str) -> None:
             if not token:
@@ -57,50 +61,83 @@ class PreprocessorPipeline:
                 return
             add_token(token.strip())
 
-        for idx, line in enumerate(lines):
-            # Collect flags already on a [FLAGS] line
+        # Keep categorized lines to re-emit in a stable order.
+        method_line: str | None = None
+        url_line: str | None = None
+        url_abs_line: str | None = None
+        query_lines: list[str] = []
+        header_lines: list[str] = []
+        hagg_line: str | None = None
+        hgf_line: str | None = None
+        qsep_line: str | None = None
+        qmeta_line: str | None = None
+        other_lines: list[str] = []
+
+        for line in lines:
+            # Collect flags already on any [FLAGS] line (we will remove all and re-add one).
             if line.startswith("[FLAGS] "):
-                existing_flags_line_idx = idx
                 for token in line[8:].split():
                     add_token_maybe_csv(token)
                 continue
 
-            # Collect inline flags from tagged lines
-            for prefix in ("[URL] ", "[QUERY] ", "[HEADER] "):
-                if line.startswith(prefix):
-                    for token in line[len(prefix):].split():
-                        add_token_maybe_csv(token)
-                    break
-
-            # Collect query separator flags
-            if line.startswith("[QSEP] "):
+            if line.startswith("[METHOD] "):
+                method_line = line
+                continue
+            if line.startswith("[URL] "):
+                url_line = line
                 for token in line[6:].split():
                     add_token_maybe_csv(token)
-
-            # Collect query meta flags (skip count=...)
+                continue
+            if line.startswith("[URL_ABS] "):
+                url_abs_line = line
+                continue
+            if line.startswith("[QUERY] "):
+                query_lines.append(line)
+                for token in line[8:].split():
+                    add_token_maybe_csv(token)
+                continue
+            if line.startswith("[HEADER] "):
+                header_lines.append(line)
+                for token in line[9:].split():
+                    add_token_maybe_csv(token)
+                continue
+            if line.startswith("[HAGG] "):
+                hagg_line = line
+                continue
+            if line.startswith("[HGF] "):
+                hgf_line = line
+                for token in line[6:].split():
+                    add_token_maybe_csv(token)
+                continue
+            if line.startswith("[QSEP] "):
+                qsep_line = line
+                for token in line[6:].split():
+                    add_token_maybe_csv(token)
+                continue
             if line.startswith("[QMETA] "):
+                qmeta_line = line
                 parts = line[7:].split()
                 for token in parts[1:]:
                     add_token_maybe_csv(token)
+                continue
 
-            # Collect flags from block-level tags
-            if line.startswith("[HGF] "):
-                for token in line[6:].split(","):
-                    token = token.strip()
-                    if token:
-                        add_token_maybe_csv(token)
+            other_lines.append(line)
 
-        if not all_flags:
-            return request
+        out_lines: list[str] = []
+        for ln in (method_line, url_line, url_abs_line):
+            if ln is not None:
+                out_lines.append(ln)
+        out_lines.extend(query_lines)
+        out_lines.extend(header_lines)
+        for ln in (hagg_line, hgf_line, qsep_line, qmeta_line):
+            if ln is not None:
+                out_lines.append(ln)
+        out_lines.extend(other_lines)
 
-        flags_line = f"[FLAGS] {' '.join(sorted(all_flags))}"
+        if all_flags:
+            out_lines.append(f"[FLAGS] {' '.join(sorted(all_flags))}")
 
-        if existing_flags_line_idx is not None:
-            lines[existing_flags_line_idx] = flags_line
-        else:
-            lines.append(flags_line)
-
-        return "\n".join(lines)
+        return "\n".join(out_lines)
 
     def batch(self, batch: Sequence[str]) -> list[str]:
         """Process a batch of requests, preserving order."""
@@ -151,7 +188,5 @@ def load_order_from_config(config_path: Path) -> list[str]:
 
 preprocess: PreprocessorPipeline = pipeline(
     resolve(name)
-    for name in load_order_from_config(
-        Path(__file__).with_name("config.toml")
-    )
+    for name in load_order_from_config(Path(__file__).with_name("config.toml"))
 )
