@@ -1,27 +1,27 @@
 from neuralshield.preprocessing.http_preprocessor import HttpPreprocessor
+from neuralshield.preprocessing.http_preprocessor import split_line_content
 
 
 class WhitespaceCollapse(HttpPreprocessor):
     """
-    Normalize whitespace within header values to eliminate formatting variations.
+    Detect whitespace anomalies within header values without rewriting content.
 
     Step 04: Whitespace Collapse
-    - Collapses sequences of spaces and tabs to single space
-    - Trims leading and trailing whitespace
-    - Preserves semantic spacing between tokens
-    - Flags when modifications are made for security evidence
+    - Detects padding/tab anomalies in header values
+    - Emits WSPAD when anomalous whitespace is observed
+    - Does not modify header content (evidence preservation)
     - Skips processing for redacted values (<SECRET:...>)
     """
 
     def process(self, request: str) -> str:
         """
-        Process the HTTP request to normalize whitespace in header values.
+        Process the HTTP request to detect whitespace anomalies in header values.
 
         Args:
             request: The HTTP request as a string with structured lines
 
         Returns:
-            The processed request with normalized whitespace and WSPAD flags
+            The processed request with WSPAD flags where applicable
         """
         lines = request.split("\n")
         processed_lines = []
@@ -37,55 +37,48 @@ class WhitespaceCollapse(HttpPreprocessor):
 
     def _process_header_line(self, line: str) -> str:
         """
-        Process a single header line for whitespace normalization.
+        Process a single header line for whitespace anomaly detection.
 
         Args:
             line: The header line in format "[HEADER] name: value"
 
         Returns:
-            The processed header line with normalized whitespace and flags
+            The processed header line with added flags (content preserved)
         """
-        # Extract the header content after "[HEADER] "
-        header_content = line[9:]
+        header_content, existing_flags = split_line_content(line, "[HEADER] ")
 
         # Skip processing for redacted values
         if self._is_redacted_value(header_content):
             return line
 
-        # Parse header name and value
         colon_index = header_content.find(":")
         if colon_index == -1:
             return line  # Malformed header, pass through unchanged
 
-        name = header_content[:colon_index].strip()
-
-        # Extract the part after the colon
         after_colon = header_content[colon_index + 1 :]
 
-        # Check if there's exactly one space after the colon followed by the value
-        if after_colon.startswith(" "):
-            value_part = after_colon[1:]  # Remove the normal space
-        else:
-            value_part = after_colon  # No space after colon
+        has_tabs = "\t" in after_colon
+        has_multi_spaces = "  " in after_colon
+        has_trailing_ws = after_colon.endswith((" ", "\t"))
+        has_leading_tab = after_colon.startswith("\t")
+        has_leading_multi_space = after_colon.startswith("  ")
 
-        # Normalize whitespace in the value part
-        normalized_value = self._normalize_whitespace(value_part)
-
-        # Check for whitespace anomalies beyond normal formatting
-        # Normal format: name:  value (two spaces after colon, single spaces in value)
-        had_whitespace_issues = (
-            after_colon.startswith("   ")  # 3+ spaces after colon
-            or "  " in value_part  # Multiple spaces in value
-            or "\t" in after_colon  # Tabs after colon
-            or "\t" in value_part  # Tabs in value
+        anomalous = (
+            has_tabs
+            or has_multi_spaces
+            or has_trailing_ws
+            or has_leading_tab
+            or has_leading_multi_space
         )
 
-        if had_whitespace_issues:
-            # Normalize to standard format: name: value (single space after colon)
-            return f"[HEADER] {name}: {normalized_value} WSPAD"
-        else:
-            # Already in correct format, return as-is
-            return line
+        all_flags = set(existing_flags)
+        if anomalous:
+            all_flags.add("WSPAD")
+
+        rebuilt = f"[HEADER] {header_content}"
+        if all_flags:
+            rebuilt += f" {' '.join(sorted(all_flags))}"
+        return rebuilt
 
     def _is_redacted_value(self, header_content: str) -> bool:
         """
@@ -120,22 +113,6 @@ class WhitespaceCollapse(HttpPreprocessor):
         name, value = header_content.split(":", 1)
         return name.strip(), value.strip()
 
-    def _normalize_whitespace(self, value: str) -> str:
-        """
-        Normalize whitespace within a header value.
-
-        Args:
-            value: The original header value
-
-        Returns:
-            The normalized value with collapsed whitespace
-        """
-        import re
-
-        # Collapse sequences of tabs and spaces to single space
-        normalized = re.sub(r"[\t ]+", " ", value)
-
-        # Trim leading and trailing whitespace
-        normalized = normalized.strip()
-
-        return normalized
+    # NOTE: This step is detection-only. We intentionally do not normalize
+    # whitespace here; normalization without explicit evidence would violate the
+    # "no-destructiveness" property described in the thesis.

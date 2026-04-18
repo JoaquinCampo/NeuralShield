@@ -4,7 +4,17 @@ from importlib import import_module
 from pathlib import Path
 from typing import Iterable, Sequence
 
-from neuralshield.preprocessing.http_preprocessor import HttpPreprocessor
+from neuralshield.preprocessing.http_preprocessor import (
+    HttpPreprocessor,
+    _KNOWN_FLAGS,
+    _PARAMETRIC_FLAG_RE,
+)
+
+
+# TODO(audit): Verify Figure 4.2 in PDF — Phase 2 flag list is incomplete
+#   (missing BADHDRCONT, BADCRLF, HDRMERGE, HOPBYHOP, HDRNORM). See audit 1.10.
+# TODO(audit): Regenerate Listing 4.2 end-to-end example from actual pipeline
+#   output after all bug fixes are applied. See audit 1.12.
 
 
 class PreprocessorPipeline:
@@ -24,7 +34,110 @@ class PreprocessorPipeline:
 
         for step in self._steps:
             request = step.process(request)
-        return request
+        return self._finalize_artifact(request)
+
+    @staticmethod
+    def _finalize_artifact(request: str) -> str:
+        """Finalize the canonical artifact.
+
+        - Enforce a stable line order.
+        - Ensure exactly one aggregated [FLAGS] line (when any flags exist).
+        - Do not modify line contents, only structure/order/deduplication.
+        """
+        lines = [ln for ln in request.split("\n") if ln != ""]
+        all_flags: set[str] = set()
+
+        def add_token(token: str) -> None:
+            if not token:
+                return
+            if token in _KNOWN_FLAGS or _PARAMETRIC_FLAG_RE.match(token):
+                all_flags.add(token)
+
+        def add_token_maybe_csv(token: str) -> None:
+            # Some steps may emit comma-separated tokens (legacy).
+            if "," in token:
+                for sub in token.split(","):
+                    add_token(sub.strip())
+                return
+            add_token(token.strip())
+
+        # Keep categorized lines to re-emit in a stable order.
+        method_line: str | None = None
+        url_line: str | None = None
+        url_abs_line: str | None = None
+        query_lines: list[str] = []
+        header_lines: list[str] = []
+        hagg_line: str | None = None
+        hgf_line: str | None = None
+        qsep_line: str | None = None
+        qmeta_line: str | None = None
+        other_lines: list[str] = []
+
+        for line in lines:
+            # Collect flags already on any [FLAGS] line (we will remove all and re-add one).
+            if line.startswith("[FLAGS] "):
+                for token in line[8:].split():
+                    add_token_maybe_csv(token)
+                continue
+
+            if line.startswith("[METHOD] "):
+                method_line = line
+                continue
+            if line.startswith("[URL] "):
+                url_line = line
+                for token in line[6:].split():
+                    add_token_maybe_csv(token)
+                continue
+            if line.startswith("[URL_ABS] "):
+                url_abs_line = line
+                continue
+            if line.startswith("[QUERY] "):
+                query_lines.append(line)
+                for token in line[8:].split():
+                    add_token_maybe_csv(token)
+                continue
+            if line.startswith("[HEADER] "):
+                header_lines.append(line)
+                for token in line[9:].split():
+                    add_token_maybe_csv(token)
+                continue
+            if line.startswith("[HAGG] "):
+                hagg_line = line
+                continue
+            if line.startswith("[HGF] "):
+                hgf_line = line
+                for token in line[6:].split():
+                    add_token_maybe_csv(token)
+                continue
+            if line.startswith("[QSEP] "):
+                qsep_line = line
+                for token in line[6:].split():
+                    add_token_maybe_csv(token)
+                continue
+            if line.startswith("[QMETA] "):
+                qmeta_line = line
+                parts = line[7:].split()
+                for token in parts[1:]:
+                    add_token_maybe_csv(token)
+                continue
+
+            other_lines.append(line)
+
+        out_lines: list[str] = []
+        for ln in (method_line, url_line, url_abs_line):
+            if ln is not None:
+                out_lines.append(ln)
+        out_lines.extend(query_lines)
+        out_lines.extend(header_lines)
+        for ln in (hagg_line, hgf_line, qsep_line, qmeta_line):
+            if ln is not None:
+                out_lines.append(ln)
+        out_lines.extend(other_lines)
+
+        if all_flags:
+            out_lines.append(f"[FLAGS] {' '.join(sorted(all_flags))}")
+
+        return "\n".join(out_lines)
 
     def batch(self, batch: Sequence[str]) -> list[str]:
         """Process a batch of requests, preserving order."""
@@ -75,7 +188,5 @@ def load_order_from_config(config_path: Path) -> list[str]:
 
 preprocess: PreprocessorPipeline = pipeline(
     resolve(name)
-    for name in load_order_from_config(
-        Path("src/neuralshield/preprocessing/config.toml")
-    )
+    for name in load_order_from_config(Path(__file__).with_name("config.toml"))
 )

@@ -27,6 +27,9 @@ class HeaderUnfoldObsFold(HttpPreprocessor):
         lines = request.split("\n")
         processed_lines = []
 
+        # Global flags emitted by this step that must survive downstream processing.
+        global_flags: set[str] = set()
+
         # State tracking for header context
         current_header = None
         current_header_index = None
@@ -43,7 +46,7 @@ class HeaderUnfoldObsFold(HttpPreprocessor):
                     # This is a continuation line
                     if current_header is None:
                         # Orphaned continuation - no preceding header
-                        processed_lines.append("[HEADER] BADHDRCONT")
+                        global_flags.add("BADHDRCONT")
                         continue  # Skip orphaned continuation
                     else:
                         # Valid continuation - join to current header
@@ -85,6 +88,11 @@ class HeaderUnfoldObsFold(HttpPreprocessor):
             else:
                 # Non-header line
                 processed_lines.append(line)
+
+        if global_flags:
+            processed_lines.append(
+                f"[FLAGS] {' '.join(sorted(global_flags))}"
+            )
 
         return "\n".join(processed_lines)
 

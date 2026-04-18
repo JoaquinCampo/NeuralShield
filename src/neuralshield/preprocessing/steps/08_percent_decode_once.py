@@ -1,6 +1,6 @@
 import re
 
-from neuralshield.preprocessing.http_preprocessor import HttpPreprocessor
+from neuralshield.preprocessing.http_preprocessor import HttpPreprocessor, split_line_content
 
 
 class PercentDecodeOnce(HttpPreprocessor):
@@ -50,35 +50,37 @@ class PercentDecodeOnce(HttpPreprocessor):
         Process a single URL or QUERY line with percent decoding.
 
         Args:
-            line: Line in format "[TYPE] content"
+            line: Line in format "[TYPE] content [FLAGS...]"
 
         Returns:
             tuple: (processed_line, list_of_flags)
         """
-        # Split prefix from content
+        # Split prefix from content, separating existing flags
         if line.startswith("[URL] "):
             prefix = "[URL]"
-            content = line[6:]  # Remove '[URL] '
+            tag_prefix = "[URL] "
             context = "URL"
         elif line.startswith("[QUERY] "):
             prefix = "[QUERY]"
-            content = line[8:]  # Remove '[QUERY] '
+            tag_prefix = "[QUERY] "
             context = "QUERY"
         else:
             return line, []
 
+        content, existing_flags = split_line_content(line, tag_prefix)
+
         # Apply percent decoding with context-aware preservation
-        decoded_content, flags = self._percent_decode_once(content, context)
+        decoded_content, new_flags = self._percent_decode_once(content, context)
+
+        # Merge flags
+        all_flags = sorted(existing_flags | set(new_flags))
 
         # Reconstruct the line with decoded content and flags
         processed_line = f"{prefix} {decoded_content}"
-        if flags:
-            processed_line += f" {' '.join(flags)}"
+        if all_flags:
+            processed_line += f" {' '.join(all_flags)}"
 
-        return (
-            processed_line,
-            [],
-        )  # Return empty flags since they're attached to the line
+        return (processed_line, [])
 
     def _percent_decode_once(self, text: str, context: str) -> tuple[str, list[str]]:
         """
@@ -96,7 +98,11 @@ class PercentDecodeOnce(HttpPreprocessor):
         # Apply selective decoding: decode safe encodings, preserve dangerous ones
         decoded = self._selective_percent_decode(text, context)
 
-        # Check for double encoding: look for remaining patterns that are not dangerous
+        # Check for double encoding.
+        # Evidence paths:
+        # 1) Direct pattern in input: %25HH (encoded '%', followed by a hex byte)
+        # 2) After decoding once, any remaining %HH indicates a second layer remains,
+        #    even if those %HH are "dangerous" encodings that we intentionally preserve.
         remaining_patterns_in_decoded = re.findall(r"%[0-9A-Fa-f]{2}", decoded)
         dangerous_encodings = self._get_dangerous_encodings(context)
 
@@ -107,8 +113,12 @@ class PercentDecodeOnce(HttpPreprocessor):
             if p.upper() not in dangerous_encodings
         ]
 
-        # If there are remaining patterns that could be decoded (not dangerous), it's double encoding
-        if non_dangerous_patterns:
+        has_direct_double_pattern = bool(re.search(r"%25[0-9A-Fa-f]{2}", text))
+        has_remaining_after_percent25 = ("%25" in text.lower()) and bool(
+            remaining_patterns_in_decoded
+        )
+
+        if has_direct_double_pattern or has_remaining_after_percent25 or non_dangerous_patterns:
             flags.append("DOUBLEPCT")
 
         # Apply context-aware flagging for preserved dangerous encodings

@@ -1,0 +1,429 @@
+# Preprocessing Snapshot
+
+Snapshot: `docs/preprocessing_snapshots/snapshots/2026-03-07_after-plan-v2.jsonl`
+Packets: 18
+
+## P01 - Normal GET (LF)
+
+Raw packet (visible escapes):
+```http
+GET / HTTP/1.1
+Host: example.com
+User-Agent: curl/8.0
+
+
+```
+
+Preprocessed artifact:
+```text
+[METHOD] GET
+[URL] / HOME
+[URL_ABS] http://example.com/
+[HEADER] host: example.com
+[HEADER] user-agent: curl/8.0
+[HAGG] h_count=2 dup_names=0 hopbyhop=0 bad_names=0 total_bytes=21
+[HGF] HDRNORM
+[QMETA] count=0
+[FLAGS] HDRNORM HOME
+```
+
+## P02 - Normal GET (CRLF)
+
+Raw packet (visible escapes):
+```http
+GET / HTTP/1.1\r
+Host: example.com\r
+User-Agent: curl/8.0\r
+\r
+
+```
+
+Preprocessed artifact:
+```text
+[METHOD] GET
+[URL] / HOME
+[URL_ABS] http://example.com/
+[HEADER] host: example.com
+[HEADER] user-agent: curl/8.0
+[HAGG] h_count=2 dup_names=0 hopbyhop=0 bad_names=0 total_bytes=21
+[HGF] HDRNORM
+[QMETA] count=0
+[FLAGS] HDRNORM HOME
+```
+
+## P03 - Unusual method
+
+Raw packet (visible escapes):
+```http
+GOT / HTTP/1.1
+Host: example.com
+
+
+```
+
+Preprocessed artifact:
+```text
+[METHOD] GOT
+[URL] / HOME
+[URL_ABS] http://example.com/
+[FLAGS] HDRNORM HOME UNUSUAL_METHOD
+[HEADER] host: example.com
+[HAGG] h_count=1 dup_names=0 hopbyhop=0 bad_names=0 total_bytes=12
+[HGF] HDRNORM
+[QMETA] count=0
+```
+
+## P04 - obs-fold continuation (X-Note + X-Admin)
+
+Raw packet (visible escapes):
+```http
+GET / HTTP/1.1
+Host: example.com
+X-Note: ok
+ X-Admin: true
+
+
+```
+
+Preprocessed artifact:
+```text
+[METHOD] GET
+[URL] / HOME
+[URL_ABS] http://example.com/
+[HEADER] host: example.com
+[HEADER] x-note: ok X-Admin: true OBSFOLD
+[HAGG] h_count=2 dup_names=0 hopbyhop=0 bad_names=0 total_bytes=29
+[HGF] HDRNORM
+[QMETA] count=0
+[FLAGS] HDRNORM HOME OBSFOLD
+```
+
+## P05 - Orphan obs-fold continuation
+
+Raw packet (visible escapes):
+```http
+GET / HTTP/1.1
+Host: example.com
+ orphan-continuation
+
+
+```
+
+Preprocessed artifact:
+```text
+[METHOD] GET
+[URL] / HOME
+[URL_ABS] http://example.com/
+[HEADER] host: example.com orphan-continuation OBSFOLD
+[HAGG] h_count=1 dup_names=0 hopbyhop=0 bad_names=0 total_bytes=32
+[HGF] HDRNORM
+[QMETA] count=0
+[FLAGS] HDRNORM HOME OBSFOLD
+```
+
+## P06 - Absolute-form target + host mismatch
+
+Raw packet (visible escapes):
+```http
+GET http://a.example/x HTTP/1.1
+Host: b.example
+
+
+```
+
+Preprocessed artifact:
+```text
+[METHOD] GET
+[URL] http://a.example/x
+[URL_ABS] http://a.example/x
+[HEADER] host: b.example
+[HAGG] h_count=1 dup_names=0 hopbyhop=0 bad_names=0 total_bytes=10
+[HGF] HDRNORM
+[FLAGS] HDRNORM HOSTMISMATCH
+[QMETA] count=0
+```
+
+## P07 - Path normalization (dot + multiple slashes)
+
+Raw packet (visible escapes):
+```http
+GET /A/./B//C/../D HTTP/1.1
+Host: example.com
+
+
+```
+
+Preprocessed artifact:
+```text
+[METHOD] GET
+[URL] /A/B/C/../D DOTCUR DOTDOT MULTIPLESLASH
+[URL_ABS] http://example.com/A/B/C/../D
+[HEADER] host: example.com
+[HAGG] h_count=1 dup_names=0 hopbyhop=0 bad_names=0 total_bytes=12
+[HGF] HDRNORM
+[QMETA] count=0
+[FLAGS] DOTCUR DOTDOT HDRNORM MULTIPLESLASH
+```
+
+## P08 - Encoded slash and backslash in URL
+
+Raw packet (visible escapes):
+```http
+GET /a%2Fb%5Cc HTTP/1.1
+Host: example.com
+
+
+```
+
+Preprocessed artifact:
+```text
+[METHOD] GET
+[URL] /a%2Fb%5Cc BACKSLASH PCTBACKSLASH PCTSLASH
+[URL_ABS] http://example.com/a%2Fb%5Cc
+[HEADER] host: example.com
+[HAGG] h_count=1 dup_names=0 hopbyhop=0 bad_names=0 total_bytes=12
+[HGF] HDRNORM
+[QMETA] count=0
+[FLAGS] BACKSLASH HDRNORM PCTBACKSLASH PCTSLASH
+```
+
+## P09 - Query double-encoding and space evidence
+
+Raw packet (visible escapes):
+```http
+GET /?enc=a%2520b HTTP/1.1
+Host: example.com
+
+
+```
+
+Preprocessed artifact:
+```text
+[METHOD] GET
+[URL] / HOME
+[URL_ABS] http://example.com/
+[QUERY] enc=a%20b DOUBLEPCT PCTSPACE
+[HEADER] host: example.com
+[HAGG] h_count=1 dup_names=0 hopbyhop=0 bad_names=0 total_bytes=12
+[HGF] HDRNORM
+[QMETA] count=1 DOUBLEPCT PCTSPACE
+[FLAGS] DOUBLEPCT HDRNORM HOME PCTSPACE
+```
+
+## P10 - Query NUL percent-encoding
+
+Raw packet (visible escapes):
+```http
+GET /?nul=%00 HTTP/1.1
+Host: example.com
+
+
+```
+
+Preprocessed artifact:
+```text
+[METHOD] GET
+[URL] / HOME
+[URL_ABS] http://example.com/
+[QUERY] nul=%00 CONTROL NUL PCTNULL QNUL
+[HEADER] host: example.com
+[HAGG] h_count=1 dup_names=0 hopbyhop=0 bad_names=0 total_bytes=12
+[HGF] HDRNORM
+[QMETA] count=1 CONTROL NUL PCTNULL QNUL
+[FLAGS] CONTROL HDRNORM HOME NUL PCTNULL QNUL
+```
+
+## P11 - Query with HTML entity ampersand
+
+Raw packet (visible escapes):
+```http
+GET /?q=a&#x26;b&x=1 HTTP/1.1
+Host: example.com
+
+
+```
+
+Preprocessed artifact:
+```text
+[METHOD] GET
+[URL] / HOME
+[URL_ABS] http://example.com/
+[QUERY] q=a&#x26;b HTMLENT SEMICOLON
+[QUERY] x=1
+[HEADER] host: example.com
+[HAGG] h_count=1 dup_names=0 hopbyhop=0 bad_names=0 total_bytes=12
+[HGF] HDRNORM
+[QSEP] MIXEDSEP QRAWSEMI
+[QMETA] count=2 HTMLENT SEMICOLON
+[FLAGS] HDRNORM HOME HTMLENT MIXEDSEP QRAWSEMI SEMICOLON
+```
+
+## P12 - Mixed query separators (; and &)
+
+Raw packet (visible escapes):
+```http
+GET /?a=1;b=2&c=3 HTTP/1.1
+Host: example.com
+
+
+```
+
+Preprocessed artifact:
+```text
+[METHOD] GET
+[URL] / HOME
+[URL_ABS] http://example.com/
+[QUERY] a=1 SEMICOLON
+[QUERY] b=2 SEMICOLON
+[QUERY] c=3
+[HEADER] host: example.com
+[HAGG] h_count=1 dup_names=0 hopbyhop=0 bad_names=0 total_bytes=12
+[HGF] HDRNORM
+[QSEP] QSEMISEP
+[QMETA] count=3 SEMICOLON
+[FLAGS] HDRNORM HOME QSEMISEP SEMICOLON
+```
+
+## P13 - Duplicate mergeable headers (accept)
+
+Raw packet (visible escapes):
+```http
+GET / HTTP/1.1
+Host: example.com
+Accept: text/html
+Accept: application/xml
+
+
+```
+
+Preprocessed artifact:
+```text
+[METHOD] GET
+[URL] / HOME
+[URL_ABS] http://example.com/
+[HEADER] accept: text/html, application/xml DUPHDR HDRMERGE
+[HEADER] host: example.com
+[HAGG] h_count=2 dup_names=1 hopbyhop=0 bad_names=0 total_bytes=40
+[HGF] HDRNORM
+[QMETA] count=0
+[FLAGS] DUPHDR HDRMERGE HDRNORM HOME
+```
+
+## P14 - Hop-by-hop header (Connection)
+
+Raw packet (visible escapes):
+```http
+GET / HTTP/1.1
+Host: example.com
+Connection: keep-alive
+
+
+```
+
+Preprocessed artifact:
+```text
+[METHOD] GET
+[URL] / HOME
+[URL_ABS] http://example.com/
+[HEADER] connection: keep-alive HOPBYHOP
+[HEADER] host: example.com
+[HAGG] h_count=2 dup_names=0 hopbyhop=1 bad_names=0 total_bytes=23
+[HGF] HDRNORM
+[QMETA] count=0
+[FLAGS] HDRNORM HOME HOPBYHOP
+```
+
+## P15 - Header script mixing + dangerous chars
+
+Raw packet (visible escapes):
+```http
+GET / HTTP/1.1
+Host: example.com
+X-Mixed-Script: Latin a + Cyrillic Ð° + Greek Î±
+X-Custom: <script>alert('xss')</script>
+
+
+```
+
+Preprocessed artifact:
+```text
+[METHOD] GET
+[URL] / HOME
+[URL_ABS] http://example.com/
+[HEADER] host: example.com
+[HEADER] x-custom: <script>alert('xss')</script> ANGLE PAREN QUOTE
+[HEADER] x-mixed-script: Latin a + Cyrillic Ð° + Greek Î±
+[HAGG] h_count=3 dup_names=0 hopbyhop=0 bad_names=0 total_bytes=75
+[HGF] HDRNORM
+[QMETA] count=0
+[FLAGS] ANGLE HDRNORM HOME PAREN QUOTE
+```
+
+## P16 - Fullwidth unicode in query
+
+Raw packet (visible escapes):
+```http
+GET /?user=ï¼¡ï¼¢ï¼£ HTTP/1.1
+Host: example.com
+
+
+```
+
+Preprocessed artifact:
+```text
+[METHOD] GET
+[URL] / HOME
+[URL_ABS] http://example.com/
+[QUERY] user=ï¼¡ï¼¢ï¼£ FULLWIDTH QNONASCII
+[HEADER] host: example.com
+[HAGG] h_count=1 dup_names=0 hopbyhop=0 bad_names=0 total_bytes=12
+[HGF] HDRNORM
+[QMETA] count=1 FULLWIDTH QNONASCII
+[FLAGS] FULLWIDTH HDRNORM HOME QNONASCII
+```
+
+## P17 - Bad host header (invalid domain)
+
+Raw packet (visible escapes):
+```http
+GET / HTTP/1.1
+Host: example..com
+
+
+```
+
+Preprocessed artifact:
+```text
+[METHOD] GET
+[URL] / HOME
+[HEADER] host: example..com BADHOST
+[HAGG] h_count=1 dup_names=0 hopbyhop=0 bad_names=0 total_bytes=13
+[HGF] HDRNORM
+[QMETA] count=0
+[FLAGS] BADHOST HDRNORM HOME
+```
+
+## P18 - Header whitespace anomalies (WSPAD)
+
+Raw packet (visible escapes):
+```http
+GET / HTTP/1.1
+Host: example.com
+X-Test:   value\twith\t tabs  
+
+
+```
+
+Preprocessed artifact:
+```text
+[METHOD] GET
+[URL] / HOME
+[URL_ABS] http://example.com/
+[HEADER] host: example.com
+[HEADER] x-test: value with tabs
+[HAGG] h_count=2 dup_names=0 hopbyhop=0 bad_names=0 total_bytes=28
+[HGF] HDRNORM
+[QMETA] count=0
+[FLAGS] HDRNORM HOME
+```
+
